@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="Phrase_App.Admin/Phrase_App.Admin.csproj" />
+  <Project Path="Phrase_App.Api/Phrase_App.Api.csproj" />
+  <Project Path="Phrase_App.Core/Phrase_App.Core.csproj" />
+  <Project Path="Phrase_App.Infrastructure/Phrase_App.Infrastructure.csproj" />
+</Solution>
