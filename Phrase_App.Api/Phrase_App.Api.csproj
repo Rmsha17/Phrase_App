@@ -20,7 +20,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Phrase_App.Core\Phrase_App.Core.csproj" />
     <ProjectReference Include="..\Phrase_App.Infrastructure\Phrase_App.Infrastructure.csproj" />
   </ItemGroup>
 
