@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Phrase_App.Infrastructure.Migrations
 {
     [DbContext(typeof(PhraseDbContext))]
-    partial class PhraseDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251226104711_[MigrationName]")]
+    partial class MigrationName
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -251,7 +254,7 @@ namespace Phrase_App.Infrastructure.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("e53374a6-683c-4c00-a484-cf03352ee664"),
+                            Id = new Guid("c73d18c9-0453-4647-84e1-bbfc163a077a"),
                             ColorHex = "#00E676",
                             IconKey = "growth",
                             IsActive = true,
@@ -259,7 +262,7 @@ namespace Phrase_App.Infrastructure.Migrations
                         },
                         new
                         {
-                            Id = new Guid("c2ac8532-ec6f-40d8-9ee6-756376ec9e90"),
+                            Id = new Guid("8b0f4530-6969-4ed1-a094-5cd5ed29d32f"),
                             ColorHex = "#FF5252",
                             IconKey = "focus",
                             IsActive = true,
@@ -267,7 +270,7 @@ namespace Phrase_App.Infrastructure.Migrations
                         },
                         new
                         {
-                            Id = new Guid("532a41f3-7e94-4f0c-ba55-0ebe7f139585"),
+                            Id = new Guid("b92311a5-2029-4886-a85d-a61b9b39773c"),
                             ColorHex = "#40C4FF",
                             IconKey = "zen",
                             IsActive = true,
@@ -275,7 +278,7 @@ namespace Phrase_App.Infrastructure.Migrations
                         },
                         new
                         {
-                            Id = new Guid("82731a8e-770f-4c65-9cb7-3f9a65e19aef"),
+                            Id = new Guid("c5024082-c63e-4231-900d-726b888c8df5"),
                             ColorHex = "#7C4DFF",
                             IconKey = "wisdom",
                             IsActive = true,
@@ -283,7 +286,7 @@ namespace Phrase_App.Infrastructure.Migrations
                         },
                         new
                         {
-                            Id = new Guid("3af82598-6366-40eb-8f1e-6575fd627951"),
+                            Id = new Guid("bfbfd438-3921-4dd4-a9f5-36455b86696a"),
                             ColorHex = "#FFD740",
                             IconKey = "energy",
                             IsActive = true,
@@ -291,7 +294,7 @@ namespace Phrase_App.Infrastructure.Migrations
                         },
                         new
                         {
-                            Id = new Guid("46e20e13-6177-419a-a348-d4b0265d7d65"),
+                            Id = new Guid("0557fdf7-80e4-42a5-956e-aea07a8a5011"),
                             ColorHex = "#FF9100",
                             IconKey = "career",
                             IsActive = true,
@@ -299,7 +302,7 @@ namespace Phrase_App.Infrastructure.Migrations
                         },
                         new
                         {
-                            Id = new Guid("f53d60cc-c1c5-4357-9820-4d136de66ce4"),
+                            Id = new Guid("663d2343-2919-4ec4-8163-6c1557ce81c0"),
                             ColorHex = "#00C853",
                             IconKey = "wealth",
                             IsActive = true,
@@ -307,7 +310,7 @@ namespace Phrase_App.Infrastructure.Migrations
                         },
                         new
                         {
-                            Id = new Guid("e63e51df-8cfc-4fd6-933d-e9415768698a"),
+                            Id = new Guid("5c2af74b-a93e-49cf-afc2-ac87601d46d5"),
                             ColorHex = "#607D8B",
                             IconKey = "discipline",
                             IsActive = true,
@@ -315,7 +318,7 @@ namespace Phrase_App.Infrastructure.Migrations
                         },
                         new
                         {
-                            Id = new Guid("2e638968-a4aa-4e9d-b2a3-4f3d48e2099c"),
+                            Id = new Guid("4c4e56c1-8255-4574-8e7d-39fa6774d0db"),
                             ColorHex = "#FF4081",
                             IconKey = "love",
                             IsActive = true,
@@ -323,7 +326,7 @@ namespace Phrase_App.Infrastructure.Migrations
                         },
                         new
                         {
-                            Id = new Guid("957ac687-dc10-4025-bd86-32a135a0edb4"),
+                            Id = new Guid("3ad3c552-8570-4d0c-bd2a-83abb2752d40"),
                             ColorHex = "#00B8D4",
                             IconKey = "peace",
                             IsActive = true,
@@ -331,7 +334,7 @@ namespace Phrase_App.Infrastructure.Migrations
                         },
                         new
                         {
-                            Id = new Guid("409f924a-f733-4f15-b62f-72e53e946213"),
+                            Id = new Guid("d8192f77-9d6b-4441-8bc5-1b82b2c83ff7"),
                             ColorHex = "#FF80AB",
                             IconKey = "gratitude",
                             IsActive = true,
@@ -339,7 +342,7 @@ namespace Phrase_App.Infrastructure.Migrations
                         },
                         new
                         {
-                            Id = new Guid("32f46a7e-e95b-4c92-8c17-65b428b37f97"),
+                            Id = new Guid("fee1e3fd-7ec2-4237-be4a-a603afa646eb"),
                             ColorHex = "#FBC02D",
                             IconKey = "happiness",
                             IsActive = true,
@@ -347,7 +350,7 @@ namespace Phrase_App.Infrastructure.Migrations
                         },
                         new
                         {
-                            Id = new Guid("169ed876-a4ed-4221-a977-a879fe8711e1"),
+                            Id = new Guid("507e5003-e002-4bd6-9d9f-30cfe41e9dff"),
                             ColorHex = "#A1887F",
                             IconKey = "resilience",
                             IsActive = true,
@@ -355,7 +358,7 @@ namespace Phrase_App.Infrastructure.Migrations
                         },
                         new
                         {
-                            Id = new Guid("b043b9d4-4ee8-4a0b-bbba-9a193c88dabb"),
+                            Id = new Guid("68ea134d-d5a8-41dc-ae62-5f40f4acb868"),
                             ColorHex = "#D50000",
                             IconKey = "courage",
                             IsActive = true,
@@ -363,7 +366,7 @@ namespace Phrase_App.Infrastructure.Migrations
                         },
                         new
                         {
-                            Id = new Guid("c3268450-402a-4866-a1bd-f172e6c50c44"),
+                            Id = new Guid("b0ce7b4e-90f7-434d-b58e-1011778d4162"),
                             ColorHex = "#2962FF",
                             IconKey = "fitness",
                             IsActive = true,
@@ -371,7 +374,7 @@ namespace Phrase_App.Infrastructure.Migrations
                         },
                         new
                         {
-                            Id = new Guid("298158de-1f42-4981-aa3d-5810cc57e9a1"),
+                            Id = new Guid("bcc304ab-2a9b-4520-ad28-b566d74273fa"),
                             ColorHex = "#B2FF59",
                             IconKey = "hope",
                             IsActive = true,

@@ -117,7 +117,7 @@ using (var scope = app.Services.CreateScope())
 app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
-    c.SwaggerEndpoint("/swagger/v1/swagger.json", "MyApp API V1");
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Phrase_App API V1");
     c.OAuthClientId(builder.Configuration["Authentication:Google:ClientId"]);
     c.OAuthClientSecret(builder.Configuration["Authentication:Google:ClientSecret"]);
     c.OAuthUsePkce(); // Recommended for Authorization Code Flow

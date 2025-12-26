@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using MyApp.Core.DTOs.Auth;
+using Phrase_App.Core.DTOs.Auth;
 using Phrase_App.Core.DTOs.Auth;
 
 [ApiController]

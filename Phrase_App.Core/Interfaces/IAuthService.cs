@@ -1,4 +1,4 @@
-﻿using MyApp.Core.DTOs.Auth;
+﻿using Phrase_App.Core.DTOs.Auth;
 using Phrase_App.Core.DTOs.Auth;
 
 public interface IAuthService

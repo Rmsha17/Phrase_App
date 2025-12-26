@@ -1,4 +1,4 @@
-﻿namespace MyApp.Core.DTOs.Auth;
+﻿namespace Phrase_App.Core.DTOs.Auth;
 
 public record RegisterDto(
     string FullName,

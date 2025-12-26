@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
-using MyApp.Core.DTOs.Auth;
+using Phrase_App.Core.DTOs.Auth;
 using Phrase_App.Core.Models;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;

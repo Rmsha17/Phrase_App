@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
-using MyApp.Core.DTOs.Auth;
+using Phrase_App.Core.DTOs.Auth;
 using Phrase_App.Core.DTOs.Auth;
 using Phrase_App.Core.Models;
 
