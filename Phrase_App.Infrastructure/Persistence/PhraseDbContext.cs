@@ -40,9 +40,22 @@ public class PhraseDbContext : IdentityDbContext<ApplicationUser>
             .WithMany() // Or .WithMany(c => c.Quotes) if you add a list to Category
             .HasForeignKey(q => q.CategoryId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        // Ensure IsFavorite defaults to false
+        modelBuilder.Entity<UserQuote>()
+            .Property(b => b.IsFavorite)
+            .HasDefaultValue(false);
+
+        // Relationship: If a system quote is deleted, keep the user record but null the reference
+        modelBuilder.Entity<UserQuote>()
+            .HasOne(uq => uq.Quote)
+            .WithMany()
+            .HasForeignKey(uq => uq.QuoteId)
+            .OnDelete(DeleteBehavior.SetNull);
     }
 
     public DbSet<RefreshToken> RefreshTokens { get; set; }
     public DbSet<Category> Categories { get; set; }
     public DbSet<Quote> Quotes { get; set; }
+    public DbSet<UserQuote> UserQuotes { get; set; }
 }

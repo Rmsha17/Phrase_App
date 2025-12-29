@@ -1,4 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Phrase_App.Core.Interfaces;
+using Phrase_App.Infrastructure.Services;
 
 namespace Phrase_App.Infrastructure
 {
@@ -9,6 +11,9 @@ namespace Phrase_App.Infrastructure
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IJwtService, JwtService>();
             services.AddScoped<IEmailService, EmailService>();
+            services.AddScoped<IUserQuoteService, UserQuoteService>();
+            services.AddScoped<IQuoteService, QuoteService>();
+            services.AddScoped<ICategoryService, CategoryService>();
 
             return services;
         }
