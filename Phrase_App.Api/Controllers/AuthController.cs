@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Phrase_App.Core.DTOs.Auth;
 using Phrase_App.Core.DTOs.Auth;
@@ -76,5 +77,21 @@ public class AuthController : ControllerBase
             return BadRequest(response);
 
         return Ok(response);
+    }
+
+    [Authorize]
+    [HttpDelete("delete-my-account")]
+    public async Task<IActionResult> DeleteMyAccount()
+    {
+        var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+        if (userIdClaim == null) return Unauthorized();
+
+        var userId = Guid.Parse(userIdClaim.Value);
+        var success = await _authService.DeleteUserAsync(userId);
+
+        if (success)
+            return Ok(new { message = "Account has been deactivated and will be removed shortly." });
+        
+        return BadRequest("An error occurred while trying to delete the account.");
     }
 }

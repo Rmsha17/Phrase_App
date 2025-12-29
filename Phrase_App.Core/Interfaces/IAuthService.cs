@@ -13,5 +13,5 @@ public interface IAuthService
     Task<AuthResponse> GoogleLoginAsync(GoogleLoginDto dto);
     Task<AuthResponse> FacebookLoginAsync(FacebookLoginDto dto);
     Task<Response> ResendEmailConfirmationAsync(string email);
-
+    Task<bool> DeleteUserAsync(Guid userId);
 }

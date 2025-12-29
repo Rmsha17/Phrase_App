@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Phrase_App.Core.DTOs.Auth;
-using Phrase_App.Core.DTOs.Auth;
 using Phrase_App.Core.Models;
 
 public class AuthService : IAuthService
@@ -58,9 +57,13 @@ public class AuthService : IAuthService
     public async Task<AuthResponse> LoginAsync(LoginDto dto)
     {
         var user = await _userManager.FindByEmailAsync(dto.Email);
+
         if (user == null || !await _userManager.CheckPasswordAsync(user, dto.Password))
             throw new UnauthorizedAccessException(StaticDetails.MsgInvalidCredentials);
 
+        if (await _userManager.IsLockedOutAsync(user))
+            throw new UnauthorizedAccessException("This account has been deleted.");
+        
         if (!user.EmailConfirmed)
             throw new ApplicationException(StaticDetails.MsgEmailNotConfirmed);
 
@@ -192,4 +195,18 @@ public class AuthService : IAuthService
         return await SocialLoginAsync(email, fullName);
     }
 
+    public async Task<bool> DeleteUserAsync(Guid userId)
+    {
+        var user = await _userManager.FindByIdAsync(userId.ToString());
+        if (user == null) return false;
+
+        var result = await _userManager.SetLockoutEndDateAsync(user, DateTimeOffset.MaxValue);
+        if (result.Succeeded)
+        {
+            await _userManager.SetLockoutEnabledAsync(user, true);
+            await _userManager.UpdateSecurityStampAsync(user);
+        }
+
+        return result.Succeeded;
+    }
 }

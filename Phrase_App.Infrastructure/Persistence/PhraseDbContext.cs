@@ -33,8 +33,16 @@ public class PhraseDbContext : IdentityDbContext<ApplicationUser>
             new Category { Id = Guid.NewGuid(), Name = "Fitness", IconKey = CategoryDefaults.Icons["fitness"], ColorHex = CategoryDefaults.Colors[14] },
             new Category { Id = Guid.NewGuid(), Name = "Hope", IconKey = CategoryDefaults.Icons["hope"], ColorHex = CategoryDefaults.Colors[15] }
         );
+
+        // One-to-Many: One Category has Many Quotes
+        modelBuilder.Entity<Quote>()
+            .HasOne(q => q.Category)
+            .WithMany() // Or .WithMany(c => c.Quotes) if you add a list to Category
+            .HasForeignKey(q => q.CategoryId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 
     public DbSet<RefreshToken> RefreshTokens { get; set; }
     public DbSet<Category> Categories { get; set; }
+    public DbSet<Quote> Quotes { get; set; }
 }
