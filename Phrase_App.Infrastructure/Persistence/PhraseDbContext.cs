@@ -52,10 +52,20 @@ public class PhraseDbContext : IdentityDbContext<ApplicationUser>
             .WithMany()
             .HasForeignKey(uq => uq.QuoteId)
             .OnDelete(DeleteBehavior.SetNull);
+
+        // Configure One-to-Many for Schedule -> Days
+        modelBuilder.Entity<QuoteSchedule>()
+            .HasMany(s => s.Days)
+            .WithOne()
+            .HasForeignKey(d => d.ScheduleId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 
     public DbSet<RefreshToken> RefreshTokens { get; set; }
     public DbSet<Category> Categories { get; set; }
     public DbSet<Quote> Quotes { get; set; }
     public DbSet<UserQuote> UserQuotes { get; set; }
+    // New tables for scheduling
+    public DbSet<QuoteSchedule> QuoteSchedules { get; set; }
+    public DbSet<ScheduledDay> ScheduledDays { get; set; }
 }

@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Phrase_App.Core.DTOs.Auth;
+using Phrase_App.Core.DTOs.Request;
 using Phrase_App.Core.Models;
 
 public class AuthService : IAuthService
@@ -208,5 +209,76 @@ public class AuthService : IAuthService
         }
 
         return result.Succeeded;
+    }
+
+    // ===============================
+    // UPDATE PROFILE (Name & Image)
+    // ===============================
+    public async Task<Response> UpdateProfileAsync(Guid userId, UpdateProfileDto dto)
+    {
+        var user = await _userManager.FindByIdAsync(userId.ToString());
+        if (user == null) return Response.FailResponse("User not found.");
+
+        user.FullName = dto.FullName;
+        if (!string.IsNullOrEmpty(dto.ProfileImageUrl))
+        {
+            user.ProfileImageUrl = dto.ProfileImageUrl;
+        }
+
+        var result = await _userManager.UpdateAsync(user);
+        return result.Succeeded
+            ? Response.SuccessResponse("Profile updated successfully.")
+            : Response.FailResponse("Failed to update profile.");
+    }
+
+    // ===============================
+    // CHANGE PASSWORD
+    // ===============================
+    public async Task<Response> ChangePasswordAsync(Guid userId, ChangePasswordDto dto)
+    {
+        var user = await _userManager.FindByIdAsync(userId.ToString());
+        if (user == null) return Response.FailResponse("User not found.");
+
+        var result = await _userManager.ChangePasswordAsync(user, dto.CurrentPassword, dto.NewPassword);
+        return result.Succeeded
+            ? Response.SuccessResponse("Password changed successfully.")
+            : Response.FailResponse(result.Errors.FirstOrDefault()?.Description ?? "Change password failed.");
+    }
+
+    // ===============================
+    // UPDATE EMAIL (Request Change)
+    // ===============================
+    public async Task<Response> RequestEmailChangeAsync(Guid userId, string newEmail)
+    {
+        var user = await _userManager.FindByIdAsync(userId.ToString());
+        if (user == null) return Response.FailResponse("User not found.");
+
+        var existingUser = await _userManager.FindByEmailAsync(newEmail);
+        if (existingUser != null) return Response.FailResponse("Email is already taken.");
+
+        var token = await _userManager.GenerateChangeEmailTokenAsync(user, newEmail);
+
+        // Note: The link points to your Flutter App or a Web Redirector
+        var link = $"{_configuration["App:ClientUrl"]}/confirm-email-change" +
+                   $"?userId={userId}&newEmail={newEmail}&token={Uri.EscapeDataString(token)}";
+
+        await _emailService.SendAsync(newEmail, "Confirm Your New Email",
+            $"Click here to confirm your email change: {link}");
+
+        return Response.SuccessResponse("Confirmation link sent to your new email.");
+    }
+
+    public async Task<Response> ConfirmEmailChangeAsync(Guid userId, string newEmail, string token)
+    {
+        var user = await _userManager.FindByIdAsync(userId.ToString());
+        if (user == null) return Response.FailResponse("User not found.");
+
+        var result = await _userManager.ChangeEmailAsync(user, newEmail, token);
+        if (!result.Succeeded) return Response.FailResponse("Email change failed. Token may be expired.");
+
+        // Identity doesn't automatically change the UserName if it's based on Email
+        await _userManager.SetUserNameAsync(user, newEmail);
+
+        return Response.SuccessResponse("Email updated successfully.");
     }
 }

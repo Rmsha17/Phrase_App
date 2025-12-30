@@ -1,5 +1,6 @@
 ﻿using Phrase_App.Core.DTOs.Auth;
 using Phrase_App.Core.DTOs.Auth;
+using Phrase_App.Core.DTOs.Request;
 
 public interface IAuthService
 {
@@ -14,4 +15,8 @@ public interface IAuthService
     Task<AuthResponse> FacebookLoginAsync(FacebookLoginDto dto);
     Task<Response> ResendEmailConfirmationAsync(string email);
     Task<bool> DeleteUserAsync(Guid userId);
+    Task<Response> UpdateProfileAsync(Guid userId, UpdateProfileDto dto);
+    Task<Response> ChangePasswordAsync(Guid userId, ChangePasswordDto dto);
+    Task<Response> RequestEmailChangeAsync(Guid userId, string newEmail);
+    Task<Response> ConfirmEmailChangeAsync(Guid userId, string newEmail, string token);
 }

@@ -14,6 +14,7 @@ namespace Phrase_App.Infrastructure
             services.AddScoped<IUserQuoteService, UserQuoteService>();
             services.AddScoped<IQuoteService, QuoteService>();
             services.AddScoped<ICategoryService, CategoryService>();
+            services.AddScoped<IQuoteSchedulerService, QuoteSchedulerService>();
 
             return services;
         }

@@ -1,4 +1,5 @@
-﻿using Phrase_App.Core.DTOs.Request;
+﻿using Microsoft.EntityFrameworkCore;
+using Phrase_App.Core.DTOs.Request;
 using Phrase_App.Core.DTOs.Response;
 
 namespace Phrase_App.Infrastructure.Services

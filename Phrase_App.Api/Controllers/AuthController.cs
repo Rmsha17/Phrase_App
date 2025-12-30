@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Phrase_App.Core.DTOs.Auth;
 using Phrase_App.Core.DTOs.Auth;
+using Phrase_App.Core.DTOs.Request;
+using System.Security.Claims;
 
 [ApiController]
 [Route("api/auth")]
@@ -93,5 +95,40 @@ public class AuthController : ControllerBase
             return Ok(new { message = "Account has been deactivated and will be removed shortly." });
         
         return BadRequest("An error occurred while trying to delete the account.");
+    }
+
+    [Authorize]
+    [HttpPut("update-profile")]
+    public async Task<IActionResult> UpdateProfile(UpdateProfileDto dto)
+    {
+        var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        var result = await _authService.UpdateProfileAsync(userId, dto);
+        return result.Success ? Ok(result) : BadRequest(result);
+    }
+
+    [Authorize]
+    [HttpPost("change-password")]
+    public async Task<IActionResult> ChangePassword(ChangePasswordDto dto)
+    {
+        var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        var result = await _authService.ChangePasswordAsync(userId, dto);
+        return result.Success ? Ok(result) : BadRequest(result);
+    }
+
+    [Authorize]
+    [HttpPost("request-email-change")]
+    public async Task<IActionResult> RequestEmailChange(UpdateEmailDto dto)
+    {
+        var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        var result = await _authService.RequestEmailChangeAsync(userId, dto.NewEmail);
+        return result.Success ? Ok(result) : BadRequest(result);
+    }
+
+    // This endpoint is usually called from a link in the user's email
+    [HttpGet("confirm-email-change")]
+    public async Task<IActionResult> ConfirmEmailChange(Guid userId, string newEmail, string token)
+    {
+        var result = await _authService.ConfirmEmailChangeAsync(userId, newEmail, token);
+        return result.Success ? Ok(result) : BadRequest(result);
     }
 }
