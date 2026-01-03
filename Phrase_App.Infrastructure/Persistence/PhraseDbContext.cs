@@ -59,6 +59,13 @@ public class PhraseDbContext : IdentityDbContext<ApplicationUser>
             .WithOne()
             .HasForeignKey(d => d.ScheduleId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<ErrorLog>(entity =>
+        {
+            entity.ToTable("ErrorLogs");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Message).IsRequired();
+        });
     }
 
     public DbSet<RefreshToken> RefreshTokens { get; set; }
@@ -68,4 +75,5 @@ public class PhraseDbContext : IdentityDbContext<ApplicationUser>
     // New tables for scheduling
     public DbSet<QuoteSchedule> QuoteSchedules { get; set; }
     public DbSet<ScheduledDay> ScheduledDays { get; set; }
+    public DbSet<ErrorLog> ErrorLogs { get; set; }
 }
