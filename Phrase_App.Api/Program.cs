@@ -102,7 +102,7 @@ builder.Services.AddSwaggerGen(c =>
         }
     });
 });
-
+builder.Services.AddMemoryCache();
 builder.Services.RegisterServices();
 var app = builder.Build();
 

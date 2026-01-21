@@ -6,6 +6,8 @@ namespace Phrase_App.Core.Models
     {
         public string FullName { get; set; }
         public string? ProfileImageUrl { get; set; } 
+        public string? Bio { get; set; }
+        public bool DarkMode { get; set; } = false; 
         public ICollection<RefreshToken> RefreshTokens { get; set; }
     }
 }

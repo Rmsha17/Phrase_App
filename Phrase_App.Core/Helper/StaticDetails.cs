@@ -17,6 +17,7 @@ public static class StaticDetails
     public const string MsgEmailAlreadyConfirmed = "Email is already confirmed.";
     public const string MsgConfirmationEmailResent = "Confirmation email resent successfully.";
     public const string MsgPasswordResetFailed = "Password reset failed";
+    public const string userLoginRequired = "User login required.";
 
     // Email subjects
     public const string EmailSubjectConfirm = "Confirm your email";

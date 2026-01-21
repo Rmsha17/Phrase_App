@@ -16,56 +16,54 @@ namespace Phrase_App.Infrastructure.Services
             _context = context;
         }
 
-        public async Task<bool> ScheduleWeeklyAsync(WeeklyScheduleRequestDto dto)
+        public async Task<bool> ScheduleWeeklyAsync(WeeklyScheduleRequestDto dto, Guid? userId)
         {
             var schedule = new QuoteSchedule
             {
-                UserId = dto.UserId,
+                UserId = userId.Value,
                 UserQuoteId = dto.UserQuoteId,
                 DailyStartTime = TimeSpan.Parse(dto.StartTime), // Expects "HH:mm"
                 DailyEndTime = TimeSpan.Parse(dto.EndTime),
                 Days = dto.DaysOfWeek.Select(day => new ScheduledDay
                 {
-                    DayOfWeek = day
-                }).ToList()
+                    DayOfWeek = day,
+                }).ToList(),
+                CreatedAt = DateTime.UtcNow
             };
 
             _context.QuoteSchedules.Add(schedule);
             return await _context.SaveChangesAsync() > 0;
         }
 
-        public async Task<UserQuoteResponseDto?> GetActiveScheduledQuoteAsync(Guid userId)
+        public async Task<List<UserQuoteResponseDto>> GetActiveScheduledQuoteAsync(Guid? userId)
         {
-            var now = DateTime.Now; // Use local time for user-specific scheduling
+            var now = DateTime.Now;
             int currentDay = (int)now.DayOfWeek;
-            var currentTime = now.TimeOfDay;
 
-            var activeSchedule = await _context.QuoteSchedules
+            var schedules = await _context.QuoteSchedules
                 .Include(s => s.Days)
                 .Include(s => s.UserQuote)
-                    .ThenInclude(uq => uq.Quote)
+                .ThenInclude(uq => uq.Quote)
                 .Where(s => s.UserId == userId &&
-                            s.Days.Any(d => d.DayOfWeek == currentDay) &&
-                            currentTime >= s.DailyStartTime &&
-                            currentTime <= s.DailyEndTime)
+                            s.Days.Any(d => d.DayOfWeek == currentDay)) // Only filtering by Today's Day
                 .OrderByDescending(s => s.CreatedAt)
-                .FirstOrDefaultAsync();
+                .ToListAsync();
 
-            if (activeSchedule == null) return null;
-
-            return new UserQuoteResponseDto
+            return schedules.Select(s => new UserQuoteResponseDto
             {
-                Id = activeSchedule.UserQuote.Id,
-                Content = activeSchedule.UserQuote.QuoteId != null
-                          ? activeSchedule.UserQuote.Quote.Content
-                          : activeSchedule.UserQuote.CustomContent,
-                Author = activeSchedule.UserQuote.QuoteId != null
-                         ? activeSchedule.UserQuote.Quote.Author
-                         : activeSchedule.UserQuote.CustomAuthor
-            };
+                Id = s.UserQuote.Id,
+                Content = s.UserQuote.QuoteId != null
+                          ? s.UserQuote.Quote.Content
+                          : s.UserQuote.CustomContent,
+                Author = s.UserQuote.QuoteId != null
+                         ? s.UserQuote.Quote.Author
+                         : s.UserQuote.CustomAuthor,
+                IsFavorite = s.UserQuote.IsFavorite,
+                IsCustom = s.UserQuote.QuoteId == null
+            }).ToList();
         }
 
-        public async Task<IEnumerable<ScheduleResponseDto>> GetUserSchedulesAsync(Guid userId)
+        public async Task<IEnumerable<ScheduleResponseDto>> GetUserSchedulesAsync(Guid? userId)
         {
             return await _context.QuoteSchedules
                 .Include(s => s.Days)
@@ -89,7 +87,6 @@ namespace Phrase_App.Infrastructure.Services
                     // Map the child collection of days to a simple list of ints
                     DaysOfWeek = s.Days.Select(d => d.DayOfWeek).ToList()
                 })
-                .OrderByDescending(s => s.Id)
                 .ToListAsync();
         }
 

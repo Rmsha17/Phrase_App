@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Phrase_App.Api.Extensions;
 using Phrase_App.Core.DTOs.Auth;
 using Phrase_App.Core.DTOs.Auth;
 using Phrase_App.Core.DTOs.Request;
@@ -27,9 +29,60 @@ public class AuthController : ControllerBase
         return Ok(response);
     }
 
+    [Authorize]
+    [HttpGet("userDetail")]
+    public async Task<IActionResult> GetUserDetails()
+    {
+        var response = await _authService.GetUserDetails(User.GetUserId());
+        return Ok(response);
+    }
+
+    [Authorize]
+    [HttpPost("update-profile")]
+    public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileDtoRequest dto)
+    {
+        // Extract User ID from JWT Token
+        var success = await _authService.UpdateUserProfile(User.GetUserId(), dto);
+
+        if (success)
+            return Ok(new { message = "Profile updated successfully!" });
+
+        return BadRequest(new { message = "Failed to update profile details." });
+    }
+
     [HttpPost("login")]
-    public async Task<IActionResult> Login(LoginDto dto)
-        => Ok(await _authService.LoginAsync(dto));
+    public async Task<IActionResult> Login([FromBody] LoginDto dto)
+    {
+        try
+        {
+            var response = await _authService.LoginAsync(dto);
+            // Wrap it in a 'data' field so your Flutter BaseService can find it!
+            return Ok(new { success = true, message = "Login successful", data = response });
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Unauthorized(new { success = false, message = ex.Message });
+        }
+    }
+
+    [HttpPost("logout")]
+    [Authorize]
+    public async Task<IActionResult> Logout([FromBody] LogoutDto dto)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (string.IsNullOrEmpty(dto.RefreshToken))
+            return BadRequest(new { success = false, message = "Refresh token is required" });
+
+        var result = await _authService.RevokeRefreshToken(userId, dto.RefreshToken);
+
+        return Ok(new
+        {
+            success = true,
+            message = "Logged out successfully from this device.",
+            data = (object)null
+        });
+    }
 
     [HttpPost("refresh")]
     public async Task<IActionResult> Refresh(RefreshTokenDto dto)
@@ -42,18 +95,31 @@ public class AuthController : ControllerBase
         return Ok();
     }
 
+
     [HttpPost("forgot-password")]
-    public async Task<IActionResult> ForgotPassword(ForgotPasswordDto dto)
+    public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto dto)
     {
-        await _authService.ForgotPasswordAsync(dto.Email);
-        return Ok();
+        await _authService.SendOtpAsync(dto.Email);
+        return Ok(new { success = true, message = "OTP sent to your email" });
+    }
+
+    [HttpPost("verify-otp")]
+    public IActionResult VerifyOtp([FromBody] VerifyOtpDto dto)
+    {
+        var isValid = _authService.VerifyOtp(dto.Email, dto.Otp);
+        if (!isValid) return BadRequest(new { success = false, message = "Invalid or expired OTP" });
+
+        return Ok(new { success = true, message = "OTP Verified" });
     }
 
     [HttpPost("reset-password")]
     public async Task<IActionResult> ResetPassword(ResetPasswordDto dto)
     {
-        await _authService.ResetPasswordAsync(dto);
-        return Ok();
+        var result = await _authService.ResetPasswordAsync(dto);
+        if (!result.Succeeded)
+            return BadRequest(new { success = false, message = "Could not reset password." });
+
+        return Ok(new { success = true, message = "Password updated successfully!" });
     }
 
     [HttpPost("google-login")]
@@ -93,7 +159,7 @@ public class AuthController : ControllerBase
 
         if (success)
             return Ok(new { message = "Account has been deactivated and will be removed shortly." });
-        
+
         return BadRequest("An error occurred while trying to delete the account.");
     }
 
@@ -108,11 +174,19 @@ public class AuthController : ControllerBase
 
     [Authorize]
     [HttpPost("change-password")]
-    public async Task<IActionResult> ChangePassword(ChangePasswordDto dto)
+    public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto dto)
     {
-        var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-        var result = await _authService.ChangePasswordAsync(userId, dto);
-        return result.Success ? Ok(result) : BadRequest(result);
+        var result = await _authService.ChangePasswordAsync(User.GetUserId(), dto);
+        if (result.Succeeded)
+        {
+            return Ok(new { success = true, message = "Password updated successfully!" });
+        }
+
+        return BadRequest(new
+        {
+            success = false,
+            message = result.Errors.FirstOrDefault()?.Description ?? "Failed to update password."
+        });
     }
 
     [Authorize]
@@ -124,11 +198,47 @@ public class AuthController : ControllerBase
         return result.Success ? Ok(result) : BadRequest(result);
     }
 
-    // This endpoint is usually called from a link in the user's email
-    [HttpGet("confirm-email-change")]
-    public async Task<IActionResult> ConfirmEmailChange(Guid userId, string newEmail, string token)
+    [Authorize]
+    [HttpPost("change-email")]
+    public async Task<IActionResult> ChangeEmail([FromBody] ChangeEmailDto dto)
     {
-        var result = await _authService.ConfirmEmailChangeAsync(userId, newEmail, token);
-        return result.Success ? Ok(result) : BadRequest(result);
+        var result = await _authService.InitiateChangeEmailAsync(User.GetUserId(), dto);
+
+        if (result.Succeeded)
+        {
+            return Ok(new
+            {
+                success = true,
+                message = "Email Changed!"
+            });
+        }
+
+        return BadRequest(new
+        {
+            success = false,
+            message = result.Errors.FirstOrDefault()?.Description ?? "Failed to initiate email change."
+        });
+    }
+
+    [Authorize]
+    [HttpPost("toggle-darkmode")]
+    public async Task<IActionResult> ToggleDarkMode([FromBody] ToggleDarkModeDto dto)
+    {
+        var success = await _authService.UpdateUserThemeAsync(User.GetUserId(), dto.IsDarkMode);
+
+        if (success)
+        {
+            return Ok(new
+            {
+                success = true,
+                message = "Theme preference updated successfully!"
+            });
+        }
+
+        return BadRequest(new
+        {
+            success = false,
+            message = "Failed to update theme preference."
+        });
     }
 }

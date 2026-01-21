@@ -13,11 +13,17 @@ namespace Phrase_App.Infrastructure.Services
             _context = context;
         }
 
-        public async Task<IEnumerable<UserQuoteResponseDto>> GetUserQuotesAsync(Guid userId, bool onlyFavorites)
+        public async Task<IEnumerable<UserQuoteResponseDto>> GetUserQuotesAsync(Guid? userId, bool onlyFavorites, bool isListingRequest)
         {
             var query = _context.UserQuotes
-                .Include(uq => uq.Quote)
-                .Where(uq => uq.UserId == userId);
+                                .Include(uq => uq.Quote)
+                                .Where(uq => uq.UserId == userId);
+
+            if (!isListingRequest)
+            {
+                var userQuotesIds = _context.QuoteSchedules.Where(qs => qs.UserId == userId).Select(sq => sq.UserQuoteId).ToList();
+                query = query.Where(uq => !userQuotesIds.Contains(uq.Id));
+            }
 
             if (onlyFavorites)
                 query = query.Where(uq => uq.IsFavorite);
@@ -33,43 +39,72 @@ namespace Phrase_App.Infrastructure.Services
             }).OrderByDescending(x => x.CreatedAt).ToListAsync();
         }
 
-        public async Task<bool> AddCustomQuoteAsync(AddCustomQuoteDto dto)
+        public async Task<Response> AddSystemQuoteAsync(AddSystemQuoteDto dto, Guid? userId)
         {
+            if (userId == Guid.Empty)
+                return Response.FailResponse(StaticDetails.userLoginRequired);
+
+            if (dto is null || dto.QuoteId == Guid.Empty)
+                return Response.FailResponse("QuoteId is required.");
+
+            var existing = await _context.UserQuotes
+                                         .FirstOrDefaultAsync(uq => uq.UserId == userId && uq.QuoteId == dto.QuoteId);
+
+            if (existing != null)
+                return Response.FailResponse("Quote already added to your collection.");
+
             var userQuote = new UserQuote
             {
-                UserId = dto.UserId,
-                CustomContent = dto.Content,
-                CustomAuthor = dto.Author,
-                IsFavorite = true // Default to favorite for custom entries
+                Id = Guid.NewGuid(),
+                UserId = userId.Value,
+                QuoteId = dto.QuoteId,
+                IsFavorite = false,
+                CreatedAt = DateTime.UtcNow
             };
 
             _context.UserQuotes.Add(userQuote);
-            return await _context.SaveChangesAsync() > 0;
+            await _context.SaveChangesAsync();
+
+            return Response.SuccessResponse("Quote added.");
         }
 
-        public async Task<bool> ToggleFavoriteSystemQuoteAsync(Guid userId, Guid quoteId)
+        public async Task<Response> AddBulkQuotesAsync(List<AddCustomQuoteDto> dtos, Guid? userId)
         {
-            var existing = await _context.UserQuotes
-                .FirstOrDefaultAsync(x => x.UserId == userId && x.QuoteId == quoteId);
+            if (userId == Guid.Empty)
+                return Response.FailResponse(StaticDetails.userLoginRequired);
 
-            if (existing != null)
+            if (dtos == null || !dtos.Any())
+                return new Response { Success = false, Message = "No quotes provided." };
+
+            var userQuotes = dtos.Select(dto => new UserQuote
             {
-                existing.IsFavorite = !existing.IsFavorite;
-            }
-            else
+                Id = Guid.NewGuid(),
+                UserId = userId.Value,
+                CustomContent = dto.Content,
+                CustomAuthor = string.IsNullOrWhiteSpace(dto.Author) ? "Me" : dto.Author,
+                CreatedAt = DateTime.UtcNow
+            }).ToList();
+
+            // Bulk Insert
+            await _context.UserQuotes.AddRangeAsync(userQuotes);
+            await _context.SaveChangesAsync();
+
+            return new Response
             {
-                _context.UserQuotes.Add(new UserQuote
-                {
-                    UserId = userId,
-                    QuoteId = quoteId,
-                    IsFavorite = true
-                });
-            }
+                Success = true,
+                Message = $"{userQuotes.Count} affirmations saved successfully!"
+            };
+        }
+
+        public async Task<bool> ToggleFavoriteSystemQuoteAsync(Guid quoteId)
+        {
+            var existing = await _context.UserQuotes.FirstOrDefaultAsync(x => x.Id == quoteId);
+            existing.IsFavorite = !existing.IsFavorite;
 
             return await _context.SaveChangesAsync() > 0;
         }
 
-        public async Task<bool> DeleteUserQuoteAsync(Guid id, Guid userId)
+        public async Task<bool> DeleteUserQuoteAsync(Guid? userId, Guid id)
         {
             var quote = await _context.UserQuotes.FirstOrDefaultAsync(x => x.Id == id && x.UserId == userId);
             if (quote == null) return false;

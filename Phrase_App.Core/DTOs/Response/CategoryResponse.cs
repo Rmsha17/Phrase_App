@@ -4,6 +4,7 @@
         Guid Id,
         string Name,
         string IconKey,
-        string ColorHex
+        string ColorHex,
+        int count
     );
 }

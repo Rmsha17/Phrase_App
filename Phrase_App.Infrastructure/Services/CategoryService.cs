@@ -19,8 +19,10 @@ namespace Phrase_App.Infrastructure.Services
         {
             var category = await _context.Categories.FindAsync(id);
             if (category == null) return null;
+            // Get count of active phrases/quotes for this category
+            var quoteCount = await _context.Quotes.CountAsync(p => p.CategoryId == category.Id);
 
-            return new CategoryResponse(category.Id, category.Name, category.IconKey, category.ColorHex);
+            return new CategoryResponse(category.Id, category.Name, category.IconKey, category.ColorHex, quoteCount);
         }
 
         public async Task<CategoryResponse> CreateAsync(CreateCategoryRequest request)
@@ -45,7 +47,7 @@ namespace Phrase_App.Infrastructure.Services
             _context.Categories.Add(category);
             await _context.SaveChangesAsync();
 
-            return new CategoryResponse(category.Id, category.Name, category.IconKey, category.ColorHex);
+            return new CategoryResponse(category.Id, category.Name, category.IconKey, category.ColorHex, 0);
         }
 
         public async Task<bool> UpdateAsync(Guid id, UpdateCategoryRequest request)
@@ -86,7 +88,8 @@ namespace Phrase_App.Infrastructure.Services
         {
             return await _context.Categories
                 .Where(x => x.IsActive)
-                .Select(x => new CategoryResponse(x.Id, x.Name, x.IconKey, x.ColorHex))
+                .Select(x => new CategoryResponse(x.Id, x.Name, x.IconKey, x.ColorHex,
+                                    _context.Quotes.Count(p => p.CategoryId == x.Id)))
                 .ToListAsync();
         }
     }
