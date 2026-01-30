@@ -37,8 +37,15 @@ builder.Services.AddAuthentication(options =>
     {
         ValidateIssuer = true,
         ValidateAudience = true,
-        ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
+
+        // 1. Enable lifetime validation
+        ValidateLifetime = true,
+
+        // 2. Set ClockSkew to zero so the token expires 
+        // EXACTLY when your 'durationInMinute' says it should.
+        ClockSkew = TimeSpan.Zero,
+
         ValidIssuer = builder.Configuration["Jwt:Issuer"],
         ValidAudience = builder.Configuration["Jwt:Audience"],
         IssuerSigningKey = new SymmetricSecurityKey(
@@ -105,7 +112,6 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddMemoryCache();
 builder.Services.RegisterServices();
 var app = builder.Build();
-
 // Seed Roles
 using (var scope = app.Services.CreateScope())
 {
@@ -122,6 +128,7 @@ app.UseSwaggerUI(c =>
     c.OAuthClientSecret(builder.Configuration["Authentication:Google:ClientSecret"]);
     c.OAuthUsePkce(); // Recommended for Authorization Code Flow
 });
+app.UseStaticFiles(); 
 
 app.UseHttpsRedirection();
 app.UseAuthentication();

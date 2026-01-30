@@ -1,3 +1,4 @@
+using Azure;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -86,7 +87,11 @@ public class AuthController : ControllerBase
 
     [HttpPost("refresh")]
     public async Task<IActionResult> Refresh(RefreshTokenDto dto)
-        => Ok(await _authService.RefreshTokenAsync(dto.RefreshToken));
+    {
+        var response = await _authService.RefreshTokenAsync(dto.RefreshToken);
+        return Ok(new { success = true, message = "Refresh successful", data = response });
+
+    }
 
     [HttpGet("confirm-email")]
     public async Task<IActionResult> ConfirmEmail(string email, string token)
@@ -239,6 +244,22 @@ public class AuthController : ControllerBase
         {
             success = false,
             message = "Failed to update theme preference."
+        });
+    }
+
+    [Authorize]
+    [HttpPost("deactivate-account")]
+    public async Task<IActionResult> DeactivateAccount([FromBody] DeactivateAccountDto dto)
+    {
+        var result = await _authService.DeactivateUserAsync(User.GetUserId(), dto.Password);
+        if (result.Succeeded)
+            return Ok(new { success = true, message = "Account successfully deactivated.", data = (object)null });
+
+        return BadRequest(new
+        {
+            success = false,
+            message = result.Errors.FirstOrDefault()?.Description ?? "Deactivation failed.",
+            data = (object)null
         });
     }
 }

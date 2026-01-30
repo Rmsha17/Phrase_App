@@ -7,7 +7,13 @@ namespace Phrase_App.Core.Models
         public string FullName { get; set; }
         public string? ProfileImageUrl { get; set; } 
         public string? Bio { get; set; }
-        public bool DarkMode { get; set; } = false; 
+        public bool DarkMode { get; set; } = false;
+
+        public bool IsPremium { get; set; } = false;
+        public DateTime? PremiumExpiryDate { get; set; }
+        public string? SubscriptionType { get; set; } // "Mont
+        // 🟢 CRITICAL: This links Google Play to your specific User
+        public string? CurrentPurchaseToken { get; set; }
         public ICollection<RefreshToken> RefreshTokens { get; set; }
     }
 }

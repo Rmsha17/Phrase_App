@@ -8,5 +8,7 @@
         public bool IsFavorite { get; set; }
         public bool IsCustom { get; set; }
         public DateTime CreatedAt { get; set; }
+        public TimeSpan? StartTime { get; set; }
+        public TimeSpan? EndTime { get; set; }
     }
 }

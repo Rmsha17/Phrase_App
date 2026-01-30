@@ -16,5 +16,8 @@ public class UserQuote
     // Favorite Filter
     public bool IsFavorite { get; set; } = false;
 
+    // Active Records
+    public bool IsActive { get; set; } = true;
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }

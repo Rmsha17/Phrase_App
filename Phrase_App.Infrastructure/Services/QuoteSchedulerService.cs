@@ -1,9 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Phrase_App.Core.DTOs.Request;
 using Phrase_App.Core.DTOs.Response;
-using Phrase_App.Core.Interfaces;
 using Phrase_App.Core.Models;
-using System;
 
 namespace Phrase_App.Infrastructure.Services
 {
@@ -35,17 +33,20 @@ namespace Phrase_App.Infrastructure.Services
             return await _context.SaveChangesAsync() > 0;
         }
 
-        public async Task<List<UserQuoteResponseDto>> GetActiveScheduledQuoteAsync(Guid? userId)
+        public async Task<List<UserQuoteResponseDto>> GetCurrentScheduledQuoteAsync(Guid? userId)
         {
             var now = DateTime.Now;
             int currentDay = (int)now.DayOfWeek;
+            TimeSpan currentTimeOfDay = now.TimeOfDay;
 
             var schedules = await _context.QuoteSchedules
                 .Include(s => s.Days)
                 .Include(s => s.UserQuote)
                 .ThenInclude(uq => uq.Quote)
-                .Where(s => s.UserId == userId &&
-                            s.Days.Any(d => d.DayOfWeek == currentDay)) // Only filtering by Today's Day
+                .Where(s => s.UserId == userId && s.IsActive &&
+                          ((s.DailyStartTime < s.DailyEndTime && currentTimeOfDay >= s.DailyStartTime && currentTimeOfDay <= s.DailyEndTime) ||
+                           (s.DailyStartTime >= s.DailyEndTime && (currentTimeOfDay >= s.DailyStartTime || currentTimeOfDay <= s.DailyEndTime)) &&
+                            s.Days.Any(d => d.DayOfWeek == currentDay)))
                 .OrderByDescending(s => s.CreatedAt)
                 .ToListAsync();
 
@@ -63,13 +64,43 @@ namespace Phrase_App.Infrastructure.Services
             }).ToList();
         }
 
+        public async Task<List<UserQuoteResponseDto>> GetActiveScheduledQuoteAsync(Guid? userId)
+        {
+            var now = DateTime.Now;
+            int currentDay = (int)now.DayOfWeek;
+
+            var schedules = await _context.QuoteSchedules
+                .Include(s => s.Days)
+                .Include(s => s.UserQuote)
+                .ThenInclude(uq => uq.Quote)
+                .Where(s => s.UserId == userId && s.IsActive &&
+                            s.Days.Any(d => d.DayOfWeek == currentDay)) // Only filtering by Today's Day
+                .OrderByDescending(s => s.CreatedAt)
+                .ToListAsync();
+
+            return schedules.Select(s => new UserQuoteResponseDto
+            {
+                Id = s.UserQuote.Id,
+                Content = s.UserQuote.QuoteId != null
+                          ? s.UserQuote.Quote.Content
+                          : s.UserQuote.CustomContent,
+                Author = s.UserQuote.QuoteId != null
+                         ? s.UserQuote.Quote.Author
+                         : s.UserQuote.CustomAuthor,
+                IsFavorite = s.UserQuote.IsFavorite,
+                IsCustom = s.UserQuote.QuoteId == null,
+                StartTime = s.DailyStartTime,
+                EndTime = s.DailyEndTime
+            }).ToList();
+        }
+
         public async Task<IEnumerable<ScheduleResponseDto>> GetUserSchedulesAsync(Guid? userId)
         {
             return await _context.QuoteSchedules
                 .Include(s => s.Days)
                 .Include(s => s.UserQuote)
                     .ThenInclude(uq => uq.Quote)
-                .Where(s => s.UserId == userId)
+                .Where(s => s.UserId == userId && s.IsActive)
                 .Select(s => new ScheduleResponseDto
                 {
                     Id = s.Id,

@@ -10,6 +10,7 @@
         public TimeSpan DailyStartTime { get; set; }
         public TimeSpan DailyEndTime { get; set; }
         public DateTime CreatedAt { get; set; }
+        public bool IsActive { get; set; } = true;
 
         // Navigation property for the days
         public List<ScheduledDay> Days { get; set; } = new();

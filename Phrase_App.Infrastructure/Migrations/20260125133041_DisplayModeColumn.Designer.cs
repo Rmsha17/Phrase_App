@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Phrase_App.Infrastructure.Migrations
 {
     [DbContext(typeof(PhraseDbContext))]
-    partial class PhraseDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260125133041_DisplayModeColumn")]
+    partial class DisplayModeColumn
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -199,9 +202,6 @@ namespace Phrase_App.Infrastructure.Migrations
                         .IsConcurrencyToken()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("CurrentPurchaseToken")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<bool>("DarkMode")
                         .HasColumnType("bit");
 
@@ -215,9 +215,6 @@ namespace Phrase_App.Infrastructure.Migrations
                     b.Property<string>("FullName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsPremium")
-                        .HasColumnType("bit");
 
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("bit");
@@ -242,16 +239,10 @@ namespace Phrase_App.Infrastructure.Migrations
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("bit");
 
-                    b.Property<DateTime?>("PremiumExpiryDate")
-                        .HasColumnType("datetime2");
-
                     b.Property<string>("ProfileImageUrl")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("SecurityStamp")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("SubscriptionType")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("TwoFactorEnabled")
@@ -403,9 +394,6 @@ namespace Phrase_App.Infrastructure.Migrations
                     b.Property<TimeSpan>("DailyStartTime")
                         .HasColumnType("time");
 
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
                     b.Property<Guid>("UserId")
                         .HasColumnType("uniqueidentifier");
 
@@ -483,9 +471,6 @@ namespace Phrase_App.Infrastructure.Migrations
 
                     b.Property<string>("CustomContent")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
 
                     b.Property<bool>("IsFavorite")
                         .ValueGeneratedOnAdd()

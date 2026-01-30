@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Phrase_App.Infrastructure.Migrations
 {
     [DbContext(typeof(PhraseDbContext))]
-    partial class PhraseDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260127141034_paymentcolumns")]
+    partial class paymentcolumns
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -197,9 +200,6 @@ namespace Phrase_App.Infrastructure.Migrations
 
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("CurrentPurchaseToken")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("DarkMode")
@@ -403,9 +403,6 @@ namespace Phrase_App.Infrastructure.Migrations
                     b.Property<TimeSpan>("DailyStartTime")
                         .HasColumnType("time");
 
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
                     b.Property<Guid>("UserId")
                         .HasColumnType("uniqueidentifier");
 
@@ -483,9 +480,6 @@ namespace Phrase_App.Infrastructure.Migrations
 
                     b.Property<string>("CustomContent")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
 
                     b.Property<bool>("IsFavorite")
                         .ValueGeneratedOnAdd()

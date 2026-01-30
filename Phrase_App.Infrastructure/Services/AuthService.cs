@@ -28,6 +28,7 @@ public class AuthService : IAuthService
 
     public async Task<UserDetailsDto> GetUserDetails(Guid? userId)
     {
+        var dateTime = DateTime.UtcNow;
         var idString = userId.Value.ToString();
         var user = await _userManager.Users
             .Where(u => u.Id == idString)
@@ -37,6 +38,10 @@ public class AuthService : IAuthService
                 Email = u.Email,
                 ProfilePicUrl = u.ProfileImageUrl,
                 DarkMode = u.DarkMode,
+                IsPremium = u.IsPremium && u.PremiumExpiryDate > dateTime,
+                PremiumExpiryDate = u.PremiumExpiryDate,
+                SubscriptionType = u.SubscriptionType,
+                CurrentPurchaseToken = u.CurrentPurchaseToken
             }).FirstOrDefaultAsync();
 
         return user;
@@ -99,7 +104,7 @@ public class AuthService : IAuthService
             throw new UnauthorizedAccessException(StaticDetails.MsgInvalidCredentials);
 
         if (await _userManager.IsLockedOutAsync(user))
-            throw new UnauthorizedAccessException("This account has been deleted.");
+            throw new UnauthorizedAccessException("This account has been deactivated.");
 
         if (!user.EmailConfirmed)
             throw new ApplicationException(StaticDetails.MsgEmailNotConfirmed);
@@ -128,6 +133,9 @@ public class AuthService : IAuthService
             await _userManager.CreateAsync(user);
             await _userManager.AddToRoleAsync(user, StaticDetails.RoleUser);
         }
+
+        if (await _userManager.IsLockedOutAsync(user))
+            throw new UnauthorizedAccessException("This account has been deactivated.");
 
         var roles = await _userManager.GetRolesAsync(user);
         return await _jwtService.GenerateTokens(user, roles);
@@ -339,7 +347,7 @@ public class AuthService : IAuthService
     {
         // Find the specific token for this user in your database
         var tokenRecord = await _context.RefreshTokens
-            .FirstOrDefaultAsync(x => x.UserId == userId && x.Token == refreshToken);
+            .FirstOrDefaultAsync(x => x.UserId == userId.ToString() && x.Token == refreshToken);
 
         if (tokenRecord == null) return false;
         _context.RefreshTokens.Remove(tokenRecord);
@@ -358,5 +366,22 @@ public class AuthService : IAuthService
 
         var result = await _userManager.UpdateAsync(user);
         return result.Succeeded;
+    }
+
+    public async Task<IdentityResult> DeactivateUserAsync(Guid? userId, string password)
+    {
+        var user = await _userManager.FindByIdAsync(userId.ToString());
+        if (user == null) return IdentityResult.Failed(new IdentityError { Description = "User not found." });
+
+        var isPasswordValid = await _userManager.CheckPasswordAsync(user, password);
+        if (!isPasswordValid)
+        {
+            return IdentityResult.Failed(new IdentityError { Description = "Incorrect password. Confirmation failed." });
+        }
+
+        await _userManager.SetLockoutEnabledAsync(user, true);
+        var result = await _userManager.SetLockoutEndDateAsync(user, DateTimeOffset.MaxValue);
+
+        return result;
     }
 }

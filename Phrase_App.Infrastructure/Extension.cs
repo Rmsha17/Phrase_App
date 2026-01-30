@@ -16,6 +16,8 @@ namespace Phrase_App.Infrastructure
             services.AddScoped<ICategoryService, CategoryService>();
             services.AddScoped<IQuoteSchedulerService, QuoteSchedulerService>();
             services.AddScoped<ILogService, LogService>();
+            services.AddScoped<IOverlaySettingService, OverlaySettingService>();
+            services.AddScoped<IPaymentService, PaymentService>();
             return services;
         }
     }

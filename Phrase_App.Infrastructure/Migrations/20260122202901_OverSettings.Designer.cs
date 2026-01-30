@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Phrase_App.Infrastructure.Migrations
 {
     [DbContext(typeof(PhraseDbContext))]
-    partial class PhraseDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260122202901_OverSettings")]
+    partial class OverSettings
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -199,9 +202,6 @@ namespace Phrase_App.Infrastructure.Migrations
                         .IsConcurrencyToken()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("CurrentPurchaseToken")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<bool>("DarkMode")
                         .HasColumnType("bit");
 
@@ -215,9 +215,6 @@ namespace Phrase_App.Infrastructure.Migrations
                     b.Property<string>("FullName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsPremium")
-                        .HasColumnType("bit");
 
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("bit");
@@ -242,16 +239,10 @@ namespace Phrase_App.Infrastructure.Migrations
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("bit");
 
-                    b.Property<DateTime?>("PremiumExpiryDate")
-                        .HasColumnType("datetime2");
-
                     b.Property<string>("ProfileImageUrl")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("SecurityStamp")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("SubscriptionType")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("TwoFactorEnabled")
@@ -298,6 +289,136 @@ namespace Phrase_App.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Categories");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("06c8c8e0-d431-4bdb-ac2e-44f87f667baf"),
+                            ColorHex = "#00E676",
+                            IconKey = "growth",
+                            IsActive = true,
+                            Name = "Growth"
+                        },
+                        new
+                        {
+                            Id = new Guid("ca3e71ea-ecc7-4f75-aa9a-33b82f2dbc5a"),
+                            ColorHex = "#FF5252",
+                            IconKey = "focus",
+                            IsActive = true,
+                            Name = "Focus"
+                        },
+                        new
+                        {
+                            Id = new Guid("8cc62e42-285f-4105-a54b-f71a087ce526"),
+                            ColorHex = "#40C4FF",
+                            IconKey = "zen",
+                            IsActive = true,
+                            Name = "Zen"
+                        },
+                        new
+                        {
+                            Id = new Guid("eddf4497-f3bd-4109-b768-11ca0f5f804e"),
+                            ColorHex = "#7C4DFF",
+                            IconKey = "wisdom",
+                            IsActive = true,
+                            Name = "Wisdom"
+                        },
+                        new
+                        {
+                            Id = new Guid("9c4a7362-6428-4804-97b0-0f53552b7e78"),
+                            ColorHex = "#FFD740",
+                            IconKey = "energy",
+                            IsActive = true,
+                            Name = "Energy"
+                        },
+                        new
+                        {
+                            Id = new Guid("0c5d4c37-c2a3-4b8d-9edd-fc4c75745609"),
+                            ColorHex = "#FF9100",
+                            IconKey = "career",
+                            IsActive = true,
+                            Name = "Career"
+                        },
+                        new
+                        {
+                            Id = new Guid("d0d76d8e-7c04-4c77-900d-0dc7d1275457"),
+                            ColorHex = "#00C853",
+                            IconKey = "wealth",
+                            IsActive = true,
+                            Name = "Wealth"
+                        },
+                        new
+                        {
+                            Id = new Guid("243877e0-c6d4-498a-9ed4-813ae66e7ff9"),
+                            ColorHex = "#607D8B",
+                            IconKey = "discipline",
+                            IsActive = true,
+                            Name = "Discipline"
+                        },
+                        new
+                        {
+                            Id = new Guid("b61dd8ce-9e86-41d9-8271-0d6a353efd26"),
+                            ColorHex = "#FF4081",
+                            IconKey = "love",
+                            IsActive = true,
+                            Name = "Love"
+                        },
+                        new
+                        {
+                            Id = new Guid("25fd56c2-9839-4cc7-9448-0538b98379d3"),
+                            ColorHex = "#00B8D4",
+                            IconKey = "peace",
+                            IsActive = true,
+                            Name = "Peace"
+                        },
+                        new
+                        {
+                            Id = new Guid("0a0ce44d-2afe-410b-a395-3d137433bd5c"),
+                            ColorHex = "#FF80AB",
+                            IconKey = "gratitude",
+                            IsActive = true,
+                            Name = "Gratitude"
+                        },
+                        new
+                        {
+                            Id = new Guid("af473f6b-78b4-466c-a471-f89e27501d72"),
+                            ColorHex = "#FBC02D",
+                            IconKey = "happiness",
+                            IsActive = true,
+                            Name = "Happiness"
+                        },
+                        new
+                        {
+                            Id = new Guid("0e180c18-937e-4919-8e06-12fdec3d5b39"),
+                            ColorHex = "#A1887F",
+                            IconKey = "resilience",
+                            IsActive = true,
+                            Name = "Resilience"
+                        },
+                        new
+                        {
+                            Id = new Guid("9c3f3bb9-8c4d-4bd8-a1b9-85d6d0539b3f"),
+                            ColorHex = "#D50000",
+                            IconKey = "courage",
+                            IsActive = true,
+                            Name = "Courage"
+                        },
+                        new
+                        {
+                            Id = new Guid("17815288-c1bd-4e4a-8b4d-229dadc114d7"),
+                            ColorHex = "#2962FF",
+                            IconKey = "fitness",
+                            IsActive = true,
+                            Name = "Fitness"
+                        },
+                        new
+                        {
+                            Id = new Guid("45475541-c73b-4c45-b93e-9056be60a096"),
+                            ColorHex = "#B2FF59",
+                            IconKey = "hope",
+                            IsActive = true,
+                            Name = "Hope"
+                        });
                 });
 
             modelBuilder.Entity("Phrase_App.Core.Models.OverlaySetting", b =>
@@ -315,10 +436,6 @@ namespace Phrase_App.Infrastructure.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("BackgroundValue")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("DisplayMode")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("FontColor")
@@ -403,9 +520,6 @@ namespace Phrase_App.Infrastructure.Migrations
                     b.Property<TimeSpan>("DailyStartTime")
                         .HasColumnType("time");
 
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
                     b.Property<Guid>("UserId")
                         .HasColumnType("uniqueidentifier");
 
@@ -483,9 +597,6 @@ namespace Phrase_App.Infrastructure.Migrations
 
                     b.Property<string>("CustomContent")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
 
                     b.Property<bool>("IsFavorite")
                         .ValueGeneratedOnAdd()

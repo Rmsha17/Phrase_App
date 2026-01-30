@@ -27,6 +27,14 @@ public class SchedulerController : ControllerBase
     }
 
     // GET: api/scheduler/active/{userId}
+    [HttpGet("current")]
+    public async Task<IActionResult> GetCurrentScheduledQuoteAsync()
+    {
+        var quotes = await _schedulerService.GetCurrentScheduledQuoteAsync(User.GetUserId());
+        return Ok(quotes);
+    }
+
+    // GET: api/scheduler/active/{userId}
     [HttpGet("active")]
     public async Task<IActionResult> GetActiveQuote()
     {

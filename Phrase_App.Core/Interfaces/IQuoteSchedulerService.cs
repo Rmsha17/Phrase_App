@@ -7,4 +7,5 @@ public interface IQuoteSchedulerService
     Task<List<UserQuoteResponseDto>> GetActiveScheduledQuoteAsync(Guid? userId);
     Task<IEnumerable<ScheduleResponseDto>> GetUserSchedulesAsync(Guid? userId);
     Task<bool> RemoveScheduleAsync(Guid scheduleId);
+    Task<List<UserQuoteResponseDto>> GetCurrentScheduledQuoteAsync(Guid? userId);
 }

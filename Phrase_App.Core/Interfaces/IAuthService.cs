@@ -26,4 +26,5 @@ public interface IAuthService
     Task<IdentityResult> InitiateChangeEmailAsync(Guid? userId, ChangeEmailDto dto);
     Task<IdentityResult> ChangePasswordAsync(Guid? userId, ChangePasswordDto dto);
     Task<bool> UpdateUserThemeAsync(Guid? userId, bool isDarkMode);
+    Task<IdentityResult> DeactivateUserAsync(Guid? userId, string password);
 }
