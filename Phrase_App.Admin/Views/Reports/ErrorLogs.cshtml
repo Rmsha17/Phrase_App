@@ -1,0 +1,231 @@
+@model Phrase_App.Admin.Controllers.ErrorLogsViewModel
+
+@{
+    ViewData["Title"] = "System Diagnostics - Error Logs";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    /* Force Modal to sit on top of everything */
+    #errorModal {
+        z-index: 100050 !important;
+    }
+
+    .modal-backdrop {
+        z-index: 100040 !important;
+    }
+
+    /* Chart Container Fix */
+    .chart-container {
+        position: relative;
+        height: 200px;
+        width: 100%;
+    }
+</style>
+
+<div class="container-fluid">
+    <div class="row mb-4 align-items-center">
+        <div class="col-md-8">
+            <h4 class="page-title text-danger mb-0">
+                <i class="mdi mdi-bug-check mr-2"></i>System Error Logs
+            </h4>
+            <p class="text-muted small">Generated at: @Model.GeneratedAt.ToString("yyyy-MM-dd HH:mm")</p>
+        </div>
+        <div class="col-md-4 text-right text-md-end">
+            <button class="btn btn-outline-secondary btn-sm" onclick="location.reload()">Refresh</button>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h6 class="card-title text-muted small font-weight-bold">ERRORS BY TYPE</h6>
+                    <ul class="list-group list-group-flush mt-2">
+                        @if (Model.ErrorsByType != null)
+                        {
+                            foreach (var s in Model.ErrorsByType.Take(5))
+                            {
+                                <li class="list-group-item d-flex justify-content-between px-0 py-1 border-0">
+                                    <span class="small text-truncate" style="max-width: 70%;">@s.ErrorType</span>
+                                    <span class="badge badge-danger bg-danger badge-pill rounded-pill">@s.Count</span>
+                                </li>
+                            }
+                        }
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h6 class="card-title text-muted small font-weight-bold">PLATFORM DISTRIBUTION</h6>
+                    <div class="chart-container">
+                        <canvas id="platformChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table id="errorsTable" class="table table-hover w-100">
+                    <thead class="thead-light table-light">
+                        <tr>
+                            <th>Time</th>
+                            <th>Platform</th>
+                            <th>Type</th>
+                            <th>Message</th>
+                            <th class="text-center">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.ErrorLogs != null)
+                        {
+                            foreach (var e in Model.ErrorLogs)
+                            {
+                                <tr>
+                                    <td class="small">
+                                        <strong>@e.Timestamp.ToString("yyyy-MM-dd")</strong><br>
+                                        <span class="text-muted">@e.Timestamp.ToString("HH:mm:ss")</span>
+                                    </td>
+                                    <td><span class="badge badge-light border">@e.Platform</span></td>
+                                    <td><code class="text-danger small">@e.ErrorType</code></td>
+                                    <td class="text-truncate small" style="max-width: 300px;">@e.Message</td>
+                                    <td class="text-center">
+                                        <button type="button" class="btn btn-sm btn-outline-danger"
+                                                onclick="openLogModal(this)"
+                                                data-time="@e.Timestamp.ToString("yyyy-MM-dd HH:mm:ss")"
+                                                data-plat="@e.Platform"
+                                                data-type="@e.ErrorType">
+                                            <i class="mdi mdi-eye"></i> View
+                                        </button>
+                                        <div class="d-none full-message-content">@e.Message</div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="errorModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">Error Details</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="$('#errorModal').modal('hide')">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body bg-light">
+                <div class="row">
+                    <div class="col-6">
+                        <small class="text-muted font-weight-bold">TIMESTAMP</small><br>
+                        <span id="mTime" class="font-weight-bold"></span>
+                    </div>
+                    <div class="col-6 text-right">
+                        <small class="text-muted font-weight-bold">PLATFORM</small><br>
+                        <span id="mPlat" class="badge badge-secondary bg-secondary badge-pill rounded-pill"></span>
+                    </div>
+                </div>
+                <hr>
+                <small class="text-muted font-weight-bold">FULL EXCEPTION</small>
+                <div class="bg-dark p-3 mt-2 rounded">
+                    <pre id="mMsg" class="text-success mb-0 small" style="white-space: pre-wrap; word-break: break-all; color: #4af626;"></pre>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="$('#errorModal').modal('hide')">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        // --- 1. SAFE CHART INITIALIZATION ---
+        document.addEventListener("DOMContentLoaded", function() {
+            try {
+                var labels = [];
+                var data = [];
+
+                // Use Razor to safely inject data line-by-line
+                @if (Model.ErrorsByPlatform != null)
+                {
+                        foreach (var item in Model.ErrorsByPlatform)
+                        {
+                                <text>
+                                labels.push("@Html.Raw(item.Platform)");
+                                data.push(@item.Count);
+                                </text>
+                        }
+                }
+
+                if(document.getElementById('platformChart')) {
+                    var ctx = document.getElementById('platformChart').getContext('2d');
+                    new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: 'Errors',
+                                data: data,
+                                backgroundColor: '#ff4f70'
+                            }]
+                        },
+                        options: {
+                            indexAxis: 'y',
+                            maintainAspectRatio: false,
+                            plugins: { legend: { display: false } }
+                        }
+                    });
+                }
+            } catch (e) {
+                console.error("Chart Error:", e);
+            }
+        });
+
+        // --- 2. GLOBAL MODAL FUNCTION ---
+        // Defined globally so it works even if other scripts fail
+        function openLogModal(btnElement) {
+            try {
+                // Get attributes using standard JS or jQuery
+                var btn = $(btnElement);
+                var time = btn.data('time');
+                var plat = btn.data('plat');
+                var type = btn.data('type');
+
+                // Get the message from the hidden div next to the button
+                // This prevents issues with quotes breaking HTML attributes
+                var msg = btn.siblings('.full-message-content').text();
+
+                // Populate
+                $('#mTime').text(time);
+                $('#mPlat').text(plat);
+                $('#mMsg').text(msg); // .text() escapes HTML, safe to use
+
+                // Show Modal (Try BS4 way, fallback to BS5)
+                $('#errorModal').modal('show');
+            } catch (err) {
+                alert("Could not open modal. Error: " + err.message);
+                console.error(err);
+            }
+        }
+
+        // --- 3. DATATABLE INIT ---
+        $(document).ready(function() {
+            if ($.fn.DataTable) {
+                $('#errorsTable').DataTable({ "order": [[0, "desc"]] });
+            }
+        });
+    </script>
+}

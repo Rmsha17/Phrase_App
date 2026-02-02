@@ -7,5 +7,6 @@
         public required string IconKey { get; set; } // e.g., "growth", "zen"
         public required string ColorHex { get; set; } // e.g., "#00E676"
         public bool IsActive { get; set; } = true;
+        public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
     }
 }

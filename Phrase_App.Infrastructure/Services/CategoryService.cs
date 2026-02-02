@@ -22,7 +22,7 @@ namespace Phrase_App.Infrastructure.Services
             // Get count of active phrases/quotes for this category
             var quoteCount = await _context.Quotes.CountAsync(p => p.CategoryId == category.Id);
 
-            return new CategoryResponse(category.Id, category.Name, category.IconKey, category.ColorHex, quoteCount);
+            return new CategoryResponse(category.Id, category.Name, category.IconKey, category.ColorHex, quoteCount, category.CreatedDate);
         }
 
         public async Task<CategoryResponse> CreateAsync(CreateCategoryRequest request)
@@ -47,7 +47,7 @@ namespace Phrase_App.Infrastructure.Services
             _context.Categories.Add(category);
             await _context.SaveChangesAsync();
 
-            return new CategoryResponse(category.Id, category.Name, category.IconKey, category.ColorHex, 0);
+            return new CategoryResponse(category.Id, category.Name, category.IconKey, category.ColorHex, 0, category.CreatedDate);
         }
 
         public async Task<bool> UpdateAsync(Guid id, UpdateCategoryRequest request)
@@ -88,8 +88,9 @@ namespace Phrase_App.Infrastructure.Services
         {
             return await _context.Categories
                 .Where(x => x.IsActive)
+                .OrderByDescending(x => x.CreatedDate)
                 .Select(x => new CategoryResponse(x.Id, x.Name, x.IconKey, x.ColorHex,
-                                    _context.Quotes.Count(p => p.CategoryId == x.Id)))
+                                    _context.Quotes.Count(p => p.CategoryId == x.Id), x.CreatedDate))
                 .ToListAsync();
         }
     }

@@ -5,6 +5,7 @@
         string Name,
         string IconKey,
         string ColorHex,
-        int count
+        int count,
+        DateTime CreatedDate
     );
 }

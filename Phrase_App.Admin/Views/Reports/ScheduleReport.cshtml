@@ -1,0 +1,227 @@
+﻿@{
+    ViewData["Title"] = "Engine Analysis | Schedule Report";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+}
+
+<style>
+    :root {
+        --p-indigo: #6366f1;
+        --p-emerald: #10b981;
+    }
+
+    .report-shell {
+        background: #fdfdfd;
+        min-height: 100vh;
+        padding: 40px;
+        color: #2d3748;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .report-card {
+        background: white;
+        border: 1px solid #edf2f7;
+        border-radius: 16px;
+        padding: 25px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+    }
+
+    .heat-cell {
+        height: 45px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 13px;
+        transition: 0.3s;
+    }
+
+    .bg-low {
+        background: #f1f5f9;
+        color: #94a3b8;
+    }
+
+    .bg-high {
+        background: var(--p-indigo);
+        color: white;
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+    }
+
+    .metric-label {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #718096;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .status-pulse {
+        height: 8px;
+        width: 8px;
+        background: var(--p-emerald);
+        border-radius: 50%;
+        display: inline-block;
+        animation: blink 2s infinite;
+    }
+
+    @@keyframes blink {
+        0% {
+            opacity: 1;
+        }
+
+        50% {
+            opacity: 0.4;
+        }
+
+        100% {
+            opacity: 1;
+        }
+    }
+</style>
+
+<div class="report-shell">
+    <div class="d-flex justify-content-between align-items-center mb-5 pb-4 border-bottom">
+        <div>
+            <h1 class="h3 fw-bold mb-1 text-dark">Schedule Distribution Report</h1>
+            <p class="text-muted small mb-0">System performance and user engagement analytics</p>
+        </div>
+       @*  <button class="btn btn-dark rounded-pill px-4 shadow-sm" onclick="window.print()">
+            <i class="mdi mdi-printer me-2"></i>Print Report
+        </button> *@
+    </div>
+
+    <div class="row">
+        <div class="col-lg-7 mb-4">
+            <div class="report-card h-100">
+                <h6 class="metric-label mb-4">Hourly Traffic Distribution</h6>
+                <div style="height: 320px;">
+                    <canvas id="timeRadarChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-5 mb-4">
+            <div class="report-card h-100 d-flex flex-column">
+                <h6 class="metric-label mb-4">Weekly Density Heatmap</h6>
+                <div class="row g-2 text-center mb-auto">
+                    @foreach (var day in ViewBag.DayDistribution)
+                    {
+                        // SAFETY FIX: Ensure day.Day is not null and long enough before calling Substring
+                        string dayName = day.Day ?? "Unknown";
+                        string shortDay = dayName.Length >= 3 ? dayName.Substring(0, 3) : dayName;
+
+                        <div class="col-4">
+                            <div class="heat-cell @(day.Count > 0 ? "bg-high" : "bg-low") mb-1">
+                                @day.Count
+                            </div>
+                            <span class="x-small text-muted" style="font-size: 11px; font-weight: 600;">@shortDay</span>
+                        </div>
+                    }
+                </div>
+
+                <div class="mt-4 p-3 rounded-4" style="background: #f8fafc; border: 1px solid #e2e8f0;">
+                    <p class="small mb-0 text-muted">
+                        <i class="mdi mdi-lightbulb-on text-warning me-2 fs-5"></i>
+                        <strong>Dynamic Insight:</strong>
+                        System activity peaks on <span class="text-indigo fw-bold">@ViewBag.PeakDay s</span>
+                        during the <span class="text-indigo fw-bold">@ViewBag.PeakTimeSlot</span> window.
+
+                        @{
+                            var morning = ViewBag.Morning ?? 0;
+                            var afternoon = ViewBag.Afternoon ?? 0;
+                            var evening = ViewBag.Evening ?? 0;
+                            var night = ViewBag.Night ?? 0;
+                            var total = (int)morning + (int)afternoon + (int)evening + (int)night;
+
+                            if (total > 50)
+                            {
+                                <span class="d-block mt-2 text-dark">Suggesting resource pre-allocation for this period.</span>
+                            }
+                        }
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-3">
+        <div class="col-12">
+            <div class="report-card">
+                <h6 class="metric-label mb-4">Top Scheduling Accounts</h6>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead>
+                            <tr class="text-muted" style="font-size: 12px; border-bottom: 2px solid #f1f5f9;">
+                                <th class="pb-3">USER ACCOUNT</th>
+                                <th class="pb-3">ACTIVE WINDOWS</th>
+                                <th class="pb-3">EST. DURATION</th>
+                                <th class="pb-3">STATUS</th>
+                                <th class="pb-3 text-end">LOAD IMPACT</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var user in ViewBag.PowerUsers)
+                            {
+                                <tr>
+                                    <td class="py-3">
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-sm me-3 d-flex align-items-center justify-content-center rounded-circle"
+                                                 style="width: 38px; height: 38px; background: #eef2ff; color: #6366f1;">
+                                                <i class="mdi mdi-account-circle-outline fs-4"></i>
+                                            </div>
+                                            <span class="fw-bold">@user.UserEmail</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge rounded-pill" style="background: #e0e7ff; color: #4338ca;">
+                                            @user.Count Schedules
+                                        </span>
+                                    </td>
+                                    <td class="text-muted small">8.2 hrs / avg</td>
+                                    <td>
+                                        <span class="status-pulse me-2"></span>
+                                        <span class="text-success small fw-bold">Operational</span>
+                                    </td>
+                                    <td class="text-end">
+                                        <div class="progress" style="height: 6px; width: 80px; display: inline-flex; border-radius: 10px;">
+                                            <div class="progress-bar bg-indigo" style="width: @(user.Count * 15)%"></div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const ctxRadar = document.getElementById('timeRadarChart').getContext('2d');
+        new Chart(ctxRadar, {
+            type: 'polarArea',
+            data: {
+                labels: ['Morning', 'Afternoon', 'Evening', 'Night'],
+                datasets: [{
+                    data: [@(ViewBag.Morning ?? 0), @(ViewBag.Afternoon ?? 0), @(ViewBag.Evening ?? 0), @(ViewBag.Night ?? 0)],
+                    backgroundColor: [
+                        'rgba(99, 102, 241, 0.8)',
+                        'rgba(16, 185, 129, 0.8)',
+                        'rgba(245, 158, 11, 0.8)',
+                        'rgba(30, 41, 59, 0.8)'
+                    ],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'bottom' } },
+                scales: { r: { ticks: { display: false }, grid: { color: '#f1f5f9' } } }
+            }
+        });
+    </script>
+}

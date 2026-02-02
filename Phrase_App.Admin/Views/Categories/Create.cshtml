@@ -1,0 +1,109 @@
+﻿@{
+    ViewData["Title"] = "Create Category";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var icons = (IEnumerable<string>?)ViewBag.AllowedIcons ?? Enumerable.Empty<string>();
+    var colors = (IEnumerable<string>?)ViewBag.AllowedColors ?? Enumerable.Empty<string>();
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Create Category</h5>
+
+                    @* Server-side validation summary *@
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <form asp-area="Admin" asp-controller="Categories" asp-action="Create" method="post" class="row g-3">
+                        @Html.AntiForgeryToken()
+
+                        <div class="col-md-6">
+                            <label class="form-label"><b>Name</b></label>
+                            <input name="Name" class="form-control" placeholder="e.g. Growth" required />
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Icon Key</label>
+                            <select name="IconKey" class="form-select" required>
+                                <option value="">-- Select Icon --</option>
+                                @foreach (var icon in icons)
+                                {
+                                    <option value="@icon">@icon</option>
+                                }
+                            </select>
+                            <div class="form-text">Use one of the predefined icon keys.</div>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label">Color</label>
+                            <input type="hidden" name="ColorHex" id="ColorHex" required />
+
+                            <div id="colorSwatches" class="d-flex flex-wrap gap-2">
+                                @foreach (var color in colors)
+                                {
+                                    <button type="button"
+                                            class="btn btn-sm color-swatch"
+                                            data-color="@color"
+                                            title="@color"
+                                            style="width:40px; height:28px; background:@color; border:1px solid rgba(0,0,0,0.12);">
+                                    </button>
+                                }
+                            </div>
+
+                            <div class="mt-2">
+                                <span class="me-2">Selected:</span>
+                                <span id="selectedColorPreview" class="badge" style="padding:8px 12px; color:#fff;">None</span>
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary">Create</button>
+                            <a asp-area="Admin" asp-controller="Categories" asp-action="Index" class="btn btn-secondary ms-2">Cancel</a>
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/Admin/assets/libs/jquery/dist/jquery.min.js"></script>
+    <script src="~/Admin/assets/libs/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        (function () {
+            var $swatches = $('#colorSwatches .color-swatch');
+            var $hidden = $('#ColorHex');
+            var $preview = $('#selectedColorPreview');
+
+            function setColor(hex) {
+                $hidden.val(hex);
+                $preview.css('background', hex);
+                function luminance(hex) {
+                    var c = hex.replace('#','');
+                    var r = parseInt(c.substr(0,2),16);
+                    var g = parseInt(c.substr(2,2),16);
+                    var b = parseInt(c.substr(4,2),16);
+                    return (0.2126*r + 0.7152*g + 0.0722*b);
+                }
+                var textColor = luminance(hex) > 160 ? '#000' : '#fff';
+                $preview.css('color', textColor);
+                $preview.text(hex);
+                $swatches.removeClass('border border-2 border-dark');
+                $swatches.filter('[data-color="' + hex + '"]').addClass('border border-2 border-dark');
+            }
+
+            $swatches.on('click', function (e) {
+                e.preventDefault();
+                var hex = $(this).data('color');
+                setColor(hex);
+            });
+
+            if (!$hidden.val() && $swatches.length) {
+                setColor($swatches.first().data('color'));
+            }
+        })();
+    </script>
+}

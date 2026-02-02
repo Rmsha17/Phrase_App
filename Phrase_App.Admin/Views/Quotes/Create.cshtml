@@ -1,0 +1,59 @@
+﻿@model Phrase_App.Core.Models.Quote
+
+@{
+    ViewData["Title"] = "Create Quote";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var categories = (IEnumerable<Phrase_App.Core.Models.Category>)ViewBag.Categories ?? new List<Phrase_App.Core.Models.Category>();
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Create Quote</h5>
+
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <form asp-area="Admin" asp-controller="Quotes" asp-action="Create" method="post" class="row g-3">
+                        @Html.AntiForgeryToken()
+
+                        <div class="col-12">
+                            <label class="form-label"><b>Quote Content</b></label>
+                            <textarea name="Content" class="form-control" rows="4" placeholder="Enter quote text..." required></textarea>
+                            <small class="form-text text-muted">The main quote text.</small>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Author</label>
+                            <input type="text" name="Author" class="form-control" placeholder="e.g. Steve Jobs" />
+                            <small class="form-text text-muted">Leave blank for 'Unknown'.</small>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label"><b>Category</b></label>
+                            <select name="CategoryId" class="form-select" required>
+                                <option value="">-- Select Category --</option>
+                                @foreach (var cat in categories)
+                                {
+                                    <option value="@cat.Id">@cat.Name</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary">Create</button>
+                            <a asp-area="Admin" asp-controller="Quotes" asp-action="Index" class="btn btn-secondary ms-2">Cancel</a>
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/Admin/assets/libs/jquery/dist/jquery.min.js"></script>
+    <script src="~/Admin/assets/libs/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+}

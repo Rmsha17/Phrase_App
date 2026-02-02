@@ -199,6 +199,9 @@ namespace Phrase_App.Infrastructure.Migrations
                         .IsConcurrencyToken()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("CurrentPurchaseToken")
                         .HasColumnType("nvarchar(max)");
 
@@ -283,6 +286,9 @@ namespace Phrase_App.Infrastructure.Migrations
                     b.Property<string>("ColorHex")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("IconKey")
                         .IsRequired()

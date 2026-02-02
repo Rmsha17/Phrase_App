@@ -1,0 +1,80 @@
+﻿@model Phrase_App.Core.Models.ApplicationUser
+
+@{
+    ViewData["Title"] = "Edit User";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Edit User</h5>
+
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <form asp-area="Admin" asp-controller="Users" asp-action="Edit" asp-route-id="@Model.Id" method="post" class="row g-3">
+                        @Html.AntiForgeryToken()
+
+                        <div class="col-md-6">
+                            <label class="form-label">Username (Read-only)</label>
+                            <input type="text" class="form-control" value="@Model.UserName" disabled />
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Email (Read-only)</label>
+                            <input type="email" class="form-control" value="@Model.Email" disabled />
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label"><b>Full Name</b></label>
+                            <input type="text" name="FullName" class="form-control" value="@Model.FullName" />
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Phone (Read-only)</label>
+                            <input type="text" class="form-control" value="@(Model.PhoneNumber ?? "-")" disabled />
+                        </div>
+
+                        <div class="col-12">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="darkMode" name="DarkMode" @(Model.DarkMode ? "checked" : "") />
+                                <label class="form-check-label" for="darkMode">Enable Dark Mode</label>
+                            </div>
+                        </div>
+
+                        <div class="col-12 border-top pt-3">
+                            <h6>Subscription Info (Read-only)</h6>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <label class="form-label">Status</label>
+                                    <input type="text" class="form-control" value="@(Model.IsPremium ? "Premium" : "Free")" disabled />
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Type</label>
+                                    <input type="text" class="form-control" value="@(Model.SubscriptionType ?? "N/A")" disabled />
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Expiry Date</label>
+                                    <input type="text" class="form-control" value="@(Model.PremiumExpiryDate?.ToString("yyyy-MM-dd") ?? "N/A")" disabled />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                            <a asp-area="Admin" asp-controller="Users" asp-action="Details" asp-route-id="@Model.Id" class="btn btn-secondary ms-2">Cancel</a>
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/Admin/assets/libs/jquery/dist/jquery.min.js"></script>
+    <script src="~/Admin/assets/libs/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+}

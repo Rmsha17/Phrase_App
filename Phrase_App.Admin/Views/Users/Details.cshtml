@@ -1,0 +1,168 @@
+﻿@model Phrase_App.Core.Models.ApplicationUser
+
+@{
+    ViewData["Title"] = "User Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var roles = (IEnumerable<string>)ViewBag.Roles ?? new List<string>();
+    var isExpired = Model.PremiumExpiryDate.HasValue && Model.PremiumExpiryDate.Value < DateTime.UtcNow;
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">User Details</h5>
+
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h6>Basic Information</h6>
+                            <table class="table table-sm">
+                                <tr>
+                                    <th>Username:</th>
+                                    <td>@Model.UserName</td>
+                                </tr>
+                                <tr>
+                                    <th>Email:</th>
+                                    <td>@Model.Email</td>
+                                </tr>
+                                <tr>
+                                    <th>Full Name:</th>
+                                    <td>@Model.FullName</td>
+                                </tr>
+                                <tr>
+                                    <th>Phone:</th>
+                                    <td>@(Model.PhoneNumber ?? "N/A")</td>
+                                </tr>
+                                <tr>
+                                    <th>Joined:</th>
+                                    <td>@Model.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                                </tr>
+                                <tr>
+                                    <th>Roles:</th>
+                                    <td>
+                                        @if (roles.Any())
+                                        {
+                                            @foreach (var role in roles)
+                                            {
+                                                <span class="badge bg-primary me-1">@role</span>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">No roles assigned</span>
+                                        }
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <div class="col-md-6">
+                            <h6>Subscription Information</h6>
+                            <table class="table table-sm">
+                                <tr>
+                                    <th>Status:</th>
+                                    <td>
+                                        @if (Model.IsPremium)
+                                        {
+                                            <span class="badge bg-success">Premium</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">Free</span>
+                                        }
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Subscription Type:</th>
+                                    <td>@(Model.SubscriptionType ?? "N/A")</td>
+                                </tr>
+                                <tr>
+                                    <th>Expiry Date:</th>
+                                    <td>
+                                        @if (Model.PremiumExpiryDate.HasValue)
+                                        {
+                                            @if (isExpired)
+                                            {
+                                                <span class="badge bg-danger">@Model.PremiumExpiryDate.Value.ToString("yyyy-MM-dd") (Expired)</span>
+                                            }
+                                            else
+                                            {
+                                                var daysLeft = (Model.PremiumExpiryDate.Value - DateTime.UtcNow).Days;
+                                                @if (daysLeft <= 7)
+                                                {
+                                                    <span class="badge bg-warning">@Model.PremiumExpiryDate.Value.ToString("yyyy-MM-dd") (@daysLeft days left)</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-info">@Model.PremiumExpiryDate.Value.ToString("yyyy-MM-dd") (@daysLeft days left)</span>
+                                                }
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">N/A</span>
+                                        }
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Purchase Token:</th>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(Model.CurrentPurchaseToken))
+                                        {
+                                            <code style="font-size: 0.75rem;">@Model.CurrentPurchaseToken.Substring(0, Math.Min(20, Model.CurrentPurchaseToken.Length))...</code>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">N/A</span>
+                                        }
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h6>Preferences</h6>
+                            <table class="table table-sm">
+                                <tr>
+                                    <th>Dark Mode:</th>
+                                    <td>
+                                        @if (Model.DarkMode)
+                                        {
+                                            <span class="badge bg-dark">Enabled</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-light text-dark">Disabled</span>
+                                        }
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Email Confirmed:</th>
+                                    <td>
+                                        @if (Model.EmailConfirmed)
+                                        {
+                                            <span class="badge bg-success">Confirmed</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-warning">Pending</span>
+                                        }
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <a asp-area="Admin" asp-controller="Users" asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">Edit</a>
+                        <a asp-area="Admin" asp-controller="Users" asp-action="Index" class="btn btn-secondary ms-2">Back to List</a>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,196 @@
+@model Phrase_App.Admin.Controllers.ContentAnalyticsViewModel
+
+@{
+    ViewData["Title"] = "Reports - Content Analytics";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4 align-items-center">
+        <div class="col-md-8">
+            <h4 class="page-title text-primary mb-0">
+                <i class="mdi mdi-library-shelves me-2"></i>Content & Quote Analytics
+            </h4>
+            <p class="text-muted small">Generated at: @Model.GeneratedAt.ToString("yyyy-MM-dd HH:mm")</p>
+        </div>
+        <div class="col-md-4 text-md-end text-right">
+            <button class="btn btn-sm btn-primary shadow-sm" onclick="location.reload()">
+                <i class="mdi mdi-refresh"></i> Update Data
+            </button>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 border-top border-primary border-3">
+                <div class="card-body text-center">
+                    <h6 class="text-muted small text-uppercase">New Quotes (30d)</h6>
+                    <h2 class="text-primary">@Model.TotalQuotesLast30Days</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 border-top border-info border-3">
+                <div class="card-body text-center">
+                    <h6 class="text-muted small text-uppercase">Total Categories</h6>
+                    <h2 class="text-info">@Model.QuotesByCategory.Count</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 border-top border-success border-3">
+                <div class="card-body text-center">
+                    <h6 class="text-muted small text-uppercase">Top Category</h6>
+                    <h2 class="text-success">@(Model.QuotesByCategory.FirstOrDefault()?.Category ?? "N/A")</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title mb-4">Quotes by Category</h5>
+                    <div style="height: 300px; width: 100%; position: relative;">
+                        <canvas id="categoryBarChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title mb-4">Quotes Added per Day</h5>
+                    <div style="height: 300px; width: 100%; position: relative;">
+                        <canvas id="quotesLineChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-white">
+            <h5 class="card-title mb-0"><i class="mdi mdi-star text-warning me-2"></i>Most Favorited Quotes</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table id="topQuotesTable" class="table table-hover no-wrap">
+                    <thead class="bg-light">
+                        <tr>
+                            <th style="width: 70%">Quote Content</th>
+                            <th class="text-center">Favorites</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var q in Model.TopQuotes)
+                        {
+                            <tr>
+                                <td class="text-wrap">
+                                    <i class="mdi mdi-format-quote-open text-muted me-1"></i>
+                                    @q.QuoteText
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge bg-soft-warning text-warning px-3 rounded-pill">
+                                        @q.FavoriteCount
+                                    </span>
+                                </td>
+                              
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .bg-soft-warning {
+        background-color: rgba(255, 193, 7, 0.15);
+    }
+</style>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        (function() {
+            window.onload = function() {
+                // --- 1. DATA PREPARATION ---
+                const catLabels = [];
+                const catData = [];
+                @foreach (var item in Model.QuotesByCategory)
+                {
+                        <text>
+                        catLabels.push("@item.Category");
+                        catData.push(@item.Count);
+                        </text>
+                }
+
+                const trendLabels = [];
+                const trendData = [];
+                @foreach (var item in Model.QuotesPerDay)
+                {
+                        <text>
+                        trendLabels.push("@item.Date.ToString("MMM dd")");
+                        trendData.push(@item.Count);
+                        </text>
+                }
+
+                // --- 2. CATEGORY BAR CHART ---
+                const ctxBar = document.getElementById('categoryBarChart');
+                if (ctxBar && catLabels.length > 0) {
+                    new Chart(ctxBar, {
+                        type: 'bar',
+                        data: {
+                            labels: catLabels,
+                            datasets: [{
+                                label: 'Total Quotes',
+                                data: catData,
+                                backgroundColor: '#007bff',
+                                borderRadius: 5
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: { legend: { display: false } },
+                            scales: { y: { beginAtZero: true } }
+                        }
+                    });
+                }
+
+                // --- 3. QUOTES TREND LINE CHART ---
+                const ctxLine = document.getElementById('quotesLineChart');
+                if (ctxLine && trendLabels.length > 0) {
+                    new Chart(ctxLine, {
+                        type: 'line',
+                        data: {
+                            labels: trendLabels,
+                            datasets: [{
+                                label: 'New Quotes',
+                                data: trendData,
+                                borderColor: '#28a745',
+                                backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                                fill: true,
+                                tension: 0.4
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: { legend: { display: false } },
+                            scales: {
+                                y: { beginAtZero: true, ticks: { precision: 0 } },
+                                x: { grid: { display: false } }
+                            }
+                        }
+                    });
+                }
+            };
+        })();
+    </script>
+}

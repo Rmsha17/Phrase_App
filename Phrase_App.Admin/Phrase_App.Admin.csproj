@@ -10,4 +10,12 @@
     <Folder Include="wwwroot\overlays\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.23" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Phrase_App.Infrastructure\Phrase_App.Infrastructure.csproj" />
+  </ItemGroup>
+
 </Project>

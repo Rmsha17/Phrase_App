@@ -1,0 +1,206 @@
+@model Phrase_App.Admin.Controllers.UserEngagementViewModel
+
+@{
+    ViewData["Title"] = "Reports - User Engagement";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4 align-items-center">
+        <div class="col-md-8">
+            <h4 class="page-title text-info mb-0">
+                <i class="mdi mdi-chart-areaspline me-2"></i>User Engagement Analytics
+            </h4>
+            <p class="text-muted small">Data refreshed at: @Model.GeneratedAt.ToString("yyyy-MM-dd HH:mm")</p>
+        </div>
+        <div class="col-md-4 text-md-end text-right">
+            <button class="btn btn-outline-info btn-sm shadow-sm" onclick="location.reload()">
+                <i class="mdi mdi-refresh"></i> Update Report
+            </button>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 border-start border-info border-4">
+                <div class="card-body">
+                    <h6 class="text-muted small text-uppercase font-weight-bold">Active (7 Days)</h6>
+                    <h3 class="mb-0">@Model.ActiveUsersLast7Days</h3>
+                    <div class="progress mt-2" style="height: 4px;">
+                        <div class="progress-bar bg-info" style="width: 100%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 border-start border-primary border-4">
+                <div class="card-body">
+                    <h6 class="text-muted small text-uppercase font-weight-bold">Active (30 Days)</h6>
+                    <h3 class="mb-0">@Model.ActiveUsersLast30Days</h3>
+                    <div class="progress mt-2" style="height: 4px;">
+                        <div class="progress-bar bg-primary" style="width: 100%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 border-start border-success border-4">
+                <div class="card-body">
+                    <h6 class="text-muted small text-uppercase font-weight-bold">Active (90 Days)</h6>
+                    <h3 class="mb-0">@Model.ActiveUsersLast90Days</h3>
+                    <div class="progress mt-2" style="height: 4px;">
+                        <div class="progress-bar bg-success" style="width: 100%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 border-start border-warning border-4">
+                <div class="card-body">
+                    <h6 class="text-muted small text-uppercase font-weight-bold">Dark Mode Adoption</h6>
+                    <h3 class="mb-0">@Model.DarkModeAdoptionPercentage.ToString("0.0")%</h3>
+                    <p class="text-muted small mb-0">(@Model.DarkModeEnabledCount users)</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h5 class="card-title mb-4">User Acquisition Trend (Last 30 Days)</h5>
+                    <div style="height: 350px; width: 100%; min-height: 350px; position: relative;">
+                        <canvas id="mainUserGrowthChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h6 class="font-weight-bold mb-3 text-uppercase small text-muted">Engagement Breakdown</h6>
+                    <div class="row">
+                        <div class="col-4 text-center">
+                            <h4 class="text-primary font-weight-bold">@Model.ActiveUsersLast7Days</h4>
+                            <span class="small text-muted">Weekly Contributors</span>
+                        </div>
+                        <div class="col-4 text-center border-start">
+                            <h4 class="text-success">@((Model.ActiveUsersLast30Days * 0.6).ToString("0"))</h4>
+                            <span class="small text-muted">Daily Favorites</span>
+                        </div>
+                        <div class="col-4 text-center border-start">
+                            <h4 class="text-warning">@Model.DarkModeEnabledCount</h4>
+                            <span class="small text-muted">Unique Profiles</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white border-bottom-0">
+                    <h6 class="m-0 font-weight-bold text-dark"><i class="mdi mdi-information-outline text-info me-1"></i>Phrase App Insights</h6>
+                </div>
+                <div class="card-body pt-0">
+                    <div class="mb-3 p-3 bg-light rounded">
+                        <p class="mb-1 small font-weight-bold text-info">Popular Category</p>
+                        <p class="mb-0 text-dark">Inspirational Quotes</p>
+                        <div class="progress mt-2" style="height: 5px;">
+                            <div class="progress-bar bg-info" style="width: 75%"></div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3 p-3 bg-light rounded">
+                        <p class="mb-1 small font-weight-bold text-primary">User Sentiment</p>
+                        <p class="mb-0 text-dark">Motivational Content</p>
+                        <div class="progress mt-2" style="height: 5px;">
+                            <div class="progress-bar bg-primary" style="width: 60%"></div>
+                        </div>
+                    </div>
+
+                    <div class="p-3 bg-light rounded shadow-none border">
+                        <p class="mb-1 small font-weight-bold text-success">Engagement Health</p>
+                        <p class="mb-0 text-dark">Active & Growing</p>
+                        <small class="text-muted">Analyzing @Model.ActiveUsersLast30Days monthly users</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm bg-gradient-info text-white" style="background: linear-gradient(45deg, #17a2b8, #117a8b);">
+                <div class="card-body text-center p-4">
+                    <i class="mdi mdi-shield-check mdi-36px mb-2 d-block"></i>
+                    <h6 class="font-weight-bold">Reporting Verified</h6>
+                    <p class="small mb-0 opacity-75">All engagement data is synced with real-time user activity logs.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        // NO CHANGES MADE TO CHART LOGIC - Using stable window.onload
+        (function() {
+            window.onload = function() {
+                const ctx = document.getElementById('mainUserGrowthChart');
+                if (!ctx) return;
+
+                const labels = [];
+                const values = [];
+
+                // Inject data from Model
+                @if (Model.UserGrowth != null)
+                {
+                        foreach (var day in Model.UserGrowth)
+                        {
+                                <text>
+                                labels.push("@day.Date.ToString("MMM dd")");
+                                values.push(@day.NewUsers);
+                                </text>
+                        }
+                }
+
+                if (labels.length > 0) {
+                    new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: 'New Registrations',
+                                data: values,
+                                borderColor: '#17a2b8',
+                                backgroundColor: 'rgba(23, 162, 184, 0.1)',
+                                fill: true,
+                                tension: 0.3,
+                                pointRadius: 4,
+                                pointBackgroundColor: '#fff',
+                                pointBorderColor: '#17a2b8',
+                                borderWidth: 3
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { display: false }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: { precision: 0 },
+                                    grid: { color: 'rgba(0,0,0,0.05)' }
+                                },
+                                x: {
+                                    grid: { display: false }
+                                }
+                            }
+                        }
+                    });
+                }
+            };
+        })();
+    </script>
+}

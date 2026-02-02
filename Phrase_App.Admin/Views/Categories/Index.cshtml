@@ -1,0 +1,165 @@
+﻿@model IEnumerable<Phrase_App.Core.DTOs.Response.CategoryResponse>
+
+<div class="container-fluid">
+    <!-- ============================================================== -->
+    <!-- Start Page Content -->
+    <!-- ============================================================== -->
+    <div class="row">
+        <div class="col-12">
+            <!-- Toast Container -->
+            <div id="toastContainer" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
+
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Basic Datatable</h5>
+
+                    <div class="mb-3">
+                        <a class="btn btn-primary" asp-area="Admin" asp-controller="Categories" asp-action="Create">New Category</a>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table id="zero_config" class="table table-striped table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Icon Key</th>
+                                    <th>Color</th>
+                                    <th>Quotes</th>
+                                    <th class="text-center">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model != null)
+                                {
+                                    foreach (var item in Model)
+                                    {
+                                        <tr>
+                                            <td>@item.Name</td>
+                                            <td>@item.IconKey</td>
+                                            <td>
+                                                <span class="badge" style="background:@item.ColorHex; color:#fff;">
+                                                    @item.ColorHex
+                                                </span>
+                                            </td>
+                                            <td>@item.count</td>
+                                            <td class="text-center">
+                                                <a class="btn btn-sm btn-outline-primary me-1"
+                                                   asp-area="Admin"
+                                                   asp-controller="Categories"
+                                                   asp-action="Edit"
+                                                   asp-route-id="@item.Id">Edit</a>
+
+                                                <form asp-area="Admin"
+                                                      asp-controller="Categories"
+                                                      asp-action="Delete"
+                                                      method="post"
+                                                      class="d-inline delete-category-form">
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="id" value="@item.Id" />
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Icon Key</th>
+                                    <th>Color</th>
+                                    <th>Quotes</th>
+                                    <th class="text-center">Actions</th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/Admin/assets/libs/jquery/dist/jquery.min.js"></script>
+    <script src="~/Admin/assets/libs/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/Admin/assets/libs/perfect-scrollbar/dist/perfect-scrollbar.jquery.min.js"></script>
+    <script src="~/Admin/assets/extra-libs/sparkline/sparkline.js"></script>
+    <script src="~/Admin/dist/js/waves.js"></script>
+    <script src="~/Admin/dist/js/sidebarmenu.js"></script>
+    <script src="~/Admin/dist/js/custom.min.js"></script>
+    <script src="~/Admin/assets/extra-libs/multicheck/datatable-checkbox-init.js"></script>
+    <script src="~/Admin/assets/extra-libs/multicheck/jquery.multicheck.js"></script>
+    <script src="~/Admin/assets/extra-libs/DataTables/datatables.min.js"></script>
+
+    <script>
+        (function () {
+            var table = $("#zero_config").DataTable({
+                responsive: true,
+                ordering: true,
+                pageLength: 10,
+                dom:
+                    '<"row mb-2"<"col-sm-6"l><"col-sm-6 text-end"f>>' +
+                    't' +
+                    '<"row mt-2"<"col-sm-6"i><"col-sm-6 text-end"p>>'
+            });
+
+            function alignControls() {
+                var $wrap = $('#zero_config').closest('.dataTables_wrapper');
+                $wrap.find('.dataTables_length').removeClass('float-end').addClass('float-start').css({ 'text-align': 'left' });
+                $wrap.find('.dataTables_info').removeClass('float-end').addClass('float-start').css({ 'text-align': 'left' });
+                $wrap.find('.dataTables_filter').removeClass('float-start').addClass('float-end').css({ 'text-align': 'right' });
+                $wrap.find('.dataTables_paginate').removeClass('float-start').addClass('float-end').css({ 'text-align': 'right' });
+                $wrap.find('.dataTables_filter input').addClass('form-control form-control-sm').css('display', 'inline-block');
+            }
+
+            alignControls();
+            table.on('draw.dt', function () { alignControls(); });
+
+            // Delete confirmation
+            $('.delete-category-form').on('submit', function (e) {
+                if (!confirm('Delete this category?')) {
+                    e.preventDefault();
+                    return false;
+                }
+                return true;
+            });
+
+            // Toast notification function
+            function showToast(message, type = 'success') {
+                var toastHtml = `
+                    <div class="toast align-items-center text-white bg-${type} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                        <div class="d-flex">
+                            <div class="toast-body">
+                                ${message}
+                            </div>
+                            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                        </div>
+                    </div>
+                `;
+                var $container = $('#toastContainer');
+                var $toast = $(toastHtml);
+                $container.append($toast);
+
+                var bsToast = new bootstrap.Toast($toast[0]);
+                bsToast.show();
+
+                // Remove after hidden
+                $toast.on('hidden.bs.toast', function () {
+                    $toast.remove();
+                });
+            }
+
+            // Check for TempData messages and show toast
+            @if (TempData["Success"] != null)
+            {
+                    <text>showToast('@TempData["Success"]', 'success');</text>
+            }
+            @if (TempData["Error"] != null)
+            {
+                    <text>showToast('@TempData["Error"]', 'danger');</text>
+            }
+        })();
+    </script>
+}

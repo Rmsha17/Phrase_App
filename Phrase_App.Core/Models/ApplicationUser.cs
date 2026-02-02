@@ -14,6 +14,7 @@ namespace Phrase_App.Core.Models
         public string? SubscriptionType { get; set; } // "Mont
         // 🟢 CRITICAL: This links Google Play to your specific User
         public string? CurrentPurchaseToken { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public ICollection<RefreshToken> RefreshTokens { get; set; }
     }
 }

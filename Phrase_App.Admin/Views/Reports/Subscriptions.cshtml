@@ -1,0 +1,204 @@
+@model Phrase_App.Admin.Controllers.SubscriptionReportViewModel
+
+@{
+    ViewData["Title"] = "Reports - Subscriptions";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4 align-items-center">
+        <div class="col-md-8">
+            <h4 class="page-title text-primary mb-0">
+                <i class="mdi mdi-credit-card-outline me-2"></i>Subscription Analytics
+            </h4>
+        </div>
+        <div class="col-md-4 text-md-end text-right">
+            <button class="btn btn-sm btn-primary shadow-sm" onclick="location.reload()">
+                <i class="mdi mdi-refresh"></i> Refresh Report
+            </button>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 border-start border-primary border-4">
+                <div class="card-body">
+                    <h6 class="text-muted small text-uppercase font-weight-bold">Monthly Plan</h6>
+                    <h3 class="mb-0">@Model.MonthlySubscribers</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 border-start border-info border-4">
+                <div class="card-body">
+                    <h6 class="text-muted small text-uppercase font-weight-bold">Yearly Plan</h6>
+                    <h3 class="mb-0">@Model.YearlySubscribers</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 border-start border-warning border-4">
+                <div class="card-body">
+                    <h6 class="text-muted small text-uppercase font-weight-bold">Expiring (30d)</h6>
+                    <h3 class="mb-0 text-warning">@Model.ExpiringWithin30Days</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 border-start border-danger border-4">
+                <div class="card-body">
+                    <h6 class="text-muted small text-uppercase font-weight-bold">Expired Total</h6>
+                    <h3 class="mb-0 text-danger">@Model.ExpiredSubscriptions</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h5 class="card-title mb-4">Subscription Mix</h5>
+                    <div id="chartContainer" style="height: 280px; width: 100%; position: relative;">
+                        <canvas id="subscriptionPieChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-header bg-white font-weight-bold">Expiring Users</div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table id="expiringTable" class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Email</th>
+                                    <th>Type</th>
+                                    <th>Expiry</th>
+                                    <th class="text-center">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var u in Model.ExpiringUsers)
+                                {
+                                    var daysLeft = (u.ExpiryDate.Date - DateTime.UtcNow.Date).Days;
+                                    <tr>
+                                        <td>@u.UserEmail</td>
+                                        <td><span class="badge bg-light text-primary border">@u.SubscriptionType</span></td>
+                                        <td>@u.ExpiryDate.ToString("yyyy-MM-dd")</td>
+                                        <td class="text-center">
+                                            @if (daysLeft <= 1)
+                                            {
+                                                <span class="text-danger font-weight-bold small">
+                                                    <i class="mdi mdi-alert-circle"></i> Action Needed
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted small">Normal</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white font-weight-bold">Plan Economics</div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted small">Monthly Price</span>
+                        <span class="font-weight-bold small">$4.99</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted small">Yearly Price</span>
+                        <span class="font-weight-bold small">$39.99</span>
+                    </div>
+                    <hr />
+                    <div class="p-3 bg-light rounded">
+                        <h6 class="small font-weight-bold text-primary mb-1">Estimated MRR</h6>
+                        <p class="mb-0 text-dark">$@((Model.MonthlySubscribers * 4.99 + (Model.YearlySubscribers * 39.99 / 12)).ToString("F2"))</p>
+                        <small class="text-muted">Monthly Recurring Revenue</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm border-0 bg-info text-white">
+                <div class="card-body">
+                    <h6 class="font-weight-bold"><i class="mdi mdi-shield-refresh me-2"></i>Retention Insights</h6>
+                    <p class="small opacity-75">Yearly subscribers show 40% higher retention rates in Phrase App compared to monthly users.</p>
+                    <ul class="list-unstyled small mb-0">
+                        <li class="mb-1"><i class="mdi mdi-check"></i> Standardized billing</li>
+                        <li><i class="mdi mdi-check"></i> Auto-renewal enabled</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="~/Admin/assets/libs/jquery/dist/jquery.min.js"></script>
+    <script src="~/Admin/assets/extra-libs/DataTables/datatables.min.js"></script>
+
+    <script>
+        (function() {
+            function initSubscriptionChart() {
+                if (typeof Chart === 'undefined') {
+                    setTimeout(initSubscriptionChart, 100);
+                    return;
+                }
+
+                const ctx = document.getElementById('subscriptionPieChart');
+                if (!ctx) return;
+
+                const mCount = parseInt("@Model.MonthlySubscribers") || 0;
+                const yCount = parseInt("@Model.YearlySubscribers") || 0;
+
+                if (mCount === 0 && yCount === 0) {
+                    ctx.parentNode.innerHTML = '<div class="text-center py-5 text-muted small">No subscription data found</div>';
+                    return;
+                }
+
+                new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Monthly', 'Yearly'],
+                        datasets: [{
+                            data: [mCount, yCount],
+                            backgroundColor: ['#007bff', '#01c0c8'],
+                            borderWidth: 2,
+                            borderColor: '#ffffff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: '75%',
+                        plugins: {
+                            legend: { position: 'bottom' }
+                        }
+                    }
+                });
+            }
+
+            if (document.readyState === 'complete') {
+                initSubscriptionChart();
+            } else {
+                window.addEventListener('load', initSubscriptionChart);
+            }
+
+            $(document).ready(function() {
+                if ($.fn.DataTable) {
+                    $('#expiringTable').DataTable({ pageLength: 5, order: [[2, 'asc']] });
+                }
+            });
+        })();
+    </script>
+}

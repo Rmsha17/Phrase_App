@@ -1,0 +1,181 @@
+﻿@model IEnumerable<Phrase_App.Core.Models.Quote>
+
+@{
+    ViewData["Title"] = "Quotes";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <!-- Toast Container -->
+            <div id="toastContainer" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
+
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Quotes</h5>
+
+                    <div class="mb-3 d-flex gap-2">
+                        <a class="btn btn-primary" asp-area="Admin" asp-controller="Quotes" asp-action="Create">New Quote</a>
+                        <a class="btn btn-success" asp-area="Admin" asp-controller="Quotes" asp-action="BulkUpload">Bulk Upload</a>
+                    </div>
+
+                    <div class="mb-3">
+                        <form method="get" class="row g-2">
+                            <div class="col-md-6">
+                                <select name="categoryId" class="form-select" onchange="this.form.submit();">
+                                    <option value="">All Categories</option>
+                                    @foreach (var cat in (IEnumerable<Phrase_App.Core.Models.Category>)ViewBag.Categories ?? new List<Phrase_App.Core.Models.Category>())
+                                    {
+                                        <option value="@cat.Id" selected="@(cat.Id == (Guid?)ViewBag.SelectedCategoryId)">@cat.Name</option>
+                                    }
+                                </select>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table id="zero_config" class="table table-striped table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Quote</th>
+                                    <th>Author</th>
+                                    <th>Category</th>
+                                    <th>Created At</th>
+                                    <th class="text-center">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model != null)
+                                {
+                                    foreach (var quote in Model)
+                                    {
+                                        <tr>
+                                            <td><b>@quote.Content</b></td>
+                                            <td>@quote.Author</td>
+                                            <td>
+                                                @if (quote.Category != null)
+                                                {
+                                                    <span class="badge" style="background:@quote.Category.ColorHex; color:#fff;">@quote.Category.Name</span>
+                                                }
+                                            </td>
+                                            <td>@quote.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                                            <td class="text-center">
+                                                <a class="btn btn-sm btn-outline-primary me-1"
+                                                   asp-area="Admin"
+                                                   asp-controller="Quotes"
+                                                   asp-action="Edit"
+                                                   asp-route-id="@quote.Id">Edit</a>
+
+                                                <form asp-area="Admin"
+                                                      asp-controller="Quotes"
+                                                      asp-action="Delete"
+                                                      method="post"
+                                                      class="d-inline delete-quote-form">
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="id" value="@quote.Id" />
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th>Quote</th>
+                                    <th>Author</th>
+                                    <th>Category</th>
+                                    <th>Created At</th>
+                                    <th class="text-center">Actions</th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/Admin/assets/libs/jquery/dist/jquery.min.js"></script>
+    <script src="~/Admin/assets/libs/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/Admin/assets/libs/perfect-scrollbar/dist/perfect-scrollbar.jquery.min.js"></script>
+    <script src="~/Admin/assets/extra-libs/sparkline/sparkline.js"></script>
+    <script src="~/Admin/dist/js/waves.js"></script>
+    <script src="~/Admin/dist/js/sidebarmenu.js"></script>
+    <script src="~/Admin/dist/js/custom.min.js"></script>
+    <script src="~/Admin/assets/extra-libs/multicheck/datatable-checkbox-init.js"></script>
+    <script src="~/Admin/assets/extra-libs/multicheck/jquery.multicheck.js"></script>
+    <script src="~/Admin/assets/extra-libs/DataTables/datatables.min.js"></script>
+
+    <script>
+        (function () {
+            var table = $("#zero_config").DataTable({
+                responsive: true,
+                ordering: true,
+                pageLength: 10,
+                dom:
+                    '<"row mb-2"<"col-sm-6"l><"col-sm-6 text-end"f>>' +
+                    't' +
+                    '<"row mt-2"<"col-sm-6"i><"col-sm-6 text-end"p>>'
+            });
+
+            function alignControls() {
+                var $wrap = $('#zero_config').closest('.dataTables_wrapper');
+                $wrap.find('.dataTables_length').removeClass('float-end').addClass('float-start').css({ 'text-align': 'left' });
+                $wrap.find('.dataTables_info').removeClass('float-end').addClass('float-start').css({ 'text-align': 'left' });
+                $wrap.find('.dataTables_filter').removeClass('float-start').addClass('float-end').css({ 'text-align': 'right' });
+                $wrap.find('.dataTables_paginate').removeClass('float-start').addClass('float-end').css({ 'text-align': 'right' });
+                $wrap.find('.dataTables_filter input').addClass('form-control form-control-sm').css('display', 'inline-block');
+            }
+
+            alignControls();
+            table.on('draw.dt', function () { alignControls(); });
+
+            // Delete confirmation
+            $('.delete-quote-form').on('submit', function (e) {
+                if (!confirm('Delete this quote?')) {
+                    e.preventDefault();
+                    return false;
+                }
+                return true;
+            });
+
+            // Toast notification function
+            function showToast(message, type = 'success') {
+                var toastHtml = `
+                    <div class="toast align-items-center text-white bg-${type} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                        <div class="d-flex">
+                            <div class="toast-body">
+                                ${message}
+                            </div>
+                            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                        </div>
+                    </div>
+                `;
+                var $container = $('#toastContainer');
+                var $toast = $(toastHtml);
+                $container.append($toast);
+
+                var bsToast = new bootstrap.Toast($toast[0]);
+                bsToast.show();
+
+                $toast.on('hidden.bs.toast', function () {
+                    $toast.remove();
+                });
+            }
+
+            // Check for TempData messages and show toast
+            @if (TempData["Success"] != null)
+            {
+                        <text>showToast('@TempData["Success"]', 'success');</text>
+            }
+            @if (TempData["Error"] != null)
+            {
+                        <text>showToast('@TempData["Error"]', 'danger');</text>
+            }
+        })();
+    </script>
+}
