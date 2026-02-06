@@ -1,0 +1,267 @@
+﻿@model Phrase_App.Core.DTOs.Auth.LoginDto
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>BelieveIn | Admin Login</title>
+    <link href="~/dist/css/style.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@@mdi/font@7.2.96/css/materialdesignicons.min.css">
+
+    <style>
+        :root {
+            --primary-orange: #f97316;
+            --primary-orange-dark: #ea580c;
+            --bg-dark: #0f172a;
+            --bg-accent: #1e293b;
+            --text-muted: #94a3b8;
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.08);
+        }
+
+        body {
+            background: radial-gradient(circle at top right, #1e293b, #0f172a);
+            height: 100vh;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+            overflow: hidden;
+        }
+
+            /* Animated Background Elements for visual interest */
+            body::before {
+                content: "";
+                position: absolute;
+                width: 300px;
+                height: 300px;
+                background: var(--primary-orange);
+                filter: blur(150px);
+                opacity: 0.1;
+                top: 10%;
+                left: 10%;
+                z-index: -1;
+            }
+
+        .login-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 28px;
+            padding: 50px 40px;
+            width: 100%;
+            max-width: 420px;
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        @@keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .login-logo {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+            .login-logo img {
+                filter: drop-shadow(0 0 10px rgba(249, 115, 22, 0.2));
+                margin-bottom: 15px;
+            }
+
+            .login-logo h2 {
+                color: #fff;
+                font-size: 1.75rem;
+                font-weight: 800;
+                letter-spacing: -0.025em;
+                margin: 0;
+            }
+
+            .login-logo p {
+                color: var(--text-muted);
+                font-size: 0.9rem;
+                margin-top: 8px;
+            }
+
+        .form-group {
+            position: relative;
+            margin-bottom: 24px;
+        }
+
+        .form-label {
+            display: block;
+            color: #e2e8f0;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            margin-left: 4px;
+        }
+
+        .input-group-custom {
+            position: relative;
+            display: flex;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 14px;
+            border: 1px solid var(--glass-border);
+            transition: all 0.3s ease;
+        }
+
+            .input-group-custom:focus-within {
+                border-color: var(--primary-orange);
+                box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.15);
+                background: rgba(0, 0, 0, 0.3);
+            }
+
+        .input-icon {
+            padding-left: 15px;
+            color: var(--text-muted);
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .form-control {
+            background: transparent;
+            border: none;
+            color: #fff;
+            padding: 14px 15px;
+            width: 100%;
+            outline: none;
+            font-size: 0.95rem;
+        }
+
+            .form-control::placeholder {
+                color: #475569;
+            }
+
+        .btn-login {
+            background: linear-gradient(135deg, var(--primary-orange) 0%, var(--primary-orange-dark) 100%);
+            border: none;
+            border-radius: 14px;
+            padding: 14px;
+            color: #fff;
+            font-weight: 700;
+            font-size: 1rem;
+            width: 100%;
+            margin-top: 10px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+            .btn-login:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 20px 25px -5px rgba(249, 115, 22, 0.4);
+                filter: brightness(1.1);
+            }
+
+            .btn-login:active {
+                transform: translateY(0);
+            }
+
+        .alert-danger {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            margin-bottom: 20px;
+            padding: 12px;
+        }
+
+            /* Custom validation summary styling */
+            .alert-danger ul {
+                margin: 0;
+                padding: 0;
+                list-style: none;
+            }
+
+        .footer-text {
+            text-align: center;
+            margin-top: 25px;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="login-card">
+        <div class="login-logo">
+            <img src="~/admin/assets/images/1400.png" alt="logo" width="60" />
+            <h2>Welcome Back</h2>
+            <p>Please enter your admin credentials</p>
+        </div>
+
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div class="alert alert-danger text-center">
+                <div asp-validation-summary="All"></div>
+            </div>
+        }
+
+        <form asp-controller="Account" asp-action="Login" method="post" id="loginForm">
+            @Html.AntiForgeryToken()
+
+            <div class="form-group">
+                <label class="form-label">Email Address</label>
+                <div class="input-group-custom">
+                    <div class="input-icon">
+                        <i class="mdi mdi-email-outline"></i>
+                    </div>
+                    <input asp-for="Email" type="email" class="form-control" placeholder="name@company.com" required />
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Password</label>
+                <div class="input-group-custom">
+                    <div class="input-icon">
+                        <i class="mdi mdi-lock-outline"></i>
+                    </div>
+                    <input asp-for="Password" type="password" class="form-control" placeholder="••••••••" required />
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-login" id="submitBtn">
+                <span>Sign In to Dashboard</span>
+            </button>
+        </form>
+
+        <div class="footer-text">
+            &copy; @DateTime.Now.Year BelieveIn App. All rights reserved.
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const loginForm = document.getElementById('loginForm');
+            const loginBtn = document.getElementById('submitBtn');
+
+            loginForm.addEventListener('submit', function (e) {
+                // checkValidity() is a built-in browser check for 'required' fields
+                if (loginForm.checkValidity()) {
+                    loginBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Signing In...';
+                    loginBtn.style.opacity = "0.7";
+                    loginBtn.style.pointerEvents = "none";
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Phrase_App.Admin.Models;
@@ -5,6 +6,7 @@ using System.Diagnostics;
 
 namespace Phrase_App.Admin.Controllers
 {
+    [Authorize(Roles = "Admin")]
     public class HomeController : Controller
     {
         private readonly PhraseDbContext _context;

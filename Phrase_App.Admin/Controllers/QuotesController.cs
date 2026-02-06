@@ -8,8 +8,7 @@ using System.Text;
 
 namespace Phrase_App.Admin.Controllers
 {
-   // [Area("Admin")]
-   // [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin")]
     public class QuotesController : Controller
     {
         private readonly PhraseDbContext _context;

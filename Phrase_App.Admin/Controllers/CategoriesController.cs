@@ -3,12 +3,10 @@ using Microsoft.AspNetCore.Mvc;
 using Phrase_App.Core.Constants;
 using Phrase_App.Core.DTOs.Request;
 using Phrase_App.Core.Interfaces;
-using Phrase_App.Infrastructure.Persistence;
 
 namespace Phrase_App.Admin.Controllers
 {
-    //[Area("Admin")]
-    //[Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin")]
     public class CategoriesController : Controller
     {
         private readonly ICategoryService _categoryService;

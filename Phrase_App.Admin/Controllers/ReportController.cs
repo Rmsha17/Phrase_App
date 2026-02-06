@@ -8,8 +8,7 @@ using System.Collections.Generic;
 
 namespace Phrase_App.Admin.Controllers
 {
-    // [Area("Admin")]
-    //[Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin")]
     public class ReportsController : Controller
     {
         private readonly PhraseDbContext _context;

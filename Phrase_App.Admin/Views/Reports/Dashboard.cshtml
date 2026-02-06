@@ -4,6 +4,47 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
+<style>
+    /* Fixes the CS0103 error and optimizes PDF layout */
+    @@media print {
+        .btn, .sidebar, .navbar, .report-note-alert {
+            display: none !important;
+        }
+
+        .container-fluid {
+            padding: 0 !important;
+        }
+
+        .col-lg-9, .col-lg-3 {
+            width: 100% !important;
+            flex: 0 0 100% !important;
+            max-width: 100% !important;
+        }
+
+        .card {
+            border: 1px solid #dee2e6 !important;
+            break-inside: avoid;
+            margin-bottom: 20px !important;
+        }
+
+        #usersChart {
+            height: 400px !important;
+        }
+    }
+
+    .border-left-primary {
+        border-left: .25rem solid #4e73df !important;
+    }
+
+    .border-left-success {
+        border-left: .25rem solid #1cc88a !important;
+    }
+
+    .border-left-warning {
+        border-left: .25rem solid #f6c23e !important;
+    }
+</style>
+
 <div class="container-fluid">
     <div class="row mb-4">
         <div class="col-12 d-flex justify-content-between align-items-center">
@@ -18,14 +59,13 @@
     </div>
 
     <div class="row">
-        <div class="row mt-4 mb-5">
-            <div class="col-12">
-                <div class="alert alert-light border shadow-sm small text-muted">
-                    <strong>Report Note:</strong> This report is a cached snapshot generated at @Model.GeneratedAt.ToString("HH:mm:ss").
-                    Data synchronization occurs every 15 minutes. High-volume periods may show slight discrepancies in "Active User" counts.
-                </div>
+        <div class="col-12 report-note-alert">
+            <div class="alert alert-light border shadow-sm small text-muted mb-4">
+                <strong>Report Note:</strong> This report is a cached snapshot generated at @Model.GeneratedAt.ToString("HH:mm:ss").
+                Data synchronization occurs every 15 minutes.
             </div>
         </div>
+
         <div class="col-lg-9">
             <div class="row">
                 <div class="col-md-4">
@@ -85,11 +125,11 @@
                 <div class="card-body">
                     <div class="d-flex justify-content-between mb-2">
                         <span class="small">Database</span>
-                        <span class="badge bg-success text-white">Online</span>
+                        <span class="badge bg-success text-white px-2">Online</span>
                     </div>
                     <div class="d-flex justify-content-between mb-2">
                         <span class="small">Storage (S3)</span>
-                        <span class="badge bg-success text-white">94% Free</span>
+                        <span class="badge bg-success text-white px-2">94% Free</span>
                     </div>
                     <div class="d-flex justify-content-between">
                         <span class="small">API Latency</span>
@@ -98,11 +138,11 @@
                 </div>
             </div>
 
-            <div class="card bg-info text-white shadow-sm">
+            <div class="card bg-info text-white shadow-sm border-0">
                 <div class="card-body">
                     <h6>Need Help?</h6>
                     <p class="small">For technical issues with the reporting engine, contact:</p>
-                    <a href="mailto:admin-support@believeinapp.com" class="text-white font-weight-bold small">support@phraseapp.com</a>
+                    <a href="mailto:support@phraseapp.com" class="text-white font-weight-bold small">support@phraseapp.com</a>
                 </div>
             </div>
         </div>
@@ -121,12 +161,13 @@
                     datasets: [{
                         data: [@Model.PremiumUsers, @Model.FreeUsers],
                         backgroundColor: ['#28a745', '#e9ecef'],
-                        hoverOffset: 4
+                        borderWidth: 1
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    animation: { duration: 0 }, // Set to 0 for instant PDF capture
                     plugins: { legend: { position: 'bottom' } }
                 }
             });

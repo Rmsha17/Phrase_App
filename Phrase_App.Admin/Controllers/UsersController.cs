@@ -6,8 +6,7 @@ using Phrase_App.Core.Models;
 
 namespace Phrase_App.Admin.Controllers
 {
-    //[Area("Admin")]
-    //[Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin")]
     public class UsersController : Controller
     {
         private readonly UserManager<ApplicationUser> _userManager;
