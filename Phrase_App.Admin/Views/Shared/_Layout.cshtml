@@ -31,40 +31,28 @@
     <link href="~/Admin/dist/css/style.min.css" rel="stylesheet" />
 
     <style>
-        /* Sidebar Layout (No Scroll) */
+        /* Sidebar Layout */
         .left-sidebar {
             display: flex !important;
             flex-direction: column !important;
             height: 100vh !important;
             position: fixed;
             overflow: visible !important;
+            z-index: 10;
         }
 
         .scroll-sidebar {
             flex: 1 1 auto !important;
-            overflow-y: visible !important;
+            overflow-y: auto !important;
             overflow-x: hidden;
-            height: auto !important;
         }
 
-        /* Sidebar visual override */
-        .sidebar-item.report-like > a.sidebar-link,
-        .sidebar-item.report-like > a.sidebar-link .hide-menu {
-            color: rgba(255,255,255,0.75);
-        }
-
-        .sidebar-item.report-like.active > a.sidebar-link,
-        .sidebar-item.report-like > a.sidebar-link.active {
-            background: rgba(255,255,255,0.06) !important;
-            color: #fff !important;
-        }
-
-        /* Sidebar Logout Button at Bottom */
+        /* FIX: Sign Out Text Issue */
         .sidebar-footer {
             padding: 15px;
             background: #1c2228;
             border-top: 1px solid rgba(255,255,255,0.05);
-            margin-top: auto; /* Pushes it to the bottom */
+            margin-top: auto;
         }
 
         .logout-box {
@@ -76,6 +64,20 @@
             text-decoration: none;
             transition: 0.3s;
             background: rgba(255,255,255,0.03);
+            white-space: nowrap; 
+        }
+
+        [data-sidebartype="mini-sidebar"] .hide-menu {
+            display: none !important;
+        }
+
+        [data-sidebartype="mini-sidebar"] .logout-box {
+            justify-content: center;
+            padding: 10px 0;
+        }
+
+        [data-sidebartype="mini-sidebar"] .logout-box i {
+            margin-right: 0;
         }
 
         .logout-box:hover {
@@ -130,52 +132,75 @@
             <div class="scroll-sidebar">
                 <nav class="sidebar-nav">
                     <ul id="sidebarnav" class="pt-4">
-                        <li class="sidebar-item @(ControllerIs("Home") ? "active" : "")">
+                        <li class="sidebar-item @(ControllerIs("Home") ? "selected" : "")">
                             <a class="sidebar-link waves-effect waves-dark" asp-controller="Home" asp-action="Index">
                                 <i class="mdi mdi-view-dashboard"></i><span class="hide-menu">Dashboard</span>
                             </a>
                         </li>
 
-                        <li class="sidebar-item report-like @(ControllerIs("Categories") ? "active" : "")">
+                        <li class="sidebar-item report-like @(ControllerIs("Categories") ? "selected" : "")">
                             <a class="sidebar-link waves-effect waves-dark" asp-controller="Categories" asp-action="Index">
                                 <i class="mdi mdi-receipt"></i><span class="hide-menu">Categories</span>
                             </a>
                         </li>
 
-                        <li class="sidebar-item report-like @(ControllerIs("Quotes") ? "active" : "")">
+                        <li class="sidebar-item report-like @(ControllerIs("Quotes") ? "selected" : "")">
                             <a class="sidebar-link waves-effect waves-dark" asp-controller="Quotes" asp-action="Index">
                                 <i class="mdi mdi-chart-bubble"></i><span class="hide-menu">Affirmations</span>
                             </a>
                         </li>
 
-                        <li class="sidebar-item report-like @(ControllerIs("Users") ? "active" : "")">
+                        <li class="sidebar-item report-like @(ControllerIs("Users") ? "selected" : "")">
                             <a class="sidebar-link waves-effect waves-dark" asp-controller="Users" asp-action="Index">
                                 <i class="mdi mdi-border-inside"></i><span class="hide-menu">Users</span>
                             </a>
                         </li>
 
-                        <li class="sidebar-item @(ControllerIs("Reports") ? "active" : "")">
-                            <a class="sidebar-link has-arrow waves-effect waves-dark" href="javascript:void(0)">
-                                <i class="mdi mdi-receipt"></i><span class="hide-menu">Reports </span>
+                        <li class="sidebar-item @(ControllerIs("Reports") ? "selected" : "")">
+                            <a class="sidebar-link has-arrow waves-effect waves-dark"
+                               href="javascript:void(0)"
+                               aria-expanded="@(ControllerIs("Reports") ? "true" : "false")">
+                                <i class="mdi mdi-receipt"></i>
+                                <span class="hide-menu">Reports</span>
                             </a>
-                            <ul aria-expanded="false" class="collapse first-level @(ControllerIs("Reports") ? "in" : "")">
+                            <ul aria-expanded="@(ControllerIs("Reports") ? "true" : "false")"
+                                class="collapse first-level @(ControllerIs("Reports") ? "in" : "")">
+
                                 <li class="sidebar-item @(ActiveForControllerAction("Reports", "Dashboard"))">
-                                    <a href="/Reports/Dashboard" class="sidebar-link"><i class="mdi mdi-note-outline"></i> Users</a>
+                                    <a href="/Reports/Dashboard" class="sidebar-link">
+                                        <i class="mdi mdi-note-outline"></i>
+                                        <span class="hide-menu">Users</span>
+                                    </a>
                                 </li>
                                 <li class="sidebar-item @(ActiveForControllerAction("Reports", "ErrorLogs"))">
-                                    <a href="/Reports/ErrorLogs" class="sidebar-link"><i class="mdi mdi-note-plus"></i> Error Logs</a>
+                                    <a href="/Reports/ErrorLogs" class="sidebar-link">
+                                        <i class="mdi mdi-note-plus"></i>
+                                        <span class="hide-menu">Error Logs</span>
+                                    </a>
                                 </li>
                                 <li class="sidebar-item @(ActiveForControllerAction("Reports", "UserEngagement"))">
-                                    <a href="/Reports/UserEngagement" class="sidebar-link"><i class="mdi mdi-note-plus"></i> User Engagement</a>
+                                    <a href="/Reports/UserEngagement" class="sidebar-link">
+                                        <i class="mdi mdi-note-plus"></i>
+                                        <span class="hide-menu">User Engagement</span>
+                                    </a>
                                 </li>
                                 <li class="sidebar-item @(ActiveForControllerAction("Reports", "ContentAnalytics"))">
-                                    <a href="/Reports/ContentAnalytics" class="sidebar-link"><i class="mdi mdi-note-plus"></i> Content Analytics</a>
+                                    <a href="/Reports/ContentAnalytics" class="sidebar-link">
+                                        <i class="mdi mdi-note-plus"></i>
+                                        <span class="hide-menu">Content Analytics</span>
+                                    </a>
                                 </li>
                                 <li class="sidebar-item @(ActiveForControllerAction("Reports", "Subscriptions"))">
-                                    <a href="/Reports/Subscriptions" class="sidebar-link"><i class="mdi mdi-note-plus"></i> Subscription</a>
+                                    <a href="/Reports/Subscriptions" class="sidebar-link">
+                                        <i class="mdi mdi-note-plus"></i>
+                                        <span class="hide-menu">Subscription</span>
+                                    </a>
                                 </li>
                                 <li class="sidebar-item @(ActiveForControllerAction("Reports", "ScheduleReport"))">
-                                    <a href="/Reports/ScheduleReport" class="sidebar-link"><i class="mdi mdi-note-plus"></i> Schedule Report</a>
+                                    <a href="/Reports/ScheduleReport" class="sidebar-link">
+                                        <i class="mdi mdi-note-plus"></i>
+                                        <span class="hide-menu">Schedule Report</span>
+                                    </a>
                                 </li>
                             </ul>
                         </li>
@@ -184,7 +209,7 @@
             </div>
 
             <div class="sidebar-footer">
-                <form id="logoutForm" asp-area="Admin" asp-controller="Account" asp-action="Logout" method="post" style="display:none;">
+                <form id="logoutForm" asp-controller="Account" asp-action="Logout" method="post" style="display:none;">
                     @Html.AntiForgeryToken()
                 </form>
                 <a href="javascript:void(0)" onclick="confirmLogout();" class="logout-box">
@@ -204,12 +229,12 @@
 
     <script src="~/Admin/assets/libs/jquery/dist/jquery.min.js"></script>
     <script src="~/Admin/assets/libs/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/Admin/js/sidebarmenu.js"></script>
     <script src="~/Admin/assets/libs/perfect-scrollbar/dist/perfect-scrollbar.jquery.min.js"></script>
     <script src="~/Admin/assets/extra-libs/sparkline/sparkline.js"></script>
     <script src="~/Admin/dist/js/waves.js"></script>
-    <script src="~/Admin/js/sidebarmenu.js"></script>
     <script src="~/Admin/dist/js/custom.min.js"></script>
-    
+
     <script src="~/Admin/assets/libs/flot/excanvas.js"></script>
     <script src="~/Admin/assets/libs/flot/jquery.flot.js"></script>
     <script src="~/Admin/assets/libs/flot/jquery.flot.pie.js"></script>
@@ -238,7 +263,23 @@
                 }
             });
         }
+                $(document).ready(function() {
+            // Force active state for the parent
+            $('.collapse.in').parents('li').addClass('active');
 
+            // Manual click handler if the template script fails
+            $('.has-arrow').on('click', function (e) {
+                e.preventDefault();
+                var $el = $(this).parent().find('ul').first();
+                if ($el.hasClass('in')) {
+                    $el.removeClass('in').attr('aria-expanded', 'false');
+                    $(this).attr('aria-expanded', 'false');
+                } else {
+                    $el.addClass('in').attr('aria-expanded', 'true');
+                    $(this).attr('aria-expanded', 'true');
+                }
+            });
+        });
         // Fix for dropdown behavior across pages
         $(document).ready(function() {
             // If the sub-menu should be open based on controller, ensure the parent has 'active' class

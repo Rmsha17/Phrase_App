@@ -1,4 +1,6 @@
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Phrase_App.Admin.Models;
@@ -19,6 +21,16 @@ namespace Phrase_App.Admin.Controllers
         }
         public async Task<IActionResult> Index()
         {
+            if (User.Identity?.IsAuthenticated == false)
+            {
+                // Authenticated but not admin — sign out to avoid redirect loop
+                await HttpContext.SignOutAsync(IdentityConstants.ApplicationScheme);
+                Response.Cookies.Delete("admin_auth_token");
+                Response.Cookies.Delete("admin_refresh_token");
+
+                return RedirectToAction("Login", "Account");
+            }
+
             // Block 1: Total Users
             ViewBag.TotalUsers = await _context.Users.CountAsync();
 
@@ -48,7 +60,8 @@ namespace Phrase_App.Admin.Controllers
 
             // Top Categories with color assignments
             ViewBag.TopCategories = await _context.Categories
-                .Select(c => new {
+                .Select(c => new
+                {
                     c.Name,
                     Count = _context.Quotes.Count(q => c.Id == q.CategoryId),
                     // Calculate percentage for progress bars
@@ -72,7 +85,8 @@ namespace Phrase_App.Admin.Controllers
             // 3. Category Density (with progress bar math)
             var totalQuotes = await _context.Quotes.CountAsync();
             ViewBag.TopCategories = await _context.Categories
-                .Select(c => new {
+                .Select(c => new
+                {
                     c.Name,
                     Count = _context.Quotes.Count(q => c.Id == q.CategoryId),
                     Percent = totalQuotes > 0 ? (_context.Quotes.Count(q => c.Id == q.CategoryId) * 100) / totalQuotes : 0

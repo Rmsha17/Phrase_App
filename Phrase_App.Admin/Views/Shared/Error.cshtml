@@ -1,25 +1,156 @@
-﻿@model ErrorViewModel
-@{
-    ViewData["Title"] = "Error";
+﻿@{
+    Layout = null;
+    var errorCode = ViewData["ErrorCode"]?.ToString() ?? "404";
+    var errorMessage = ViewData["ErrorMessage"]?.ToString() ?? "Oops! The page you're looking for has drifted away.";
+    var requestId = ViewData["RequestId"]?.ToString();
+    var showRequestId = (ViewData["ShowRequestId"] as bool?) ?? false;
 }
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>BelieveIn | Error @errorCode</title>
+    <link href="~/Admin/dist/css/style.min.css" rel="stylesheet" />
+    <style>
+        body {
+            margin: 0;
+            background-color: #1a0f00;
+            /* Sunset Mesh Background */
+            background-image: radial-gradient(at 0% 0%, rgba(234, 88, 12, 0.2) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(124, 58, 237, 0.15) 0px, transparent 50%), linear-gradient(180deg, #1a0f00 0%, #2d1a00 100%);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+        }
 
-<h1 class="text-danger">Error.</h1>
-<h2 class="text-danger">An error occurred while processing your request.</h2>
+        /* Floating Light Orbs */
+        .orb {
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            background: rgba(234, 88, 12, 0.15);
+            filter: blur(100px);
+            border-radius: 50%;
+            z-index: 0;
+            animation: float 15s infinite alternate;
+        }
 
-@if (Model.ShowRequestId)
-{
-    <p>
-        <strong>Request ID:</strong> <code>@Model.RequestId</code>
-    </p>
-}
+        @@keyframes float {
+            from {
+                transform: translate(0, 0);
+            }
 
-<h3>Development Mode</h3>
-<p>
-    Swapping to <strong>Development</strong> environment will display more detailed information about the error that occurred.
-</p>
-<p>
-    <strong>The Development environment shouldn't be enabled for deployed applications.</strong>
-    It can result in displaying sensitive information from exceptions to end users.
-    For local debugging, enable the <strong>Development</strong> environment by setting the <strong>ASPNETCORE_ENVIRONMENT</strong> environment variable to <strong>Development</strong>
-    and restarting the app.
-</p>
+            to {
+                transform: translate(100px, -50px);
+            }
+        }
+
+        .error-container {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(15px);
+            padding: 50px;
+            border-radius: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            max-width: 600px;
+            width: 90%;
+        }
+
+        .error-code {
+            font-size: 120px;
+            font-weight: 900;
+            margin: 0;
+            background: linear-gradient(to bottom, #fb923c, #ea580c);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            line-height: 1;
+        }
+
+        .error-subtitle {
+            font-size: 24px;
+            color: #fdba74;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .error-msg {
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+
+        .btn-sunset {
+            background: #ea580c;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: 0.3s;
+            display: inline-block;
+            border: none;
+            box-shadow: 0 10px 15px -3px rgba(234, 88, 12, 0.3);
+        }
+
+            .btn-sunset:hover {
+                background: #f97316;
+                transform: translateY(-2px);
+                box-shadow: 0 20px 25px -5px rgba(234, 88, 12, 0.4);
+            }
+
+        .debug-info {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.4);
+            text-align: left;
+        }
+
+        code {
+            color: #fdba74;
+        }
+    </style>
+</head>
+<body>
+    <div class="orb"></div>
+    <div class="error-container">
+        <h1 class="error-code">@errorCode</h1>
+        <div class="error-subtitle">Something Went Wrong</div>
+        <p class="error-msg">@errorMessage</p>
+
+        <div style="display: flex; gap: 15px; justify-content: center;">
+            <a href="/" class="btn-sunset">Return Home</a>
+            <a href="javascript:history.back()" class="btn-sunset" style="background: rgba(255,255,255,0.1); box-shadow: none;">Go Back</a>
+        </div>
+
+        @if (showRequestId && !string.IsNullOrEmpty(requestId))
+        {
+            <div class="debug-info">
+                <strong>Request ID:</strong> <code>@requestId</code><br />
+                <small>Please quote this ID if you report this issue to the administrator.</small>
+            </div>
+        }
+    </div>
+
+    <script src="~/Admin/assets/libs/jquery/dist/jquery.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Slight parallax effect for the orb
+            $(document).mousemove(function(e) {
+                let x = (e.pageX / 50);
+                let y = (e.pageY / 50);
+                $('.orb').css('transform', 'translate(' + x + 'px, ' + y + 'px)');
+            });
+        });
+    </script>
+</body>
+</html>

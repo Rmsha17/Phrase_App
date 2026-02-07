@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Phrase_App.Admin.Middleware;
 using Phrase_App.Core.Models;
 using Phrase_App.Infrastructure;
 
@@ -103,7 +104,7 @@ namespace Phrase_App.Admin
 
             // Seed default admin account (if not exists)
             SeedAdminAccount(app);
-
+            app.UseMiddleware<ErrorHandlingMiddleware>();
             // Configure the HTTP request pipeline.
             if (!app.Environment.IsDevelopment())
             {
@@ -135,7 +136,8 @@ namespace Phrase_App.Admin
                     "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; " + // Added 'unsafe-inline'
                     "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; " +
                     "img-src 'self' data:; " +
-                    "font-src 'self' https://cdn.jsdelivr.net;";
+                    "font-src 'self' https://cdn.jsdelivr.net;" +
+                    "connect-src 'self' ws://localhost:* http://localhost:*;"; ;
                 await next();
             });
 

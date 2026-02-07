@@ -138,7 +138,31 @@ public class AuthService : IAuthService
             throw new UnauthorizedAccessException("This account has been deactivated.");
 
         var roles = await _userManager.GetRolesAsync(user);
+
+        await SaveDefaultOverLaySetting(Guid.Parse(user.Id));
         return await _jwtService.GenerateTokens(user, roles);
+    }
+
+    private async Task SaveDefaultOverLaySetting(Guid userId)
+    {
+        //Overlay Style to Defaults
+        var userSetting = new OverlaySetting
+        {
+            FontSize = 14.0,
+            FontColor = "FFFFFFFF", // White
+            FontFamily = "Default",
+            Opacity = 1.0,
+            BackgroundType = "Glass", // Force back to free Glass texture
+            BackgroundValue = null,
+            AnimationType = "Fade",
+            Position = "Center",
+            DisplayMode = "Compact Box", // Force back to Compact Box
+            VibrationEnabled = true,
+            SoundEffect = "Default",
+            IntervalMinutes = 1
+        };
+        _context.OverlaySettings.Add(userSetting);
+        await _context.SaveChangesAsync();
     }
 
     // ===============================
@@ -157,6 +181,7 @@ public class AuthService : IAuthService
 
         var result = await _userManager.ConfirmEmailAsync(user, token);
         if (!result.Succeeded) throw new ApplicationException(StaticDetails.MsgEmailConfirmationFailed);
+        await SaveDefaultOverLaySetting(Guid.Parse(user.Id));
     }
 
     // ===============================

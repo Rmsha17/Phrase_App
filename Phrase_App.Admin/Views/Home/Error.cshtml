@@ -1,122 +1,156 @@
 ﻿@{
-    // Dynamic values provided by ErrorHandlingMiddleware
-    var errorCode = ViewData["ErrorCode"]?.ToString() ?? (Context.Response?.StatusCode.ToString() ?? "Error");
-    var errorMessage = ViewData["ErrorMessage"]?.ToString() ?? "PAGE NOT FOUND !";
+    Layout = null;
+    var errorCode = ViewData["ErrorCode"]?.ToString() ?? "404";
+    var errorMessage = ViewData["ErrorMessage"]?.ToString() ?? "Oops! The page you're looking for has drifted away.";
     var requestId = ViewData["RequestId"]?.ToString();
     var showRequestId = (ViewData["ShowRequestId"] as bool?) ?? false;
 }
 <!DOCTYPE html>
-<html dir="ltr">
-
+<html lang="en">
 <head>
     <meta charset="utf-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <!-- Tell the browser to be responsive to screen width -->
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="keywords"
-          content="wrappixel, admin dashboard, html css dashboard, web dashboard, bootstrap 5 admin, bootstrap 5, css3 dashboard, bootstrap 5 dashboard, Matrix lite admin bootstrap 5 dashboard, frontend, responsive bootstrap 5 admin template, Matrix admin lite design, Matrix admin lite dashboard bootstrap 5 dashboard template" />
-    <meta name="description"
-          content="BelieveIn Admin Lite Free Version is powerful and clean admin dashboard" />
-    <meta name="robots" content="noindex,nofollow" />
-    <title>BelieveIn - Error @errorCode</title>
-    <!-- Favicon icon -->
-    <link rel="icon"
-          type="image/png"
-          sizes="16x16"
-          href="~/Admin/assets/images/favicon.png" />
-    <!-- Custom CSS -->
+    <title>BelieveIn | Error @errorCode</title>
     <link href="~/Admin/dist/css/style.min.css" rel="stylesheet" />
-    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
-    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
-    <!--[if lt IE 9]>
-      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
-      <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
-    <![endif]-->
+    <style>
+        body {
+            margin: 0;
+            background-color: #1a0f00;
+            /* Sunset Mesh Background */
+            background-image: radial-gradient(at 0% 0%, rgba(234, 88, 12, 0.2) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(124, 58, 237, 0.15) 0px, transparent 50%), linear-gradient(180deg, #1a0f00 0%, #2d1a00 100%);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+        }
+
+        /* Floating Light Orbs */
+        .orb {
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            background: rgba(234, 88, 12, 0.15);
+            filter: blur(100px);
+            border-radius: 50%;
+            z-index: 0;
+            animation: float 15s infinite alternate;
+        }
+
+        @@keyframes float {
+            from {
+                transform: translate(0, 0);
+            }
+
+            to {
+                transform: translate(100px, -50px);
+            }
+        }
+
+        .error-container {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(15px);
+            padding: 50px;
+            border-radius: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            max-width: 600px;
+            width: 90%;
+        }
+
+        .error-code {
+            font-size: 120px;
+            font-weight: 900;
+            margin: 0;
+            background: linear-gradient(to bottom, #fb923c, #ea580c);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            line-height: 1;
+        }
+
+        .error-subtitle {
+            font-size: 24px;
+            color: #fdba74;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .error-msg {
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+
+        .btn-sunset {
+            background: #ea580c;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: 0.3s;
+            display: inline-block;
+            border: none;
+            box-shadow: 0 10px 15px -3px rgba(234, 88, 12, 0.3);
+        }
+
+            .btn-sunset:hover {
+                background: #f97316;
+                transform: translateY(-2px);
+                box-shadow: 0 20px 25px -5px rgba(234, 88, 12, 0.4);
+            }
+
+        .debug-info {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.4);
+            text-align: left;
+        }
+
+        code {
+            color: #fdba74;
+        }
+    </style>
 </head>
-
 <body>
-    <div class="main-wrapper">
-        <!-- ============================================================== -->
-        <!-- Preloader - style you can find in spinners.css -->
-        <!-- ============================================================== -->
-        <div class="preloader">
-            <div class="lds-ripple">
-                <div class="lds-pos"></div>
-                <div class="lds-pos"></div>
-            </div>
+    <div class="orb"></div>
+    <div class="error-container">
+        <h1 class="error-code">@errorCode</h1>
+        <div class="error-subtitle">Something Went Wrong</div>
+        <p class="error-msg">@errorMessage</p>
+
+        <div style="display: flex; gap: 15px; justify-content: center;">
+            <a href="/" class="btn-sunset">Return Home</a>
+            <a href="javascript:history.back()" class="btn-sunset" style="background: rgba(255,255,255,0.1); box-shadow: none;">Go Back</a>
         </div>
-        <!-- ============================================================== -->
-        <!-- Preloader - style you can find in spinners.css -->
-        <!-- ============================================================== -->
-        <!-- ============================================================== -->
-        <!-- Login box.scss -->
-        <!-- ============================================================== -->
-        <div class="error-box">
-            <div class="error-body text-center">
-                <h1 class="error-title text-danger">@errorCode</h1>
-                <h3 class="text-uppercase error-subtitle">@Html.Raw(System.Net.WebUtility.HtmlEncode(errorMessage))</h3>
-                <p class="text-muted mt-4 mb-4">
-                    You seem to be trying to find your way home.
-                </p>
 
-                <div class="mb-3">
-                    <a href="~/" class="btn btn-danger btn-rounded waves-effect waves-light mb-2 text-white">Back to
-                       home</a>
-                    <a href="javascript:history.back()"
-                       class="btn btn-secondary btn-rounded waves-effect waves-light mb-2 ms-2">Go Back</a>
-                </div>
-
-                @if (showRequestId || !string.IsNullOrEmpty(requestId) || !string.IsNullOrEmpty(errorMessage))
-                {
-                    <div class="card mt-3 mx-auto" style="max-width:760px;">
-                        <div class="card-body text-start">
-                            <h6 class="card-title">Error details</h6>
-                            <dl class="row mb-0">
-                                <dt class="col-sm-3">Code</dt>
-                                <dd class="col-sm-9">@errorCode</dd>
-
-                                <dt class="col-sm-3">Message</dt>
-                                <dd class="col-sm-9"
-                                    title="@errorMessage">@Html.Raw(System.Net.WebUtility.HtmlEncode(errorMessage).Length > 200 ? System.Net.WebUtility.HtmlEncode(errorMessage).Substring(0, 200) + "…" : System.Net.WebUtility.HtmlEncode(errorMessage))</dd>
-
-                                @if (showRequestId && !string.IsNullOrEmpty(requestId))
-                                {
-                                    <dt class="col-sm-3">Request Id</dt>
-                                    <dd class="col-sm-9">@requestId</dd>
-                                }
-                            </dl>
-                        </div>
-                    </div>
-                }
+        @if (showRequestId && !string.IsNullOrEmpty(requestId))
+        {
+            <div class="debug-info">
+                <strong>Request ID:</strong> <code>@requestId</code><br />
+                <small>Please quote this ID if you report this issue to the administrator.</small>
             </div>
-        </div>
-        <!-- ============================================================== -->
-        <!-- Login box.scss -->
-        <!-- ============================================================== -->
-        <!-- ============================================================== -->
-        <!-- Page wrapper scss in scafholding.scss -->
-        <!-- ============================================================== -->
-        <!-- ============================================================== -->
-        <!-- Page wrapper scss in scafholding.scss -->
-        <!-- ============================================================== -->
-        <!-- ============================================================== -->
-        <!-- Right Sidebar -->
-        <!-- ============================================================== -->
-        <!-- ============================================================== -->
-        <!-- Right Sidebar -->
-        <!-- ============================================================== -->
+        }
     </div>
-    <!-- ============================================================== -->
-    <!-- All Required js -->
-    <!-- ============================================================== -->
+
     <script src="~/Admin/assets/libs/jquery/dist/jquery.min.js"></script>
-    <!-- Bootstrap tether Core JavaScript -->
-    <script src="~/Admin/assets/libs/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- ============================================================== -->
-    <!-- This page plugin js -->
-    <!-- ============================================================== -->
     <script>
-        $(".preloader").fadeOut();
+        $(document).ready(function() {
+            // Slight parallax effect for the orb
+            $(document).mousemove(function(e) {
+                let x = (e.pageX / 50);
+                let y = (e.pageY / 50);
+                $('.orb').css('transform', 'translate(' + x + 'px, ' + y + 'px)');
+            });
+        });
     </script>
 </body>
 </html>
