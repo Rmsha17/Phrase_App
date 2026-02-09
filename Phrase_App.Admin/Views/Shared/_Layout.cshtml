@@ -1,6 +1,6 @@
 ﻿@using System
 @{
-    // helper functions for active menu detection
+    // helper functions for active menu detection - KEPT EXACTLY AS PROVIDED
     string CurrentController() => ViewContext.RouteData.Values["controller"]?.ToString() ?? string.Empty;
     string CurrentAction() => ViewContext.RouteData.Values["action"]?.ToString() ?? string.Empty;
 
@@ -31,23 +31,20 @@
     <link href="~/Admin/dist/css/style.min.css" rel="stylesheet" />
 
     <style>
-        /* Sidebar Layout */
+        /* Ensures the sidebar is fixed and doesn't push content off-screen */
         .left-sidebar {
             display: flex !important;
             flex-direction: column !important;
             height: 100vh !important;
             position: fixed;
-            overflow: visible !important;
             z-index: 10;
         }
 
         .scroll-sidebar {
             flex: 1 1 auto !important;
             overflow-y: auto !important;
-            overflow-x: hidden;
         }
 
-        /* FIX: Sign Out Text Issue */
         .sidebar-footer {
             padding: 15px;
             background: #1c2228;
@@ -64,31 +61,31 @@
             text-decoration: none;
             transition: 0.3s;
             background: rgba(255,255,255,0.03);
-            white-space: nowrap; 
         }
 
-        [data-sidebartype="mini-sidebar"] .hide-menu {
-            display: none !important;
-        }
+            .logout-box:hover {
+                background: rgba(234, 88, 12, 0.15);
+                color: #ea580c !important;
+            }
 
-        [data-sidebartype="mini-sidebar"] .logout-box {
-            justify-content: center;
-            padding: 10px 0;
-        }
+            .logout-box i {
+                margin-right: 10px;
+                color: #ef4444;
+            }
 
-        [data-sidebartype="mini-sidebar"] .logout-box i {
-            margin-right: 0;
-        }
-
-        .logout-box:hover {
-            background: rgba(234, 88, 12, 0.15);
-            color: #ea580c !important;
-        }
-
-        .logout-box i {
-            font-size: 18px;
-            margin-right: 10px;
-            color: #ef4444;
+        @@media (max-width: 767px) {
+            .topbar .top-navbar .navbar-header {
+                display: flex !important;
+                align-items: center;
+                width: 100%;
+                justify-content: normal !important;
+            }
+            /* Ensuring the toggler doesn't hug the edge too tightly */
+            .nav-toggler {
+                padding: 10px;
+                display: flex;
+                align-items: center;
+            }
         }
     </style>
 </head>
@@ -102,11 +99,15 @@
     </div>
 
     <div id="main-wrapper" data-layout="vertical" data-navbarbg="skin5" data-sidebartype="full"
-         data-sidebar-position="absolute" data-header-position="absolute" data-boxed-layout="full">
-        
+         data-sidebar-position="fixed" data-header-position="fixed" data-boxed-layout="full">
+
         <header class="topbar" data-navbarbg="skin5">
             <nav class="navbar top-navbar navbar-expand-md navbar-dark">
                 <div class="navbar-header" data-logobg="skin5">
+                    <a class="nav-toggler waves-effect waves-light d-block d-md-none" href="javascript:void(0)">
+                        <i class="ti-menu ti-close"></i>
+                    </a>
+
                     <a class="navbar-brand" href="/home/index">
                         <b class="logo-icon ps-2">
                             <img src="~/Admin/assets/images/1400.png" alt="logo" class="light-logo" width="25" />
@@ -116,7 +117,7 @@
                         </span>
                     </a>
                 </div>
-                <div class="navbar-collapse collapse" id="navbarSupportedContent" data-navbarbg="skin5">
+                <div class="" id="navbarSupportedContent" data-navbarbg="skin5">
                     <ul class="navbar-nav float-start me-auto">
                         <li class="nav-item d-none d-lg-block">
                             <a class="nav-link sidebartoggler waves-effect waves-light" href="javascript:void(0)" data-sidebartype="mini-sidebar">
@@ -132,25 +133,26 @@
             <div class="scroll-sidebar">
                 <nav class="sidebar-nav">
                     <ul id="sidebarnav" class="pt-4">
+
                         <li class="sidebar-item @(ControllerIs("Home") ? "selected" : "")">
                             <a class="sidebar-link waves-effect waves-dark" asp-controller="Home" asp-action="Index">
                                 <i class="mdi mdi-view-dashboard"></i><span class="hide-menu">Dashboard</span>
                             </a>
                         </li>
 
-                        <li class="sidebar-item report-like @(ControllerIs("Categories") ? "selected" : "")">
+                        <li class="sidebar-item @(ControllerIs("Categories") ? "selected" : "")">
                             <a class="sidebar-link waves-effect waves-dark" asp-controller="Categories" asp-action="Index">
                                 <i class="mdi mdi-receipt"></i><span class="hide-menu">Categories</span>
                             </a>
                         </li>
 
-                        <li class="sidebar-item report-like @(ControllerIs("Quotes") ? "selected" : "")">
+                        <li class="sidebar-item @(ControllerIs("Quotes") ? "selected" : "")">
                             <a class="sidebar-link waves-effect waves-dark" asp-controller="Quotes" asp-action="Index">
                                 <i class="mdi mdi-chart-bubble"></i><span class="hide-menu">Affirmations</span>
                             </a>
                         </li>
 
-                        <li class="sidebar-item report-like @(ControllerIs("Users") ? "selected" : "")">
+                        <li class="sidebar-item @(ControllerIs("Users") ? "selected" : "")">
                             <a class="sidebar-link waves-effect waves-dark" asp-controller="Users" asp-action="Index">
                                 <i class="mdi mdi-border-inside"></i><span class="hide-menu">Users</span>
                             </a>
@@ -220,7 +222,10 @@
         </aside>
 
         <div class="page-wrapper">
-            @RenderBody()
+            <div class="container-fluid">
+                @RenderBody()
+            </div>
+
             <footer class="footer text-center">
                 &copy; @DateTime.Now.Year BelieveIn App. All rights reserved.
             </footer>
@@ -231,18 +236,8 @@
     <script src="~/Admin/assets/libs/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/Admin/js/sidebarmenu.js"></script>
     <script src="~/Admin/assets/libs/perfect-scrollbar/dist/perfect-scrollbar.jquery.min.js"></script>
-    <script src="~/Admin/assets/extra-libs/sparkline/sparkline.js"></script>
     <script src="~/Admin/dist/js/waves.js"></script>
     <script src="~/Admin/dist/js/custom.min.js"></script>
-
-    <script src="~/Admin/assets/libs/flot/excanvas.js"></script>
-    <script src="~/Admin/assets/libs/flot/jquery.flot.js"></script>
-    <script src="~/Admin/assets/libs/flot/jquery.flot.pie.js"></script>
-    <script src="~/Admin/assets/libs/flot/jquery.flot.time.js"></script>
-    <script src="~/Admin/assets/libs/flot/jquery.flot.stack.js"></script>
-    <script src="~/Admin/assets/libs/flot/jquery.flot.crosshair.js"></script>
-    <script src="~/Admin/assets/libs/flot.tooltip/js/jquery.flot.tooltip.min.js"></script>
-    <script src="~/Admin/dist/js/pages/chart/chart-page-init.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
@@ -263,7 +258,7 @@
                 }
             });
         }
-                $(document).ready(function() {
+           $(document).ready(function() {
             // Force active state for the parent
             $('.collapse.in').parents('li').addClass('active');
 
@@ -280,11 +275,7 @@
                 }
             });
         });
-        // Fix for dropdown behavior across pages
-        $(document).ready(function() {
-            // If the sub-menu should be open based on controller, ensure the parent has 'active' class
-            $('.collapse.in').parents('li').addClass('active');
-        });
+
     </script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>

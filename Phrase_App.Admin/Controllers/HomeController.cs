@@ -19,81 +19,71 @@ namespace Phrase_App.Admin.Controllers
             _logger = logger;
             _context = context;
         }
+
         public async Task<IActionResult> Index()
         {
             if (User.Identity?.IsAuthenticated == false)
             {
-                // Authenticated but not admin — sign out to avoid redirect loop
                 await HttpContext.SignOutAsync(IdentityConstants.ApplicationScheme);
-                Response.Cookies.Delete("admin_auth_token");
-                Response.Cookies.Delete("admin_refresh_token");
-
                 return RedirectToAction("Login", "Account");
             }
 
-            // Block 1: Total Users
-            ViewBag.TotalUsers = await _context.Users.CountAsync();
+            var now = DateTime.UtcNow;
+            var firstDayOfMonth = new DateTime(now.Year, now.Month, 1);
+            var firstDayLastMonth = firstDayOfMonth.AddMonths(-1);
 
-            // Block 2: Total Quotes 
+            // 1. TOTAL USERS & GROWTH RATE
+            var totalUsers = await _context.Users.CountAsync();
+            var usersThisMonth = await _context.Users.CountAsync(u => u.CreatedAt >= firstDayOfMonth);
+            var usersLastMonth = await _context.Users.CountAsync(u => u.CreatedAt >= firstDayLastMonth && u.CreatedAt < firstDayOfMonth);
+
+            double growthRate = 0;
+            if (usersLastMonth > 0)
+                growthRate = ((double)(usersThisMonth - usersLastMonth) / usersLastMonth) * 100;
+            else if (usersThisMonth > 0)
+                growthRate = 100;
+
+            ViewBag.TotalUsers = totalUsers;
+            ViewBag.UserGrowth = growthRate.ToString("F1");
+
+            // 2. TOTAL QUOTES & TODAY'S ADDITIONS
             ViewBag.TotalQuotes = await _context.Quotes.CountAsync();
+            ViewBag.QuotesToday = await _context.Quotes.CountAsync(q => q.CreatedAt.Date == now.Date);
 
-            // Block 3: Active Engine Hooks (Schedules)
-            ViewBag.ActiveSchedules = await _context.QuoteSchedules.CountAsync();
+            // 3. ENGINE UPTIME (Dynamic from Process)
+            var uptime = DateTime.Now - Process.GetCurrentProcess().StartTime;
+            ViewBag.EngineUptime = uptime.Days > 0 ? $"{uptime.Days}d {uptime.Hours}h" : $"{uptime.Hours}h {uptime.Minutes}m";
 
-            // Chart Data: Schedule Density (Same logic as report for consistency)
+            // 4. ACTIVE HOOKS & SYSTEM EFFICIENCY
+            var activeHooks = await _context.QuoteSchedules.CountAsync();
+            ViewBag.ActiveSchedules = activeHooks;
+
+            // Efficiency calculation: % of quotes that are fully categorized and have authors
+            var totalQ = await _context.Quotes.CountAsync();
+            var completeQ = await _context.Quotes.CountAsync(q => !string.IsNullOrEmpty(q.Author) && q.CategoryId != null);
+            ViewBag.SystemEfficiency = totalQ > 0 ? (completeQ * 100) / totalQ : 100;
+
+            // 5. CHART DATA (24H CYCLE)
             var allSchedules = await _context.QuoteSchedules.ToListAsync();
             ViewBag.Morning = allSchedules.Count(s => s.DailyStartTime.Hours >= 5 && s.DailyStartTime.Hours < 12);
             ViewBag.Afternoon = allSchedules.Count(s => s.DailyStartTime.Hours >= 12 && s.DailyStartTime.Hours < 17);
             ViewBag.Evening = allSchedules.Count(s => s.DailyStartTime.Hours >= 17 && s.DailyStartTime.Hours < 22);
             ViewBag.Night = allSchedules.Count(s => (s.DailyStartTime.Hours >= 22) || (s.DailyStartTime.Hours < 5));
 
-            // Top Categories Logic
-            ViewBag.TopCategories = await _context.Categories
-                .Select(c => new { c.Name, Count = _context.Quotes.Count(q => c.Id == q.CategoryId) })
-                .OrderByDescending(x => x.Count)
-                .Take(4)
-                .ToListAsync();
-            // Static Metrics for Admin insight
-            ViewBag.NewUsersToday = 5;
-            ViewBag.ServerLoad = "24%";
-            ViewBag.LastSync = DateTime.Now.ToString("HH:mm");
-
-            // Top Categories with color assignments
+            // 6. TOP CATEGORIES (Coverage %)
             ViewBag.TopCategories = await _context.Categories
                 .Select(c => new
                 {
                     c.Name,
                     Count = _context.Quotes.Count(q => c.Id == q.CategoryId),
-                    // Calculate percentage for progress bars
-                    Percent = _context.Quotes.Count(q => c.Id == q.CategoryId) > 0 ? (_context.Quotes.Count(q => c.Id == q.CategoryId) * 100) / 50 : 0
+                    Percent = totalQ > 0 ? (_context.Quotes.Count(q => c.Id == q.CategoryId) * 100) / totalQ : 0
                 })
-                .OrderByDescending(x => x.Count)
-                .Take(4)
-                .ToListAsync();
+                .OrderByDescending(x => x.Count).Take(5).ToListAsync();
 
-            // 1. Live Feed: Get last 3 quotes added
+            // 7. LIVE FEED
             ViewBag.RecentQuotes = await _context.Quotes
-                .OrderByDescending(q => q.CreatedAt)
-                .Select(q => new { q.Content, q.Author })
-                .Take(3)
-                .ToListAsync();
-
-            // 2. System Health Metric (Static or semi-dynamic)
-            ViewBag.EngineUptime = "99.98%";
-            ViewBag.SystemEfficiency = 88; // Percentage
-
-            // 3. Category Density (with progress bar math)
-            var totalQuotes = await _context.Quotes.CountAsync();
-            ViewBag.TopCategories = await _context.Categories
-                .Select(c => new
-                {
-                    c.Name,
-                    Count = _context.Quotes.Count(q => c.Id == q.CategoryId),
-                    Percent = totalQuotes > 0 ? (_context.Quotes.Count(q => c.Id == q.CategoryId) * 100) / totalQuotes : 0
-                })
-                .OrderByDescending(x => x.Count)
-                .Take(5)
-                .ToListAsync();
+                .OrderByDescending(q => q.CreatedAt).Take(3)
+                .Select(q => new { q.Content, q.Author }).ToListAsync();
 
             return View();
         }

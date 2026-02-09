@@ -98,8 +98,8 @@
                                                            @(user.DarkMode ? "checked" : "") />
                                                 </div>
                                             </td>
-@*                                             <td>@user.CreatedAt?.ToString("yyyy-MM-dd")</td>
- *@                                            <td class="text-center">
+                                            <td>@user.CreatedAt.ToString("yyyy-MM-dd")</td>
+                                            <td class="text-center">
                                                 <a class="btn btn-sm btn-outline-primary me-1"
                                                    asp-area="Admin"
                                                    asp-controller="Users"

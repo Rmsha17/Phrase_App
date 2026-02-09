@@ -2,79 +2,80 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 <style>
-     :root {
-         --deep-orange: #f97316;
-         --bright-yellow: #fbce03;
-         --obsidian: #1e293b;
-         --sunset-gradient: linear-gradient(135deg, #f97316 0%, #fbbf24 100%);
-     }
+    :root {
+        --deep-orange: #f97316;
+        --bright-yellow: #fbce03;
+        --obsidian: #1e293b;
+        --sunset-gradient: linear-gradient(135deg, #f97316 0%, #fbbf24 100%);
+    }
 
-     .dashboard-container {
-         background: #f4f7f9;
-         font-family: 'Inter', sans-serif;
-         min-height: 100vh;
-     }
+    .dashboard-container {
+        background: #f4f7f9;
+        font-family: 'Inter', sans-serif;
+        min-height: 100vh;
+    }
 
-     /* Glowing Stats */
-     .stat-card-glowing {
-         background: var(--sunset-gradient);
-         border: none;
-         color: white;
-         position: relative;
-         overflow: hidden;
-     }
+    .stat-card-glowing {
+        background: var(--sunset-gradient);
+        border: none;
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
 
-         .stat-card-glowing::after {
-             content: "";
-             position: absolute;
-             top: -50%;
-             left: -50%;
-             width: 200%;
-             height: 200%;
-             background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 60%);
-         }
+        .stat-card-glowing::after {
+            content: "";
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 60%);
+        }
 
-     /* Activity Feed */
-     .feed-item {
-         border-left: 2px solid #e2e8f0;
-         position: relative;
-         padding-left: 20px;
-         margin-bottom: 20px;
-     }
+    .feed-item {
+        border-left: 2px solid #e2e8f0;
+        position: relative;
+        padding-left: 20px;
+        margin-bottom: 20px;
+    }
 
-         .feed-item::before {
-             content: "";
-             position: absolute;
-             left: -6px;
-             top: 0;
-             width: 10px;
-             height: 10px;
-             background: var(--deep-orange);
-             border-radius: 50%;
-         }
+        .feed-item::before {
+            content: "";
+            position: absolute;
+            left: -6px;
+            top: 0;
+            width: 10px;
+            height: 10px;
+            background: var(--deep-orange);
+            border-radius: 50%;
+        }
 
-     /* Category Glassmorphism */
-     .glass-card {
-         background: rgba(255, 255, 255, 0.8);
-         backdrop-filter: blur(10px);
-         border: 1px solid rgba(255,255,255,0.3);
-     }
+    .glass-card {
+        background: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.3);
+    }
 
-     .btn-action {
-         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-         border: 1px solid #e2e8f0;
-     }
+    .btn-action {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        border: 1px solid #e2e8f0;
+    }
 
-         .btn-action:hover {
-             background: var(--obsidian);
-             color: white;
-             transform: scale(1.05);
-         }
+        .btn-action:hover {
+            background: var(--obsidian);
+            color: black;
+            transform: scale(1.05);
+        }
 
-     .progress-warm {
-         background: var(--sunset-gradient);
-         border-radius: 10px;
-     }
+    .progress-warm {
+        background: var(--sunset-gradient);
+        border-radius: 10px;
+    }
+
+    .text-sunset {
+        color: var(--deep-orange);
+    }
 </style>
 
 <div class="dashboard-container p-4">
@@ -82,13 +83,8 @@
         <div class="col-md-6">
             <h2 class="fw-bold mb-0 text-dark">Engine Dashboard</h2>
             <div class="d-flex align-items-center mt-1">
-                <span class="status-pulse me-2"></span>
+                <span class="status-pulse me-2" style="width:10px; height:10px; background:#22c55e; border-radius:50%; display:inline-block;"></span>
                 <span class="text-muted small">Uptime: <span class="text-dark fw-bold">@ViewBag.EngineUptime</span></span>
-            </div>
-        </div>
-        <div class="col-md-6 text-md-end">
-            <div class="d-inline-flex bg-white p-2 rounded-pill shadow-sm border">
-                <button class="btn btn-sm btn-dark rounded-pill px-3">Live View</button>
             </div>
         </div>
     </div>
@@ -98,28 +94,35 @@
             <div class="card stat-card-glowing rounded-4 p-4 shadow-lg">
                 <p class="small fw-bold opacity-75 mb-1">TOTAL USERS</p>
                 <h1 class="fw-bold mb-0">@ViewBag.TotalUsers</h1>
-                <div class="mt-2 x-small opacity-75"><i class="mdi mdi-trending-up"></i> 12% Growth this month</div>
+                <div class="mt-2 x-small opacity-75">
+                    <i class="mdi @(double.Parse(ViewBag.UserGrowth) >= 0 ? "mdi-trending-up" : "mdi-trending-down")"></i>
+                    @ViewBag.UserGrowth% Growth this month
+                </div>
             </div>
         </div>
+
         <div class="col-lg-3 col-md-6">
             <div class="card bg-white rounded-4 p-4 shadow-sm border-0">
-                <p class="small text-muted fw-bold mb-1">QUOTES BANK</p>
+                <p class="small text-muted fw-bold mb-1">Total Affirmations</p>
                 <h1 class="fw-bold mb-0 text-dark">@ViewBag.TotalQuotes</h1>
-                <div class="mt-2 x-small text-sunset fw-bold">3 New added today</div>
+                <div class="mt-2 x-small text-sunset fw-bold">@ViewBag.QuotesToday New added today</div>
             </div>
         </div>
+
         <div class="col-lg-3 col-md-6">
             <div class="card bg-dark rounded-4 p-4 shadow-sm border-0 text-white">
-                <p class="small opacity-50 fw-bold mb-1">ACTIVE HOOKS</p>
+                <p class="small opacity-50 fw-bold mb-1">ACTIVE SCHEDULES</p>
                 <h1 class="fw-bold mb-0" style="color: var(--bright-yellow)">@ViewBag.ActiveSchedules</h1>
                 <div class="mt-2 x-small" style="color: var(--bright-yellow)">Engine running nominal</div>
             </div>
         </div>
+
+
         <div class="col-lg-3 col-md-6">
             <div class="card bg-white rounded-4 p-4 shadow-sm border-0">
                 <p class="small text-muted fw-bold mb-1">EFFICIENCY</p>
-                <h1 class="fw-bold mb-0">@ViewBag.SystemEfficiency<span class="h4">%</span></h1>
-                <div class="progress mt-2" style="height: 4px;">
+                <h1 class="fw-bold mb-0 text-dark">@ViewBag.SystemEfficiency<span class="h4">%</span></h1>
+                <div class="progress mt-4" style="height: 5px;">
                     <div class="progress-bar bg-success" style="width: @ViewBag.SystemEfficiency%"></div>
                 </div>
             </div>
@@ -157,11 +160,10 @@
                 </div>
                 <div class="col-6">
                     <a href="/Categories/Index" class="btn btn-action bg-white w-100 py-4 rounded-4 text-decoration-none">
-                        <i class="mdi mdi-plus-circle-outline fs-2 d-block mb-1 text-sunset"></i>
+                        <i class="mdi mdi-format-list-bulleted fs-2 d-block mb-1 text-sunset"></i>
                         <span class="fw-bold small">Manage Categories</span>
                     </a>
                 </div>
-               
             </div>
 
             <div class="card border-0 shadow-sm rounded-4 p-4 glass-card">
@@ -189,33 +191,24 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     const ctx = document.getElementById('dashboardSunsetChart').getContext('2d');
-    const sunsetGrd = ctx.createLinearGradient(0, 0, 0, 300);
-    sunsetGrd.addColorStop(0, '#f97316');
-    sunsetGrd.addColorStop(1, '#fbbf24');
-
     new Chart(ctx, {
-        type: 'line', // Line chart looks more "active" than bars
+        type: 'line',
         data: {
             labels: ['Morning', 'Afternoon', 'Evening', 'Night'],
             datasets: [{
-                label: 'Active Hooks',
+                label: 'Schedules',
                 data: [@ViewBag.Morning, @ViewBag.Afternoon, @ViewBag.Evening, @ViewBag.Night],
                 borderColor: '#f97316',
                 backgroundColor: 'rgba(249, 115, 22, 0.1)',
                 fill: true,
                 tension: 0.4,
-                pointBackgroundColor: '#fff',
-                pointBorderColor: '#f97316',
                 pointRadius: 6
             }]
         },
         options: {
             maintainAspectRatio: false,
             plugins: { legend: { display: false } },
-            scales: {
-                y: { display: false },
-                x: { grid: { display: false } }
-            }
+            scales: { y: { display: false }, x: { grid: { display: false } } }
         }
     });
 </script>
