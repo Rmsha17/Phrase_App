@@ -6,6 +6,7 @@ using Phrase_App.Api.Extensions;
 using Phrase_App.Core.DTOs.Auth;
 using Phrase_App.Core.DTOs.Auth;
 using Phrase_App.Core.DTOs.Request;
+using System.Linq.Expressions;
 using System.Security.Claims;
 
 [ApiController]
@@ -130,8 +131,16 @@ public class AuthController : ControllerBase
     [HttpPost("google-login")]
     public async Task<IActionResult> GoogleLogin(GoogleLoginDto dto)
     {
-        var authResponse = await _authService.GoogleLoginAsync(dto);
-        return Ok(authResponse);
+        try
+        {
+            var authResponse = await _authService.GoogleLoginAsync(dto);
+            return Ok(authResponse);
+        }
+
+        catch (Exception e)
+        {
+            return Ok();
+        }
     }
 
     [HttpPost("facebook-login")]

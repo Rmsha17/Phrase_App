@@ -20,6 +20,24 @@ namespace Phrase_App.Admin.Controllers
         }
 
         [HttpGet]
+        public async Task<IActionResult> DataDeletionPage()
+        {
+            return View();
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ConfirmEmail()
+        {
+            return View();
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> PrivacyPolicy()
+        {
+            return View();
+        }
+
+        [HttpGet]
         public async Task<IActionResult> Login()
         {
             // If authenticated and in Admin role -> go to Home

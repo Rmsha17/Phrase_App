@@ -15,8 +15,22 @@ public class OAuthService
     // Google ID Token verification
     public async Task<(string Email, string FullName)> VerifyGoogleTokenAsync(string idToken)
     {
-        var payload = await GoogleJsonWebSignature.ValidateAsync(idToken);
-        return (payload.Email, payload.Name);
+        var settings = new GoogleJsonWebSignature.ValidationSettings()
+        {
+            Audience = new List<string> { _configuration["Authentication:Google:ClientId"] }
+        };
+
+        try
+        {
+            // Pass the settings here!
+            var payload = await GoogleJsonWebSignature.ValidateAsync(idToken, settings);
+            return (payload.Email, payload.Name);
+        }
+        catch (InvalidJwtException e)
+        {
+            // This will now tell you EXACTLY why it failed (e.g., expired or wrong audience)
+            throw new Exception($"JWT Validation failed: {e.Message}");
+        }
     }
 
     // Facebook Access Token verification

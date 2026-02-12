@@ -1,0 +1,131 @@
+﻿@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>BelieveIn | Email Confirmed</title>
+    <link href="~/dist/css/style.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@@mdi/font@7.2.96/css/materialdesignicons.min.css">
+
+    <style>
+        :root {
+            --primary-orange: #f97316;
+            --primary-orange-dark: #ea580c;
+            --bg-dark: #0f172a;
+            --text-muted: #94a3b8;
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --success-green: #22c55e;
+        }
+
+        body {
+            background: radial-gradient(circle at top right, #1e293b, #0f172a);
+            height: 100vh;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
+        }
+
+            /* Reusing your background glow */
+            body::before {
+                content: "";
+                position: absolute;
+                width: 300px;
+                height: 300px;
+                background: var(--primary-orange);
+                filter: blur(150px);
+                opacity: 0.1;
+                top: 10%;
+                left: 10%;
+                z-index: -1;
+            }
+
+        .login-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 28px;
+            padding: 50px 40px;
+            width: 100%;
+            max-width: 420px;
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        @@keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .success-icon {
+            font-size: 4rem;
+            color: var(--success-green);
+            margin-bottom: 20px;
+            filter: drop-shadow(0 0 15px rgba(34, 197, 94, 0.3));
+        }
+
+        h2 {
+            color: #fff;
+            font-size: 1.75rem;
+            font-weight: 800;
+            margin-bottom: 10px;
+        }
+
+        .message {
+            color: var(--text-muted);
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+
+        .btn-action {
+            background: linear-gradient(135deg, var(--primary-orange) 0%, var(--primary-orange-dark) 100%);
+            border: none;
+            border-radius: 14px;
+            padding: 16px;
+            color: #fff;
+            font-weight: 700;
+            text-decoration: none;
+            display: block;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+            .btn-action:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 20px 25px -5px rgba(249, 115, 22, 0.4);
+            }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <div class="success-icon">
+            <i class="mdi mdi-check-decagram"></i>
+        </div>
+
+        <h2>Email Verified!</h2>
+        <p class="message">
+            Your account is now active. You can close this window and return to the BelieveIn app to start your journey.
+        </p>
+
+        <div style="margin-top: 25px; color: var(--text-muted); font-size: 0.75rem;">
+            &copy; @DateTime.Now.Year BelieveIn App.
+        </div>
+    </div>
+</body>
+</html>

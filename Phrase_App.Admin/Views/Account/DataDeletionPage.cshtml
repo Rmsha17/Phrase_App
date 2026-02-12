@@ -1,0 +1,107 @@
+﻿@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Deletion - BelieveIn</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            /* Same Sunset Gradient Background as Privacy Policy */
+            background: linear-gradient(180deg, #FFE082 0%, #FFB74D 50%, #FF7043 100%);
+            background-attachment: fixed;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: black;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.15); /* Slightly higher opacity for list readability */
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 700px;
+            margin: 20px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: darkorange;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        h2 {
+            color: black;
+            margin-top: 25px;
+            border-left: 4px solid #f27121;
+            padding-left: 10px;
+            font-size: 1.5rem;
+        }
+
+        p, li {
+            line-height: 1.7;
+            color: black;
+            font-size: 1.1rem;
+        }
+
+        ol {
+            padding-left: 20px;
+        }
+
+        li {
+            margin-bottom: 12px;
+        }
+
+        .highlight {
+            background: rgba(0, 0, 0, 0.05);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            font-style: italic;
+        }
+
+        .footer {
+            margin-top: 30px;
+            font-size: 0.8rem;
+            opacity: 0.7;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="glass-card">
+        <h1>Data Deletion</h1>
+        <p>At <strong>BelieveIn</strong>, we respect your right to manage your data. Below are the instructions on how to remove your app activities and delete your account data.</p>
+
+        <h2>1. Deletion via Facebook</h2>
+        <p>If you signed in using Facebook, you can remove your activities by following these steps:</p>
+        <ol>
+            <li>Go to your Facebook Account’s <strong>Settings & Privacy</strong>.</li>
+            <li>Click on <strong>Settings</strong>.</li>
+            <li>Look for <strong>Apps and Websites</strong> to see all the apps linked with your Facebook.</li>
+            <li>Search for <strong>BelieveIn</strong> and click the <strong>Remove</strong> button.</li>
+            <li>Confirm the removal. This will stop the app from accessing your data in the future.</li>
+        </ol>
+
+        <h2>2. Delete Data from Our Servers</h2>
+        <p>To request a permanent deletion of your account and all associated data from our internal systems, please contact us directly:</p>
+        <div class="highlight">
+            Email us at: <strong>getbelievein@gmail.com</strong>
+        </div>
+        <p>Please provide the email address used during sign-up. We will process your request and remove your data within 7 business days.</p>
+
+        <div class="footer">&copy; @DateTime.UtcNow.Year BelieveIn</div>
+    </div>
+</body>
+</html>

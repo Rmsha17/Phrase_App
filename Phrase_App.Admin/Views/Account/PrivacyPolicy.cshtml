@@ -1,0 +1,86 @@
+﻿@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy - BelieveIn</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            /* Sunset Gradient Background */
+            /* Optimized Sunset Gradient for your Logo */
+            background: linear-gradient( 180deg, #FFE082 0%, #FFB74D 50%, #FF7043 100% );
+            background-attachment: fixed; /* Keeps background still while scrolling */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: black;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 700px;
+            margin: 20px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: darkorange;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        h2 {
+            color: black;
+            margin-top: 25px;
+            border-left: 4px solid #f27121;
+            padding-left: 10px;
+        }
+
+        p {
+            line-height: 1.7;
+            color: black;
+            font-size: 1.1rem;
+        }
+
+        .footer {
+            margin-top: 30px;
+            font-size: 0.8rem;
+            opacity: 0.7;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="glass-card">
+        <h1>Privacy Policy</h1>
+        <p>Your trust is the foundation of <strong>BelieveIn</strong>. This policy details our commitment to protecting your data.</p>
+
+        <h2>1. Data Collection</h2>
+        <p>Through Google or Facebook login, we access your name and email to identify you. We do not access private files, friends, or social feeds.</p>
+
+        <h2>2. Data Usage</h2>
+        <p>Your data stays with us. We use it only for authentication. We never sell your personal information to third parties.</p>
+
+        <h2>3. Security</h2>
+        <p>Just like the sunset remains constant, we consistently monitor our systems to ensure your data remains encrypted and safe.</p>
+
+        <h2>4. Contact</h2>
+        <p>Questions? Reach out at: <br><strong>getbelievein@gmail.com</strong></p>
+
+        <div class="footer">&copy; @DateTime.UtcNow.Year BelieveIn</div>
+    </div>
+</body>
+</html>
