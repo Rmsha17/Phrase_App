@@ -1,196 +1,605 @@
 ﻿@{
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
+
 <style>
+    /* ================================================
+           DASHBOARD PAGE — CREAM LIGHT THEME
+           Cards: white with soft shadow
+           Accents: orange #f97316 / amber #fbbf24
+           Background: #faf6f1 (from layout)
+           ================================================ */
     :root {
-        --deep-orange: #f97316;
-        --bright-yellow: #fbce03;
-        --obsidian: #1e293b;
-        --sunset-gradient: linear-gradient(135deg, #f97316 0%, #fbbf24 100%);
+        --orange: #f97316;
+        --orange-light: #fff4ed;
+        --orange-border: #fed7aa;
+        --amber: #fbbf24;
+        --amber-light: #fffbeb;
+        --card-bg: #ffffff;
+        --card-border: rgba(0,0,0,0.06);
+        --card-shadow: 0 1px 12px rgba(0,0,0,0.07), 0 4px 24px rgba(0,0,0,0.04);
+        --text: #1e293b;
+        --muted: #64748b;
+        --muted-light: #94a3b8;
+        --success: #16a34a;
+        --success-bg: #f0fdf4;
+        --gradient: linear-gradient(135deg, #f97316 0%, #fbbf24 100%);
     }
 
-    .dashboard-container {
-        background: #f4f7f9;
-        font-family: 'Inter', sans-serif;
-        min-height: 100vh;
+    /* ── PAGE HEADER ── */
+    .dash-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-bottom: 28px;
     }
 
-    .stat-card-glowing {
-        background: var(--sunset-gradient);
-        border: none;
-        color: white;
+        .dash-header h2 {
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--text);
+            margin: 0 0 6px;
+            letter-spacing: -0.4px;
+        }
+
+    .uptime-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        background: var(--success-bg);
+        border: 1px solid #bbf7d0;
+        border-radius: 30px;
+        padding: 5px 14px;
+        font-size: 12px;
+        color: var(--success);
+        font-weight: 600;
+    }
+
+    .uptime-dot {
+        width: 7px;
+        height: 7px;
+        background: var(--success);
+        border-radius: 50%;
+        animation: blink 2s infinite;
+        flex-shrink: 0;
+    }
+
+    @@keyframes blink {
+        0%, 100% {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        50% {
+            opacity: 0.4;
+            transform: scale(1.5);
+        }
+    }
+
+    .live-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: var(--orange-light);
+        border: 1px solid var(--orange-border);
+        color: var(--orange);
+        border-radius: 30px;
+        padding: 6px 16px;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        align-self: center;
+    }
+
+    /* ── STAT CARDS ── */
+    .stat-card {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 20px;
+        padding: 24px;
+        box-shadow: var(--card-shadow);
         position: relative;
+        overflow: hidden;
+        height: 100%;
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+
+        /* Primary card — full orange gradient */
+        .stat-card.primary {
+            background: var(--gradient);
+            border: none;
+            box-shadow: 0 8px 32px rgba(249,115,22,0.35);
+        }
+
+            .stat-card.primary::before {
+                content: '';
+                position: absolute;
+                top: -50px;
+                right: -50px;
+                width: 160px;
+                height: 160px;
+                background: rgba(255,255,255,0.15);
+                border-radius: 50%;
+            }
+
+            .stat-card.primary::after {
+                content: '';
+                position: absolute;
+                bottom: -40px;
+                left: -30px;
+                width: 120px;
+                height: 120px;
+                background: rgba(255,255,255,0.08);
+                border-radius: 50%;
+            }
+
+        /* Dark navy accent card */
+        .stat-card.navy {
+            background: #1a2235;
+            border: 1px solid rgba(251,191,36,0.2);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+        }
+
+    .stat-label {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 1.2px;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 10px;
+    }
+
+    .stat-card.primary .stat-label {
+        color: rgba(255,255,255,0.75);
+    }
+
+    .stat-card.navy .stat-label {
+        color: rgba(251,191,36,0.65);
+    }
+
+    .stat-value {
+        font-size: 38px;
+        font-weight: 800;
+        color: var(--text);
+        line-height: 1;
+        letter-spacing: -1.5px;
+        margin-bottom: 10px;
+    }
+
+    .stat-card.primary .stat-value {
+        color: #fff;
+    }
+
+    .stat-card.navy .stat-value {
+        color: var(--amber);
+    }
+
+    .stat-sub {
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--muted);
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .stat-card.primary .stat-sub {
+        color: rgba(255,255,255,0.8);
+    }
+
+    .stat-card.navy .stat-sub {
+        color: rgba(251,191,36,0.65);
+    }
+
+    .trend-up {
+        color: #16a34a;
+    }
+
+    .trend-down {
+        color: #dc2626;
+    }
+
+    .stat-card.primary .trend-up {
+        color: #bbf7d0;
+    }
+
+    /* Icon badge */
+    .stat-icon {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        width: 46px;
+        height: 46px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 22px;
+    }
+
+    .stat-card.primary .stat-icon {
+        background: rgba(255,255,255,0.22);
+        color: #fff;
+    }
+
+    .stat-card:not(.primary):not(.navy) .stat-icon {
+        background: var(--orange-light);
+        color: var(--orange);
+        border: 1px solid var(--orange-border);
+    }
+
+    .stat-card.navy .stat-icon {
+        background: rgba(251,191,36,0.15);
+        color: var(--amber);
+    }
+
+    /* Efficiency bar */
+    .eff-track {
+        height: 6px;
+        background: #f1f5f9;
+        border-radius: 10px;
+        margin-top: 16px;
         overflow: hidden;
     }
 
-        .stat-card-glowing::after {
-            content: "";
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 60%);
-        }
-
-    .feed-item {
-        border-left: 2px solid #e2e8f0;
-        position: relative;
-        padding-left: 20px;
-        margin-bottom: 20px;
-    }
-
-        .feed-item::before {
-            content: "";
-            position: absolute;
-            left: -6px;
-            top: 0;
-            width: 10px;
-            height: 10px;
-            background: var(--deep-orange);
-            border-radius: 50%;
-        }
-
-    .glass-card {
-        background: rgba(255, 255, 255, 0.8);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255,255,255,0.3);
-    }
-
-    .btn-action {
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        border: 1px solid #e2e8f0;
-    }
-
-        .btn-action:hover {
-            background: var(--obsidian);
-            color: black;
-            transform: scale(1.05);
-        }
-
-    .progress-warm {
-        background: var(--sunset-gradient);
+    .eff-fill {
+        height: 100%;
         border-radius: 10px;
+        background: var(--gradient);
     }
 
-    .text-sunset {
-        color: var(--deep-orange);
+    /* ── PANEL CARD (charts, feed, etc.) ── */
+    .panel {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 20px;
+        padding: 24px;
+        box-shadow: var(--card-shadow);
+        margin-bottom: 24px;
     }
+
+    .panel-title {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 1.2px;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+        .panel-title i {
+            color: var(--orange);
+            font-size: 17px;
+        }
+
+    /* ── FEED ── */
+    .feed-row {
+        display: flex;
+        gap: 14px;
+        padding: 14px 0;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+        .feed-row:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+    .feed-icon {
+        width: 38px;
+        height: 38px;
+        border-radius: 11px;
+        background: var(--orange-light);
+        border: 1px solid var(--orange-border);
+        color: var(--orange);
+        font-size: 17px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .feed-title {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text);
+        margin-bottom: 3px;
+    }
+
+    .feed-sub {
+        font-size: 12px;
+        color: var(--muted);
+        font-style: italic;
+        line-height: 1.5;
+    }
+
+    /* ── QUICK ACTIONS ── */
+    .action-btn {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        padding: 20px 10px;
+        background: var(--card-bg);
+        border: 1.5px solid var(--card-border);
+        border-radius: 16px;
+        color: var(--muted);
+        text-decoration: none;
+        font-size: 13px;
+        font-weight: 600;
+        transition: all 0.22s ease;
+        text-align: center;
+        box-shadow: var(--card-shadow);
+    }
+
+        .action-btn i {
+            font-size: 26px;
+            color: var(--orange);
+            transition: transform 0.22s;
+        }
+
+        .action-btn:hover {
+            background: var(--orange-light);
+            border-color: var(--orange-border);
+            color: var(--orange);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(249,115,22,0.18);
+        }
+
+            .action-btn:hover i {
+                transform: scale(1.12);
+            }
+
+    /* ── LIBRARY COVERAGE ── */
+    .cat-row {
+        margin-bottom: 18px;
+    }
+
+        .cat-row:last-child {
+            margin-bottom: 0;
+        }
+
+    .cat-name {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text);
+    }
+
+    .cat-badge {
+        font-size: 11px;
+        font-weight: 700;
+        background: var(--orange-light);
+        color: var(--orange);
+        border: 1px solid var(--orange-border);
+        border-radius: 30px;
+        padding: 2px 10px;
+    }
+
+    .cat-track {
+        height: 6px;
+        background: #f1f5f9;
+        border-radius: 10px;
+        margin-top: 8px;
+        overflow: hidden;
+    }
+
+    .cat-fill {
+        height: 100%;
+        border-radius: 10px;
+        background: var(--gradient);
+    }
+
+    .view-all {
+        display: block;
+        text-align: center;
+        color: var(--orange);
+        font-size: 13px;
+        font-weight: 600;
+        text-decoration: none;
+        margin-top: 20px;
+        padding-top: 16px;
+        border-top: 1px solid #f1f5f9;
+        transition: color 0.2s;
+    }
+
+        .view-all:hover {
+            color: #ea580c;
+        }
 </style>
 
-<div class="dashboard-container p-4">
-    <div class="row align-items-center mb-4">
-        <div class="col-md-6">
-            <h2 class="fw-bold mb-0 text-dark">Engine Dashboard</h2>
-            <div class="d-flex align-items-center mt-1">
-                <span class="status-pulse me-2" style="width:10px; height:10px; background:#22c55e; border-radius:50%; display:inline-block;"></span>
-                <span class="text-muted small">Uptime: <span class="text-dark fw-bold">@ViewBag.EngineUptime</span></span>
+<div>
+
+    <!-- Header -->
+    <div class="dash-header">
+        <div>
+            <h2>Engine Dashboard</h2>
+            <div class="uptime-pill">
+                <span class="uptime-dot"></span>
+                Uptime: <strong>@ViewBag.EngineUptime</strong>
             </div>
         </div>
+        <span class="live-pill">
+            <i class="mdi mdi-circle" style="font-size:8px;"></i> LIVE
+        </span>
     </div>
 
+    <!-- Stat Cards Row -->
     <div class="row g-3 mb-4">
+
         <div class="col-lg-3 col-md-6">
-            <div class="card stat-card-glowing rounded-4 p-4 shadow-lg">
-                <p class="small fw-bold opacity-75 mb-1">TOTAL USERS</p>
-                <h1 class="fw-bold mb-0">@ViewBag.TotalUsers</h1>
-                <div class="mt-2 x-small opacity-75">
-                    <i class="mdi @(double.Parse(ViewBag.UserGrowth) >= 0 ? "mdi-trending-up" : "mdi-trending-down")"></i>
-                    @ViewBag.UserGrowth% Growth this month
+            <div class="stat-card primary">
+                <div class="stat-icon"><i class="mdi mdi-account-multiple"></i></div>
+                <div class="stat-label">Total Users</div>
+                <div class="stat-value">@ViewBag.TotalUsers</div>
+                <div class="stat-sub">
+                    @if (double.Parse(ViewBag.UserGrowth.ToString()) >= 0)
+                    {
+                        <i class="mdi mdi-trending-up trend-up"></i>
+                    }
+                    else
+                    {
+                        <i class="mdi mdi-trending-down" style="color:#fca5a5"></i>
+                    }
+                    @ViewBag.UserGrowth% growth this month
                 </div>
             </div>
         </div>
 
         <div class="col-lg-3 col-md-6">
-            <div class="card bg-white rounded-4 p-4 shadow-sm border-0">
-                <p class="small text-muted fw-bold mb-1">Total Affirmations</p>
-                <h1 class="fw-bold mb-0 text-dark">@ViewBag.TotalQuotes</h1>
-                <div class="mt-2 x-small text-sunset fw-bold">@ViewBag.QuotesToday New added today</div>
-            </div>
-        </div>
-
-        <div class="col-lg-3 col-md-6">
-            <div class="card bg-dark rounded-4 p-4 shadow-sm border-0 text-white">
-                <p class="small opacity-50 fw-bold mb-1">ACTIVE SCHEDULES</p>
-                <h1 class="fw-bold mb-0" style="color: var(--bright-yellow)">@ViewBag.ActiveSchedules</h1>
-                <div class="mt-2 x-small" style="color: var(--bright-yellow)">Engine running nominal</div>
-            </div>
-        </div>
-
-
-        <div class="col-lg-3 col-md-6">
-            <div class="card bg-white rounded-4 p-4 shadow-sm border-0">
-                <p class="small text-muted fw-bold mb-1">EFFICIENCY</p>
-                <h1 class="fw-bold mb-0 text-dark">@ViewBag.SystemEfficiency<span class="h4">%</span></h1>
-                <div class="progress mt-4" style="height: 5px;">
-                    <div class="progress-bar bg-success" style="width: @ViewBag.SystemEfficiency%"></div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="mdi mdi-format-quote-open"></i></div>
+                <div class="stat-label">Total Affirmations</div>
+                <div class="stat-value">@ViewBag.TotalQuotes</div>
+                <div class="stat-sub">
+                    <i class="mdi mdi-plus-circle" style="color:var(--orange)"></i>
+                    @ViewBag.QuotesToday new today
                 </div>
             </div>
         </div>
+
+        <div class="col-lg-3 col-md-6">
+            <div class="stat-card navy">
+                <div class="stat-icon"><i class="mdi mdi-calendar-check"></i></div>
+                <div class="stat-label">Active Schedules</div>
+                <div class="stat-value">@ViewBag.ActiveSchedules</div>
+                <div class="stat-sub">
+                    <i class="mdi mdi-check-circle"></i> Engine running nominal
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+            <div class="stat-card">
+                <div class="stat-icon"><i class="mdi mdi-speedometer"></i></div>
+                <div class="stat-label">Efficiency</div>
+                <div class="stat-value">
+                    @ViewBag.SystemEfficiency<span style="font-size:20px;font-weight:600;color:var(--muted-light)">%</span>
+                </div>
+                <div class="eff-track">
+                    <div class="eff-fill" style="width:@ViewBag.SystemEfficiency%"></div>
+                </div>
+            </div>
+        </div>
+
     </div>
 
+    <!-- Main Row -->
     <div class="row">
+
+        <!-- Left: Chart + Feed -->
         <div class="col-lg-8">
-            <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
-                <h6 class="fw-bold text-muted mb-4 small"><i class="mdi mdi-chart-timeline-variant me-2"></i>ENGINE TRAFFIC (24H CYCLE)</h6>
-                <div style="height: 300px;">
-                    <canvas id="dashboardSunsetChart"></canvas>
+
+            <div class="panel">
+                <div class="panel-title">
+                    <i class="mdi mdi-chart-areaspline"></i>
+                    Engine Traffic — 24H Cycle
+                </div>
+                <div style="height:280px;">
+                    <canvas id="dashboardChart"></canvas>
                 </div>
             </div>
 
-            <div class="card border-0 shadow-sm rounded-4 p-4">
-                <h6 class="fw-bold text-muted mb-4 small"><i class="mdi mdi-rss me-2"></i>SYSTEM LIVE FEED</h6>
+            <div class="panel">
+                <div class="panel-title">
+                    <i class="mdi mdi-rss"></i>
+                    System Live Feed
+                </div>
                 @foreach (var item in ViewBag.RecentQuotes)
                 {
-                    <div class="feed-item">
-                        <p class="mb-0 text-dark fw-bold" style="font-size: 13px;">New quote added to library</p>
-                        <p class="text-muted x-small mb-0 italic">"@item.Content" — @item.Author</p>
+                    <div class="feed-row">
+                        <div class="feed-icon"><i class="mdi mdi-plus"></i></div>
+                        <div>
+                            <div class="feed-title">New affirmation added to library</div>
+                            <div class="feed-sub">"@item.Content" — @item.Author</div>
+                        </div>
                     </div>
                 }
             </div>
+
         </div>
 
+        <!-- Right: Actions + Coverage -->
         <div class="col-lg-4">
-            <div class="row g-2 mb-4">
-                <div class="col-6">
-                    <a href="/Quotes/Create" class="btn btn-action bg-white w-100 py-4 rounded-4 text-decoration-none">
-                        <i class="mdi mdi-plus-circle-outline fs-2 d-block mb-1 text-sunset"></i>
-                        <span class="fw-bold small">New Quote</span>
-                    </a>
+
+            <div class="panel">
+                <div class="panel-title">
+                    <i class="mdi mdi-lightning-bolt"></i>
+                    Quick Actions
                 </div>
-                <div class="col-6">
-                    <a href="/Categories/Index" class="btn btn-action bg-white w-100 py-4 rounded-4 text-decoration-none">
-                        <i class="mdi mdi-format-list-bulleted fs-2 d-block mb-1 text-sunset"></i>
-                        <span class="fw-bold small">Manage Categories</span>
-                    </a>
+                <div class="row g-3">
+                    <div class="col-6">
+                        <a href="/Quotes/Create" class="action-btn">
+                            <i class="mdi mdi-plus-circle-outline"></i>
+                            New Quote
+                        </a>
+                    </div>
+                    <div class="col-6">
+                        <a href="/Categories/Index" class="action-btn">
+                            <i class="mdi mdi-shape-plus"></i>
+                            Categories
+                        </a>
+                    </div>
+                    <div class="col-6">
+                        <a href="/Users/Index" class="action-btn">
+                            <i class="mdi mdi-account-box"></i>
+                            Users
+                        </a>
+                    </div>
+                    <div class="col-6">
+                        <a href="/Reports/Dashboard" class="action-btn">
+                            <i class="mdi mdi-chart-bar"></i>
+                            Reports
+                        </a>
+                    </div>
                 </div>
             </div>
 
-            <div class="card border-0 shadow-sm rounded-4 p-4 glass-card">
-                <h6 class="fw-bold text-muted mb-4 small">LIBRARY COVERAGE</h6>
+            <div class="panel">
+                <div class="panel-title">
+                    <i class="mdi mdi-bookshelf"></i>
+                    Library Coverage
+                </div>
                 @foreach (var cat in ViewBag.TopCategories)
                 {
-                    <div class="mb-4">
-                        <div class="d-flex justify-content-between mb-1">
-                            <span class="small fw-bold">@cat.Name</span>
-                            <span class="badge bg-light text-dark rounded-pill" style="font-size: 10px;">@cat.Count</span>
+                    <div class="cat-row">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="cat-name">@cat.Name</span>
+                            <span class="cat-badge">@cat.Count</span>
                         </div>
-                        <div class="progress" style="height: 8px; background: #eee;">
-                            <div class="progress-bar progress-warm" style="width: @cat.Percent%"></div>
+                        <div class="cat-track">
+                            <div class="cat-fill" style="width:@cat.Percent%"></div>
                         </div>
                     </div>
                 }
-                <div class="text-center mt-2">
-                    <a href="/Categories" class="text-sunset fw-bold small text-decoration-none">View All Categories <i class="mdi mdi-arrow-right"></i></a>
-                </div>
+                <a href="/Categories" class="view-all">
+                    View All Categories <i class="mdi mdi-arrow-right"></i>
+                </a>
             </div>
+
         </div>
     </div>
+
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    const ctx = document.getElementById('dashboardSunsetChart').getContext('2d');
+    const ctx = document.getElementById('dashboardChart').getContext('2d');
+
+    const grad = ctx.createLinearGradient(0, 0, 0, 280);
+    grad.addColorStop(0, 'rgba(249,115,22,0.25)');
+    grad.addColorStop(1, 'rgba(249,115,22,0.0)');
+
     new Chart(ctx, {
         type: 'line',
         data: {
@@ -199,16 +608,40 @@
                 label: 'Schedules',
                 data: [@ViewBag.Morning, @ViewBag.Afternoon, @ViewBag.Evening, @ViewBag.Night],
                 borderColor: '#f97316',
-                backgroundColor: 'rgba(249, 115, 22, 0.1)',
+                backgroundColor: grad,
                 fill: true,
-                tension: 0.4,
-                pointRadius: 6
+                tension: 0.45,
+                pointRadius: 6,
+                pointBackgroundColor: '#f97316',
+                pointBorderColor: '#ffffff',
+                pointBorderWidth: 2.5,
+                borderWidth: 2.5,
             }]
         },
         options: {
             maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
-            scales: { y: { display: false }, x: { grid: { display: false } } }
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: '#1a2235',
+                    borderColor: 'rgba(249,115,22,0.3)',
+                    borderWidth: 1,
+                    titleColor: '#f1f5f9',
+                    bodyColor: '#94a3b8',
+                    padding: 12,
+                    cornerRadius: 10,
+                }
+            },
+            scales: {
+                y: {
+                    grid: { color: 'rgba(0,0,0,0.05)', drawBorder: false },
+                    ticks: { color: '#94a3b8', font: { size: 11 } }
+                },
+                x: {
+                    grid: { display: false },
+                    ticks: { color: '#64748b', font: { size: 12, weight: '500' } }
+                }
+            }
         }
     });
 </script>

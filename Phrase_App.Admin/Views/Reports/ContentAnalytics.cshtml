@@ -1,146 +1,545 @@
-@model Phrase_App.Admin.Controllers.ContentAnalyticsViewModel
+﻿@model Phrase_App.Admin.Controllers.ContentAnalyticsViewModel
 
 @{
-    ViewData["Title"] = "Reports - Content Analytics";
+    ViewData["Title"] = "Content Analytics";
     Layout = "~/Views/Shared/_Layout.cshtml";
+    var topCategory = Model.QuotesByCategory.FirstOrDefault();
 }
 
-<div class="container-fluid">
-    <div class="row mb-4 align-items-center">
-        <div class="col-md-8">
-            <h4 class="page-title text-primary mb-0">
-                <i class="mdi mdi-library-shelves me-2"></i>Content & Quote Analytics
-            </h4>
-            <p class="text-muted small">Generated at: @Model.GeneratedAt.ToString("yyyy-MM-dd HH:mm")</p>
-        </div>
-        <div class="col-md-4 text-md-end text-right">
-            <button class="btn btn-sm btn-primary shadow-sm" onclick="location.reload()">
-                <i class="mdi mdi-refresh"></i> Update Data
-            </button>
+<style>
+    :root {
+        --orange: #f97316;
+        --orange-light: #fff4ed;
+        --orange-border: #fed7aa;
+        --amber: #fbbf24;
+        --card-bg: #ffffff;
+        --card-border: rgba(0,0,0,0.06);
+        --card-shadow: 0 1px 12px rgba(0,0,0,0.07), 0 4px 24px rgba(0,0,0,0.04);
+        --text: #1e293b;
+        --muted: #64748b;
+        --muted-light: #94a3b8;
+        --input-bg: #f8fafc;
+        --input-border: #e2e8f0;
+        --gradient: linear-gradient(135deg, #f97316 0%, #fbbf24 100%);
+    }
+
+    /* ── PAGE HEADER ── */
+    .page-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-bottom: 28px;
+    }
+
+        .page-header h2 {
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--text);
+            margin: 0 0 4px;
+            letter-spacing: -0.4px;
+        }
+
+        .page-header p {
+            font-size: 13px;
+            color: var(--muted);
+            margin: 0;
+        }
+
+    .refresh-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: var(--input-bg);
+        color: var(--muted) !important;
+        border: 1.5px solid var(--input-border);
+        border-radius: 12px;
+        padding: 9px 18px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none !important;
+        transition: all 0.2s;
+    }
+
+        .refresh-btn:hover {
+            background: var(--orange-light);
+            border-color: var(--orange-border);
+            color: var(--orange) !important;
+        }
+
+    /* ── STAT CARDS ── */
+    .stat-card {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 20px;
+        padding: 24px;
+        box-shadow: var(--card-shadow);
+        position: relative;
+        overflow: hidden;
+        height: 100%;
+        transition: transform 0.25s, box-shadow 0.25s;
+    }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+
+        .stat-card.primary {
+            background: var(--gradient);
+            border: none;
+            box-shadow: 0 8px 32px rgba(249,115,22,0.35);
+        }
+
+            .stat-card.primary::before {
+                content: '';
+                position: absolute;
+                top: -40px;
+                right: -40px;
+                width: 140px;
+                height: 140px;
+                background: rgba(255,255,255,0.13);
+                border-radius: 50%;
+            }
+
+        .stat-card.navy {
+            background: #1a2235;
+            border: 1px solid rgba(251,191,36,0.15);
+        }
+
+    .stat-label {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 1.2px;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 10px;
+    }
+
+    .stat-card.primary .stat-label {
+        color: rgba(255,255,255,0.75);
+    }
+
+    .stat-card.navy .stat-label {
+        color: rgba(251,191,36,0.6);
+    }
+
+    .stat-value {
+        font-size: 38px;
+        font-weight: 800;
+        color: var(--text);
+        line-height: 1;
+        letter-spacing: -1.5px;
+        margin-bottom: 10px;
+        word-break: break-word;
+    }
+
+    .stat-card.primary .stat-value {
+        color: #fff;
+    }
+
+    .stat-card.navy .stat-value {
+        color: var(--amber);
+        font-size: 22px;
+        letter-spacing: -0.5px;
+    }
+
+    .stat-sub {
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--muted);
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .stat-card.primary .stat-sub {
+        color: rgba(255,255,255,0.8);
+    }
+
+    .stat-card.navy .stat-sub {
+        color: rgba(251,191,36,0.65);
+    }
+
+    .stat-icon {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 22px;
+    }
+
+    .stat-card.primary .stat-icon {
+        background: rgba(255,255,255,0.2);
+        color: #fff;
+    }
+
+    .stat-card:not(.primary):not(.navy) .stat-icon {
+        background: var(--orange-light);
+        color: var(--orange);
+        border: 1px solid var(--orange-border);
+    }
+
+    .stat-card.navy .stat-icon {
+        background: rgba(251,191,36,0.15);
+        color: var(--amber);
+    }
+
+    .stat-bar-track {
+        height: 5px;
+        border-radius: 10px;
+        margin-top: 14px;
+        overflow: hidden;
+        background: rgba(255,255,255,0.15);
+    }
+
+    .stat-bar-fill {
+        height: 100%;
+        border-radius: 10px;
+        background: rgba(255,255,255,0.6);
+    }
+
+    .stat-card:not(.primary) .stat-bar-track {
+        background: #f1f5f9;
+    }
+
+    .stat-card:not(.primary) .stat-bar-fill {
+        background: var(--gradient);
+    }
+
+    .stat-card.navy .stat-bar-track {
+        background: rgba(255,255,255,0.08);
+    }
+
+    .stat-card.navy .stat-bar-fill {
+        background: var(--amber);
+    }
+
+    /* ── PANELS ── */
+    .panel {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 20px;
+        padding: 24px;
+        box-shadow: var(--card-shadow);
+        margin-bottom: 24px;
+    }
+
+    .panel-title {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 1.2px;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+        .panel-title i {
+            color: var(--orange);
+            font-size: 16px;
+        }
+
+        .panel-title::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #f1f5f9;
+        }
+
+    /* ── TOP QUOTES TABLE ── */
+    .quotes-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+        .quotes-table thead th {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--muted);
+            padding: 12px 16px;
+            background: #f8fafc;
+            border-bottom: 2px solid #e2e8f0;
+            white-space: nowrap;
+        }
+
+        .quotes-table tbody tr {
+            transition: background 0.15s;
+        }
+
+            .quotes-table tbody tr:hover {
+                background: #fff9f5;
+            }
+
+        .quotes-table tbody td {
+            font-size: 13.5px;
+            color: var(--text);
+            border-bottom: 1px solid #f1f5f9;
+            padding: 14px 16px;
+            vertical-align: middle;
+        }
+
+    .quote-text-cell {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        line-height: 1.55;
+    }
+
+    .quote-icon-box {
+        width: 30px;
+        height: 30px;
+        border-radius: 8px;
+        background: var(--orange-light);
+        border: 1px solid var(--orange-border);
+        color: var(--orange);
+        font-size: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        margin-top: 1px;
+    }
+
+    .fav-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        background: #fffbeb;
+        border: 1px solid #fde68a;
+        color: #b45309;
+        border-radius: 20px;
+        padding: 4px 12px;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    /* ── RANK BADGE ── */
+    .rank-badge {
+        width: 26px;
+        height: 26px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+        font-weight: 800;
+        flex-shrink: 0;
+    }
+
+        .rank-badge.r1 {
+            background: var(--gradient);
+            color: #fff;
+            box-shadow: 0 3px 10px rgba(249,115,22,0.35);
+        }
+
+        .rank-badge.r2 {
+            background: #f1f5f9;
+            color: var(--muted);
+        }
+
+        .rank-badge.r3 {
+            background: #fffbeb;
+            border: 1px solid #fde68a;
+            color: #b45309;
+        }
+
+        .rank-badge.rn {
+            background: #f8fafc;
+            color: var(--muted-light);
+            border: 1px solid #e2e8f0;
+        }
+</style>
+
+<!-- Page Header -->
+<div class="page-header">
+    <div>
+        <h2>Content Analytics</h2>
+        <p>
+            <i class="mdi mdi-clock-outline" style="font-size:13px;"></i>
+            Generated at: <strong>@Model.GeneratedAt.ToString("MMM dd, yyyy · HH:mm UTC")</strong>
+        </p>
+    </div>
+    <button class="refresh-btn" onclick="location.reload()">
+        <i class="mdi mdi-refresh"></i> Refresh Report
+    </button>
+</div>
+
+<!-- Stat Cards -->
+<div class="row g-3 mb-4">
+
+    <div class="col-lg-4 col-md-6">
+        <div class="stat-card primary">
+            <div class="stat-icon"><i class="mdi mdi-format-quote-open"></i></div>
+            <div class="stat-label">New Quotes — 30 Days</div>
+            <div class="stat-value">@Model.TotalQuotesLast30Days</div>
+            <div class="stat-sub">
+                <i class="mdi mdi-calendar-month"></i> Last 30 days
+            </div>
+            <div class="stat-bar-track">
+                <div class="stat-bar-fill" style="width:100%;"></div>
+            </div>
         </div>
     </div>
 
-    <div class="row mb-4">
-        <div class="col-md-4">
-            <div class="card shadow-sm border-0 border-top border-primary border-3">
-                <div class="card-body text-center">
-                    <h6 class="text-muted small text-uppercase">New Quotes (30d)</h6>
-                    <h2 class="text-primary">@Model.TotalQuotesLast30Days</h2>
-                </div>
+    <div class="col-lg-4 col-md-6">
+        <div class="stat-card">
+            <div class="stat-icon"><i class="mdi mdi-tag-multiple-outline"></i></div>
+            <div class="stat-label">Total Categories</div>
+            <div class="stat-value">@Model.QuotesByCategory.Count</div>
+            <div class="stat-sub">
+                <i class="mdi mdi-layers-outline"></i> Active content categories
             </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card shadow-sm border-0 border-top border-info border-3">
-                <div class="card-body text-center">
-                    <h6 class="text-muted small text-uppercase">Total Categories</h6>
-                    <h2 class="text-info">@Model.QuotesByCategory.Count</h2>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card shadow-sm border-0 border-top border-success border-3">
-                <div class="card-body text-center">
-                    <h6 class="text-muted small text-uppercase">Top Category</h6>
-                    <h2 class="text-success">@(Model.QuotesByCategory.FirstOrDefault()?.Category ?? "N/A")</h2>
-                </div>
+            <div class="stat-bar-track">
+                <div class="stat-bar-fill" style="width:70%;"></div>
             </div>
         </div>
     </div>
 
-    <div class="row mb-4">
-        <div class="col-lg-6">
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title mb-4">Quotes by Category</h5>
-                    <div style="height: 300px; width: 100%; position: relative;">
-                        <canvas id="categoryBarChart"></canvas>
-                    </div>
-                </div>
+    <div class="col-lg-4 col-md-6">
+        <div class="stat-card navy">
+            <div class="stat-icon"><i class="mdi mdi-trophy-outline"></i></div>
+            <div class="stat-label">Top Category</div>
+            <div class="stat-value">@(topCategory?.Category ?? "N/A")</div>
+            <div class="stat-sub">
+                <i class="mdi mdi-chart-bar"></i>
+                @(topCategory != null ? topCategory.Count + " quotes" : "No data yet")
             </div>
-        </div>
-
-        <div class="col-lg-6">
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title mb-4">Quotes Added per Day</h5>
-                    <div style="height: 300px; width: 100%; position: relative;">
-                        <canvas id="quotesLineChart"></canvas>
-                    </div>
-                </div>
+            <div class="stat-bar-track">
+                <div class="stat-bar-fill" style="width:85%;"></div>
             </div>
         </div>
     </div>
 
-    <div class="card shadow-sm">
-        <div class="card-header bg-white">
-            <h5 class="card-title mb-0"><i class="mdi mdi-star text-warning me-2"></i>Most Favorited Quotes</h5>
-        </div>
-        <div class="card-body">
-            <div class="table-responsive">
-                <table id="topQuotesTable" class="table table-hover no-wrap">
-                    <thead class="bg-light">
-                        <tr>
-                            <th style="width: 70%">Quote Content</th>
-                            <th class="text-center">Favorites</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var q in Model.TopQuotes)
-                        {
-                            <tr>
-                                <td class="text-wrap">
-                                    <i class="mdi mdi-format-quote-open text-muted me-1"></i>
-                                    @q.QuoteText
-                                </td>
-                                <td class="text-center">
-                                    <span class="badge bg-soft-warning text-warning px-3 rounded-pill">
-                                        @q.FavoriteCount
-                                    </span>
-                                </td>
-                              
-                            </tr>
-                        }
-                    </tbody>
-                </table>
+</div>
+
+<!-- Charts Row -->
+<div class="row g-4 mb-0">
+
+    <div class="col-lg-6">
+        <div class="panel">
+            <div class="panel-title">
+                <i class="mdi mdi-chart-bar"></i>
+                Quotes by Category
+            </div>
+            <div style="height:280px;">
+                <canvas id="categoryBarChart"></canvas>
             </div>
         </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="panel">
+            <div class="panel-title">
+                <i class="mdi mdi-chart-areaspline"></i>
+                Quotes Added per Day
+            </div>
+            <div style="height:280px;">
+                <canvas id="quotesLineChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Top Quotes Table -->
+<div class="panel">
+    <div class="panel-title">
+        <i class="mdi mdi-star-outline"></i>
+        Most Favorited Quotes
+    </div>
+    <div class="table-responsive">
+        <table class="quotes-table">
+            <thead>
+                <tr>
+                    <th style="width:50px;">#</th>
+                    <th>Quote</th>
+                    <th class="text-center" style="width:130px;">Favorites</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{
+                    int rank = 1;
+                }
+                @foreach (var q in Model.TopQuotes)
+                {
+                    var rankClass = rank == 1 ? "r1" : rank == 2 ? "r2" : rank == 3 ? "r3" : "rn";
+                    <tr>
+                        <td>
+                            <div class="rank-badge @rankClass">@rank</div>
+                        </td>
+                        <td>
+                            <div class="quote-text-cell">
+                                <div class="quote-icon-box">
+                                    <i class="mdi mdi-format-quote-open"></i>
+                                </div>
+                                <span>@q.QuoteText</span>
+                            </div>
+                        </td>
+                        <td class="text-center">
+                            <span class="fav-badge">
+                                <i class="mdi mdi-heart" style="font-size:12px;"></i>
+                                @q.FavoriteCount
+                            </span>
+                        </td>
+                    </tr>
+                    rank++;
+                }
+            </tbody>
+        </table>
     </div>
 </div>
 
-<style>
-    .bg-soft-warning {
-        background-color: rgba(255, 193, 7, 0.15);
-    }
-</style>
-
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
     <script>
-        (function() {
-            window.onload = function() {
-                // --- 1. DATA PREPARATION ---
-                const catLabels = [];
-                const catData = [];
+        (function () {
+            window.onload = function () {
+
+                // ── Data ──
+                const catLabels = [], catData = [], catColors = [];
                 @foreach (var item in Model.QuotesByCategory)
                 {
-                        <text>
-                        catLabels.push("@item.Category");
-                        catData.push(@item.Count);
-                        </text>
+                        <text>catLabels.push("@item.Category"); catData.push(@item.Count);</text>
                 }
 
-                const trendLabels = [];
-                const trendData = [];
+                const trendLabels = [], trendData = [];
                 @foreach (var item in Model.QuotesPerDay)
                 {
-                        <text>
-                        trendLabels.push("@item.Date.ToString("MMM dd")");
-                        trendData.push(@item.Count);
-                        </text>
+                        <text>trendLabels.push("@item.Date.ToString("MMM dd")"); trendData.push(@item.Count);</text>
                 }
 
-                // --- 2. CATEGORY BAR CHART ---
+                // Build orange-to-amber gradient array for bars
+                const baseColors = ['#f97316','#fb923c','#fdba74','#fbbf24','#fcd34d'];
+                for (let i = 0; i < catLabels.length; i++) {
+                    catColors.push(baseColors[i % baseColors.length]);
+                }
+
+                const tooltipDefaults = {
+                    backgroundColor: '#1a2235',
+                    borderColor: 'rgba(249,115,22,0.3)',
+                    borderWidth: 1,
+                    titleColor: '#f1f5f9',
+                    bodyColor: '#94a3b8',
+                    padding: 12,
+                    cornerRadius: 10
+                };
+
+                const tickStyle = { color: '#94a3b8', font: { size: 11 } };
+
+                // ── Bar Chart ──
                 const ctxBar = document.getElementById('categoryBarChart');
                 if (ctxBar && catLabels.length > 0) {
                     new Chart(ctxBar, {
@@ -148,24 +547,42 @@
                         data: {
                             labels: catLabels,
                             datasets: [{
-                                label: 'Total Quotes',
+                                label: 'Quotes',
                                 data: catData,
-                                backgroundColor: '#007bff',
-                                borderRadius: 5
+                                backgroundColor: catColors,
+                                borderRadius: 8,
+                                borderSkipped: false
                             }]
                         },
                         options: {
                             responsive: true,
                             maintainAspectRatio: false,
-                            plugins: { legend: { display: false } },
-                            scales: { y: { beginAtZero: true } }
+                            plugins: {
+                                legend: { display: false },
+                                tooltip: tooltipDefaults
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: { precision: 0, ...tickStyle },
+                                    grid: { color: 'rgba(0,0,0,0.05)', drawBorder: false }
+                                },
+                                x: {
+                                    grid: { display: false },
+                                    ticks: tickStyle
+                                }
+                            }
                         }
                     });
                 }
 
-                // --- 3. QUOTES TREND LINE CHART ---
+                // ── Line Chart ──
                 const ctxLine = document.getElementById('quotesLineChart');
                 if (ctxLine && trendLabels.length > 0) {
+                    const grad = ctxLine.getContext('2d').createLinearGradient(0, 0, 0, 280);
+                    grad.addColorStop(0, 'rgba(249,115,22,0.28)');
+                    grad.addColorStop(1, 'rgba(249,115,22,0.0)');
+
                     new Chart(ctxLine, {
                         type: 'line',
                         data: {
@@ -173,19 +590,34 @@
                             datasets: [{
                                 label: 'New Quotes',
                                 data: trendData,
-                                borderColor: '#28a745',
-                                backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                                borderColor: '#f97316',
+                                backgroundColor: grad,
                                 fill: true,
-                                tension: 0.4
+                                tension: 0.45,
+                                pointRadius: 5,
+                                pointBackgroundColor: '#f97316',
+                                pointBorderColor: '#ffffff',
+                                pointBorderWidth: 2,
+                                borderWidth: 2.5
                             }]
                         },
                         options: {
                             responsive: true,
                             maintainAspectRatio: false,
-                            plugins: { legend: { display: false } },
+                            plugins: {
+                                legend: { display: false },
+                                tooltip: tooltipDefaults
+                            },
                             scales: {
-                                y: { beginAtZero: true, ticks: { precision: 0 } },
-                                x: { grid: { display: false } }
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: { precision: 0, ...tickStyle },
+                                    grid: { color: 'rgba(0,0,0,0.05)', drawBorder: false }
+                                },
+                                x: {
+                                    grid: { display: false },
+                                    ticks: tickStyle
+                                }
                             }
                         }
                     });

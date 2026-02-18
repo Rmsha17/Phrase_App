@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -60,55 +60,114 @@ namespace Phrase_App.Admin.Controllers
 
             return View(user);
         }
-
-        // GET: Admin/Users/Edit/{id}
+        // ─────────────────────────────────────────
+        // GET: /Admin/Users/Edit/{id}
+        // ─────────────────────────────────────────
         [HttpGet]
         public async Task<IActionResult> Edit(string id)
         {
-            var user = await _userManager.Users.FirstOrDefaultAsync(u => u.Id == id);
+            if (string.IsNullOrEmpty(id))
+                return NotFound();
+
+            var user = await _userManager.FindByIdAsync(id);
             if (user == null)
-            {
-                TempData["Error"] = "User not found.";
-                return RedirectToAction(nameof(Index));
-            }
+                return NotFound();
 
             return View(user);
         }
 
-        // POST: Admin/Users/Edit/{id}
+        // ─────────────────────────────────────────
+        // POST: /Admin/Users/Edit/{id}
+        // Only saves: FullName + DarkMode
+        // ─────────────────────────────────────────
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(string id, [Bind("Id,FullName,DarkMode")] ApplicationUser model)
+        public async Task<IActionResult> Edit(string id, string? FullName, bool DarkMode)
         {
-            if (id != model.Id) return BadRequest();
+            if (string.IsNullOrEmpty(id))
+                return NotFound();
 
             var user = await _userManager.FindByIdAsync(id);
             if (user == null)
+                return NotFound();
+
+            user.FullName = FullName?.Trim();
+            user.DarkMode = DarkMode;
+
+            var result = await _userManager.UpdateAsync(user);
+
+            if (result.Succeeded)
             {
-                TempData["Error"] = "User not found.";
-                return RedirectToAction(nameof(Index));
+                TempData["Success"] = "User updated successfully.";
+                return RedirectToAction(nameof(Details), new { id });
             }
 
-            try
-            {
-                user.FullName = model.FullName ?? user.FullName;
-                user.DarkMode = model.DarkMode;
+            foreach (var error in result.Errors)
+                ModelState.AddModelError(string.Empty, error.Description);
 
-                var result = await _userManager.UpdateAsync(user);
-                if (!result.Succeeded)
+            TempData["Error"] = "Failed to update user.";
+            return View(user);
+        }
+
+        // ─────────────────────────────────────────
+        // POST: /Admin/Users/SetLockout/{id}
+        // lockoutEnd = ""           → Activate (clear lockout)
+        // lockoutEnd = ISO datetime → Deactivate (set lockout)
+        // ─────────────────────────────────────────
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SetLockout(string id, string? lockoutEnd)
+        {
+            if (string.IsNullOrEmpty(id))
+                return NotFound();
+
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null)
+                return NotFound();
+
+            // Make sure lockout is enabled for this user
+            await _userManager.SetLockoutEnabledAsync(user, true);
+
+            if (string.IsNullOrWhiteSpace(lockoutEnd))
+            {
+                // ── ACTIVATE: clear the lockout ──
+                var unlockResult = await _userManager.SetLockoutEndDateAsync(user, null);
+
+                if (unlockResult.Succeeded)
+                    TempData["Success"] = $"{user.UserName}'s account has been activated.";
+                else
+                    TempData["Error"] = "Failed to activate account.";
+            }
+            else
+            {
+                // ── DEACTIVATE: set lockout end date ──
+                if (!DateTimeOffset.TryParse(lockoutEnd, out var lockoutEndDate))
                 {
-                    TempData["Error"] = "Failed to update user.";
-                    return View(model);
+                    TempData["Error"] = "Invalid lockout date.";
+                    return RedirectToAction(nameof(Edit), new { id });
                 }
 
-                TempData["Success"] = "User updated successfully!";
-                return RedirectToAction(nameof(Details), new { id = user.Id });
+                // Safety: don't allow a date in the past
+                if (lockoutEndDate <= DateTimeOffset.UtcNow)
+                {
+                    TempData["Error"] = "Lockout end date must be in the future.";
+                    return RedirectToAction(nameof(Edit), new { id });
+                }
+
+                var lockResult = await _userManager.SetLockoutEndDateAsync(user, lockoutEndDate);
+
+                if (lockResult.Succeeded)
+                {
+                    var days = (lockoutEndDate - DateTimeOffset.UtcNow).Days;
+                    TempData["Success"] = $"{user.UserName}'s account has been deactivated for {days} day(s).";
+                }
+                else
+                {
+                    TempData["Error"] = "Failed to deactivate account.";
+                }
             }
-            catch (Exception ex)
-            {
-                TempData["Error"] = "An error occurred while updating the user.";
-                return View(model);
-            }
+
+            return RedirectToAction(nameof(Edit), new { id });
         }
 
         // POST: Admin/Users/ToggleDarkMode/{id}

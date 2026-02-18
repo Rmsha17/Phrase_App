@@ -1,53 +1,634 @@
 ﻿@model Phrase_App.Core.Models.Quote
-
 @{
     ViewData["Title"] = "Edit Quote";
     Layout = "~/Views/Shared/_Layout.cshtml";
     var categories = (IEnumerable<Phrase_App.Core.Models.Category>)ViewBag.Categories ?? new List<Phrase_App.Core.Models.Category>();
 }
 
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">Edit Quote</h5>
+<style>
+    :root {
+        --orange: #f97316;
+        --orange-light: #fff4ed;
+        --orange-border: #fed7aa;
+        --card-bg: #ffffff;
+        --card-border: rgba(0,0,0,0.06);
+        --card-shadow: 0 1px 12px rgba(0,0,0,0.07), 0 4px 24px rgba(0,0,0,0.04);
+        --text: #1e293b;
+        --muted: #64748b;
+        --muted-light: #94a3b8;
+        --input-bg: #f8fafc;
+        --input-border: #e2e8f0;
+        --gradient: linear-gradient(135deg, #f97316 0%, #fbbf24 100%);
+    }
 
-                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+    .page-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-bottom: 28px;
+    }
 
-                    <form asp-area="Admin" asp-controller="Quotes" asp-action="Edit" asp-route-id="@Model.Id" method="post" class="row g-3">
-                        @Html.AntiForgeryToken()
+        .page-header h2 {
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--text);
+            margin: 0 0 4px;
+            letter-spacing: -0.4px;
+        }
 
-                        <div class="col-12">
-                            <label class="form-label"><b>Quote Content</b></label>
-                            <textarea name="Content" class="form-control" rows="4" required>@Model.Content</textarea>
-                        </div>
+        .page-header p {
+            font-size: 13px;
+            color: var(--muted);
+            margin: 0;
+        }
 
-                        <div class="col-md-6">
-                            <label class="form-label">Author</label>
-                            <input type="text" name="Author" class="form-control" value="@Model.Author" />
-                        </div>
+    .breadcrumb-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 500;
+        text-decoration: none;
+        transition: color 0.2s;
+    }
 
-                        <div class="col-md-6">
-                            <label class="form-label"><b>Category</b></label>
-                            <select name="CategoryId" class="form-select" required>
-                                <option value="">-- Select Category --</option>
-                                @foreach (var cat in categories)
-                                {
-                                    <option value="@cat.Id" selected="@(cat.Id == Model.CategoryId)">@cat.Name</option>
-                                }
-                            </select>
-                        </div>
+        .breadcrumb-link:hover {
+            color: var(--orange);
+        }
 
-                        <div class="col-12">
-                            <button type="submit" class="btn btn-primary">Update</button>
-                            <a asp-area="Admin" asp-controller="Quotes" asp-action="Index" class="btn btn-secondary ms-2">Cancel</a>
-                        </div>
-                    </form>
+    .editing-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        background: var(--orange-light);
+        border: 1px solid var(--orange-border);
+        color: var(--orange);
+        border-radius: 30px;
+        padding: 5px 14px;
+        font-size: 12px;
+        font-weight: 600;
+        margin-top: 6px;
+    }
 
-                </div>
-            </div>
+    .panel {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 20px;
+        padding: 32px;
+        box-shadow: var(--card-shadow);
+    }
+
+    .form-section {
+        margin-bottom: 28px;
+    }
+
+    .form-section-title {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 1.2px;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+        .form-section-title i {
+            color: var(--orange);
+            font-size: 16px;
+        }
+
+        .form-section-title::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #f1f5f9;
+        }
+
+    .form-label {
+        font-size: 13px !important;
+        font-weight: 600 !important;
+        color: var(--text) !important;
+        margin-bottom: 7px !important;
+    }
+
+    .form-hint {
+        font-size: 12px;
+        color: var(--muted-light);
+        margin-top: 6px;
+    }
+
+    .form-control,
+    .form-select {
+        background: var(--input-bg) !important;
+        border: 1.5px solid var(--input-border) !important;
+        border-radius: 12px !important;
+        padding: 11px 15px !important;
+        font-size: 14px !important;
+        color: var(--text) !important;
+        transition: border-color 0.2s, box-shadow 0.2s !important;
+        box-shadow: none !important;
+    }
+
+        .form-control:focus,
+        .form-select:focus {
+            border-color: var(--orange) !important;
+            box-shadow: 0 0 0 3px rgba(249,115,22,0.12) !important;
+            background: #fff !important;
+            outline: none !important;
+        }
+
+    textarea.form-control {
+        resize: vertical;
+        min-height: 130px;
+        line-height: 1.7;
+    }
+
+    .char-counter {
+        font-size: 11px;
+        color: var(--muted-light);
+        text-align: right;
+        margin-top: 5px;
+        transition: color 0.2s;
+    }
+
+        .char-counter.warn {
+            color: #f97316;
+        }
+
+        .char-counter.danger {
+            color: #dc2626;
+        }
+
+    .field-validation-error {
+        font-size: 12px;
+        color: #dc2626;
+        margin-top: 5px;
+        display: block;
+    }
+
+    /* ── CATEGORY PILL ── */
+    .category-option-preview {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 14px;
+        background: var(--input-bg);
+        border: 1.5px solid var(--input-border);
+        border-radius: 12px;
+        margin-top: 10px;
+    }
+
+    .category-option-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 4px;
+        flex-shrink: 0;
+        transition: background 0.3s;
+    }
+
+    .category-option-name {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text);
+    }
+
+    /* ── LIVE PREVIEW ── */
+    .preview-affirmation {
+        background: linear-gradient(135deg, #1a2235 0%, #263044 100%);
+        border-radius: 18px;
+        padding: 24px;
+        margin-bottom: 16px;
+        border: 1px solid rgba(255,255,255,0.07);
+        min-height: 130px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .preview-quote-text {
+        font-size: 15px;
+        font-weight: 600;
+        color: #f1f5f9;
+        line-height: 1.65;
+        font-style: italic;
+        margin-bottom: 16px;
+        flex: 1;
+    }
+
+        .preview-quote-text.empty {
+            color: #475569;
+            font-style: normal;
+            font-weight: 400;
+            font-size: 13px;
+        }
+
+    .preview-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .preview-author {
+        font-size: 12px;
+        font-weight: 600;
+        color: #94a3b8;
+    }
+
+    .preview-cat-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        border-radius: 20px;
+        padding: 3px 10px;
+        font-size: 11px;
+        font-weight: 700;
+        color: #fff;
+        transition: background 0.3s;
+    }
+
+    /* ── BUTTONS ── */
+    .btn-submit {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: var(--gradient);
+        color: #fff !important;
+        border: none;
+        border-radius: 12px;
+        padding: 12px 28px;
+        font-size: 14px;
+        font-weight: 700;
+        cursor: pointer;
+        box-shadow: 0 4px 16px rgba(249,115,22,0.35);
+        transition: opacity 0.2s, transform 0.2s;
+        text-decoration: none !important;
+    }
+
+        .btn-submit:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+    .btn-cancel {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: #f1f5f9;
+        color: var(--muted) !important;
+        border: 1.5px solid var(--input-border);
+        border-radius: 12px;
+        padding: 12px 24px;
+        font-size: 14px;
+        font-weight: 600;
+        text-decoration: none !important;
+        transition: all 0.2s;
+    }
+
+        .btn-cancel:hover {
+            background: #e2e8f0;
+            color: var(--text) !important;
+        }
+
+    /* ── META INFO BOX ── */
+    .meta-box {
+        background: #f8fafc;
+        border: 1px solid var(--input-border);
+        border-radius: 14px;
+        padding: 16px 18px;
+        margin-bottom: 16px;
+    }
+
+    .meta-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 12px;
+        padding: 4px 0;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+        .meta-row:last-child {
+            border-bottom: none;
+        }
+
+    .meta-key {
+        color: var(--muted);
+        font-weight: 600;
+    }
+
+    .meta-val {
+        color: var(--text);
+        font-weight: 500;
+        font-family: 'Courier New', monospace;
+        font-size: 11px;
+    }
+
+    /* ── DANGER ZONE ── */
+    .danger-zone {
+        background: #fff5f5;
+        border: 1.5px solid #fecaca;
+        border-radius: 16px;
+        padding: 20px 24px;
+        margin-top: 16px;
+    }
+
+    .danger-zone-title {
+        font-size: 13px;
+        font-weight: 700;
+        color: #dc2626;
+        margin-bottom: 4px;
+        display: flex;
+        align-items: center;
+        gap: 7px;
+    }
+
+    .danger-zone-desc {
+        font-size: 12px;
+        color: #94a3b8;
+        margin-bottom: 14px;
+    }
+</style>
+
+<!-- Page Header -->
+<div class="page-header">
+    <div>
+        <h2>Edit Affirmation</h2>
+        <div class="editing-badge">
+            <i class="mdi mdi-pencil" style="font-size:12px;"></i>
+            Editing quote
         </div>
     </div>
+    <a class="breadcrumb-link" asp-area="Admin" asp-controller="Quotes" asp-action="Index">
+        <i class="mdi mdi-arrow-left"></i> Back to Affirmations
+    </a>
 </div>
 
+<div class="row g-4">
+
+    <!-- Form Column -->
+    <div class="col-lg-8">
+        <div class="panel">
+
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3" style="font-size:13px;"></div>
+
+            <form asp-area="Admin" asp-controller="Quotes" asp-action="Edit" asp-route-id="@Model.Id" method="post">
+                @Html.AntiForgeryToken()
+
+                <!-- Quote Content -->
+                <div class="form-section">
+                    <div class="form-section-title">
+                        <i class="mdi mdi-format-quote-open"></i>
+                        Quote Content
+                    </div>
+
+                    <label class="form-label">Affirmation Text</label>
+                    <textarea name="Content"
+                              id="contentInput"
+                              class="form-control"
+                              rows="5"
+                              required
+                              maxlength="500">@Model.Content</textarea>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <p class="form-hint mb-0">The main affirmation text shown to the user.</p>
+                        <div class="char-counter" id="charCounter">@Model.Content?.Length / 500</div>
+                    </div>
+                </div>
+
+                <!-- Author & Category -->
+                <div class="form-section">
+                    <div class="form-section-title">
+                        <i class="mdi mdi-information-outline"></i>
+                        Details
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Author</label>
+                            <input type="text"
+                                   name="Author"
+                                   id="authorInput"
+                                   class="form-control"
+                                   value="@Model.Author"
+                                   placeholder="e.g. Steve Jobs, Unknown..." />
+                            <p class="form-hint">Leave blank to default to 'Unknown'.</p>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Category</label>
+                            <select name="CategoryId" id="categorySelect" class="form-select" required>
+                                <option value="">— Select a category —</option>
+                                @foreach (var cat in categories)
+                                {
+                                    <option value="@cat.Id"
+                                            data-color="@cat.ColorHex"
+                                            data-name="@cat.Name"
+                                            selected="@(cat.Id == Model.CategoryId)">
+                                        @cat.Name
+                                    </option>
+                                }
+                            </select>
+
+                            <div class="category-option-preview" id="catPreviewRow" style="display:none;">
+                                <div class="category-option-dot" id="catPreviewDot"></div>
+                                <span class="category-option-name" id="catPreviewName"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="d-flex gap-3 pt-2">
+                    <button type="submit" class="btn-submit">
+                        <i class="mdi mdi-check"></i> Save Changes
+                    </button>
+                    <a asp-area="Admin" asp-controller="Quotes" asp-action="Index" class="btn-cancel">
+                        <i class="mdi mdi-close"></i> Cancel
+                    </a>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+    <!-- Right Column: Preview + Meta + Danger -->
+    <div class="col-lg-4">
+        <div style="position: sticky; top: 90px;">
+
+            <!-- Live Preview Panel -->
+            <div class="panel" style="margin-bottom: 20px;">
+                <div style="font-size:11px; font-weight:700; letter-spacing:1.2px; text-transform:uppercase; color:#64748b; margin-bottom:16px; display:flex; align-items:center; gap:8px;">
+                    <i class="mdi mdi-eye-outline" style="color:#f97316; font-size:16px;"></i>
+                    Live Preview
+                </div>
+
+                <div class="preview-affirmation">
+                    <div class="preview-quote-text" id="previewText">
+                        "@Model.Content"
+                    </div>
+                    <div class="preview-footer">
+                        <span class="preview-author" id="previewAuthor">— @(string.IsNullOrEmpty(Model.Author) ? "Unknown" : Model.Author)</span>
+                        <span class="preview-cat-chip" id="previewCat"
+                              style="background:@(Model.Category?.ColorHex ?? "#f97316"); @(Model.Category == null ? "display:none;" : "")">
+                            <i class="mdi mdi-tag" style="font-size:10px;"></i>
+                            <span id="previewCatName">@Model.Category?.Name</span>
+                        </span>
+                    </div>
+                </div>
+
+                <div style="background:#f8fafc; border-radius:12px; padding:16px;">
+                    <div style="font-size:12px; color:#94a3b8; margin-bottom:10px; font-weight:600;">Overlay card preview</div>
+                    <div style="background:#1a2235; border-radius:10px; padding:14px; display:flex; flex-direction:column; gap:8px;">
+                        <div id="miniText" style="font-size:12px; color:#cbd5e1; font-style:italic; line-height:1.5;">"@Model.Content"</div>
+                        <div style="display:flex; align-items:center; justify-content:space-between;">
+                            <span id="miniAuthor" style="font-size:11px; color:#475569;">— @(string.IsNullOrEmpty(Model.Author) ? "Unknown" : Model.Author)</span>
+                            <span id="miniCat" style="font-size:10px; font-weight:700; padding:2px 8px; border-radius:10px; color:@(Model.Category?.ColorHex ?? "#f97316");">@Model.Category?.Name</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quote Meta Info -->
+            <div class="panel" style="margin-bottom: 20px;">
+                <div style="font-size:11px; font-weight:700; letter-spacing:1.2px; text-transform:uppercase; color:#64748b; margin-bottom:14px; display:flex; align-items:center; gap:8px;">
+                    <i class="mdi mdi-information-outline" style="color:#f97316; font-size:16px;"></i>
+                    Quote Info
+                </div>
+                <div class="meta-box" style="margin-bottom:0;">
+                    <div class="meta-row">
+                        <span class="meta-key">ID</span>
+                        <span class="meta-val">@Model.Id.ToString().Substring(0, 8)…</span>
+                    </div>
+                    <div class="meta-row">
+                        <span class="meta-key">Created</span>
+                        <span class="meta-val">@Model.CreatedAt.ToString("MMM dd, yyyy")</span>
+                    </div>
+                    <div class="meta-row">
+                        <span class="meta-key">Length</span>
+                        <span class="meta-val" id="metaLength">@Model.Content?.Length chars</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Danger Zone -->
+            <div class="danger-zone">
+                <div class="danger-zone-title">
+                    <i class="mdi mdi-alert-outline"></i> Danger Zone
+                </div>
+                <p class="danger-zone-desc">Permanently deletes this affirmation. This action cannot be undone.</p>
+                <form asp-area="Admin"
+                      asp-controller="Quotes"
+                      asp-action="Delete"
+                      method="post"
+                      class="delete-quote-form">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@Model.Id" />
+                    <button type="submit" style="display:inline-flex; align-items:center; justify-content:center; gap:7px; width:100%; background:#fee2e2; color:#dc2626; border:1.5px solid #fca5a5; border-radius:10px; padding:10px 18px; font-size:13px; font-weight:600; cursor:pointer; transition:all 0.2s;">
+                        <i class="mdi mdi-trash-can-outline"></i> Delete Affirmation
+                    </button>
+                </form>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+@section Scripts {
+    <script>
+        (function () {
+            var $content = $('#contentInput');
+            var $author  = $('#authorInput');
+            var $catSel  = $('#categorySelect');
+            var $counter = $('#charCounter');
+
+            // ── Init counter ──
+            function updateCounter() {
+                var len = $content.val().length;
+                $counter.text(len + ' / 500').removeClass('warn danger');
+                if (len > 400) $counter.addClass('warn');
+                if (len > 470) $counter.removeClass('warn').addClass('danger');
+                $('#metaLength').text(len + ' chars');
+            }
+
+            updateCounter();
+
+            // ── Init category pill from pre-selected ──
+            function initCategory() {
+                var $opt  = $catSel.find('option:selected');
+                var color = $opt.data('color') || '';
+                var name  = $opt.data('name')  || '';
+                if (color && name) {
+                    $('#catPreviewDot').css('background', color);
+                    $('#catPreviewName').text(name);
+                    $('#catPreviewRow').show();
+                }
+            }
+
+            initCategory();
+
+            // ── Char counter + preview ──
+            $content.on('input', function () {
+                updateCounter();
+                updatePreview();
+            });
+
+            $author.on('input', function () { updatePreview(); });
+
+            // ── Category change ──
+            $catSel.on('change', function () {
+                var $opt  = $(this).find('option:selected');
+                var color = $opt.data('color') || '';
+                var name  = $opt.data('name')  || '';
+
+                if (color && name) {
+                    $('#catPreviewDot').css('background', color);
+                    $('#catPreviewName').text(name);
+                    $('#catPreviewRow').show();
+                    $('#previewCat').show().css('background', color);
+                    $('#previewCatName').text(name);
+                    $('#miniCat').text(name).css('color', color);
+                } else {
+                    $('#catPreviewRow').hide();
+                    $('#previewCat').hide();
+                    $('#miniCat').text('');
+                }
+            });
+
+            function updatePreview() {
+                var content = $content.val().trim();
+                var author  = $author.val().trim() || 'Unknown';
+                var display = content ? '"' + content + '"' : 'Your affirmation will appear here...';
+
+                $('#previewText').text(display).toggleClass('empty', !content);
+                $('#miniText').text(display);
+                $('#previewAuthor').text('— ' + author);
+                $('#miniAuthor').text('— ' + author);
+            }
+
+            // ── Delete confirmation ──
+            $('.delete-quote-form').on('submit', function (e) {
+                e.preventDefault();
+                var $form = $(this);
+                Swal.fire({
+                    title: 'Delete Affirmation?',
+                    text: "This will permanently remove the quote.",
+                    icon: 'warning',
+                    background: '#1a2235',
+                    color: '#f1f5f9',
+                    showCancelButton: true,
+                    confirmButtonColor: '#ef4444',
+                    cancelButtonColor: '#475569',
+                    confirmButtonText: 'Yes, Delete',
+                    cancelButtonText: 'Cancel'
+                }).then((result) => {
+                    if (result.isConfirmed) { $form[0].submit(); }
+                });
+            });
+        })();
+    </script>
+}

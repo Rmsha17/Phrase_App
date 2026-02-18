@@ -18,6 +18,8 @@ namespace Phrase_App.Infrastructure
             services.AddScoped<ILogService, LogService>();
             services.AddScoped<IOverlaySettingService, OverlaySettingService>();
             services.AddScoped<IPaymentService, PaymentService>();
+            // After builder.Services.AddScoped<IPaymentService, PaymentService>();
+            services.AddHostedService<SubscriptionVerificationService>();
             return services;
         }
     }

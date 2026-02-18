@@ -1,19 +1,13 @@
 ﻿@using System
 @{
-    // helper functions for active menu detection - KEPT EXACTLY AS PROVIDED
     string CurrentController() => ViewContext.RouteData.Values["controller"]?.ToString() ?? string.Empty;
     string CurrentAction() => ViewContext.RouteData.Values["action"]?.ToString() ?? string.Empty;
-
-    string ActiveForController(string controller)
-    {
-        return string.Equals(CurrentController(), controller, StringComparison.OrdinalIgnoreCase) ? "active" : string.Empty;
-    }
 
     string ActiveForControllerAction(string controller, string action)
     {
         return (string.Equals(CurrentController(), controller, StringComparison.OrdinalIgnoreCase)
                 && string.Equals(CurrentAction(), action, StringComparison.OrdinalIgnoreCase))
-                ? "active"
+                ? "selected"
                 : string.Empty;
     }
 
@@ -25,66 +19,258 @@
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>BelieveIn</title>
+    <title>BelieveIn Admin</title>
     <link rel="icon" type="image/png" sizes="16x16" href="~/Admin/assets/images/1400.png" />
     <link href="~/Admin/assets/libs/flot/css/float-chart.css" rel="stylesheet" />
     <link href="~/Admin/dist/css/style.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
 
     <style>
-        /* Ensures the sidebar is fixed and doesn't push content off-screen */
-        .left-sidebar {
+        /* ================================================
+                   BELIEVEIN ADMIN
+                   Sidebar  : #1a2235 dark navy
+                   Content  : #faf6f1 warm cream
+                   Accent   : #f97316 orange  /  #fbbf24 amber
+                   ================================================ */
+
+        body {
+            font-family: 'Inter', sans-serif !important;
+        }
+
+        /* ── CREAM PAGE BACKGROUND ── */
+        body,
+        .page-wrapper {
+            background-color: #faf6f1 !important;
+        }
+
+        .brand-logo {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 60px;
+        }
+
+            .brand-logo img {
+                width: 48px;
+                height: 48px;
+                border-radius: 14px;
+                box-shadow: 0 0 28px rgba(249,115,22,0.4);
+            }
+
+        .brand-logo-text {
+            font-size: 20px;
+            font-weight: 800;
+            color: #fff;
+            letter-spacing: -0.3px;
+        }
+
+            .brand-logo-text span {
+                color: #f97316;
+            }
+        /* ── TOPBAR ── */
+        .topbar,
+        .topbar nav.top-navbar,
+        .topbar .navbar-header,
+        .navbar[data-navbarbg="skin5"],
+        .navbar-header[data-logobg="skin5"] {
+            background-color: #1a2235 !important;
+            border-bottom: 2px solid rgba(249,115,22,0.25) !important;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.3) !important;
+        }
+
+            .topbar .mdi-menu,
+            .topbar .ti-menu {
+                color: #94a3b8 !important;
+            }
+
+            .topbar .sidebartoggler:hover .mdi-menu {
+                color: #f97316 !important;
+            }
+
+        /* ── SIDEBAR BACKGROUND ── */
+        .left-sidebar,
+        aside.left-sidebar,
+        [data-sidebarbg="skin5"] {
+            background-color: #1a2235 !important;
+            border-right: 1px solid rgba(249,115,22,0.15) !important;
+            box-shadow: 4px 0 24px rgba(0,0,0,0.35) !important;
             display: flex !important;
             flex-direction: column !important;
             height: 100vh !important;
-            position: fixed;
-            z-index: 10;
+            position: fixed !important;
+            z-index: 10 !important;
         }
 
         .scroll-sidebar {
             flex: 1 1 auto !important;
             overflow-y: auto !important;
+            background: transparent !important;
         }
 
+            .scroll-sidebar::-webkit-scrollbar {
+                width: 4px;
+            }
+
+            .scroll-sidebar::-webkit-scrollbar-thumb {
+                background: rgba(249,115,22,0.3);
+                border-radius: 10px;
+            }
+
+        /* ── SECTION CAPS ── */
+        #sidebarnav > li.nav-small-cap {
+            color: #ffffff !important;
+            font-size: 10px !important;
+            font-weight: 700 !important;
+            letter-spacing: 1.5px !important;
+            text-transform: uppercase !important;
+            padding: 18px 22px 5px !important;
+            list-style: none;
+        }
+
+        /* ── SIDEBAR ITEMS BASE ── */
+        #sidebarnav > li.sidebar-item,
+        #sidebarnav .first-level > li.sidebar-item {
+            margin: 2px 10px !important;
+            border-radius: 12px !important;
+            list-style: none !important;
+        }
+
+        #sidebarnav .sidebar-link,
+        #sidebarnav .sidebar-link:visited {
+            display: flex !important;
+            align-items: center !important;
+            gap: 12px !important;
+            padding: 11px 16px !important;
+            border-radius: 12px !important;
+            color: #ffffff !important;
+            font-size: 14px !important;
+            font-weight: 500 !important;
+            text-decoration: none !important;
+            background: transparent !important;
+            transition: background 0.2s, color 0.2s !important;
+        }
+
+            #sidebarnav .sidebar-link i {
+                font-size: 18px !important;
+                width: 22px !important;
+                text-align: center !important;
+                color: #ffffff !important;
+                flex-shrink: 0 !important;
+                transition: color 0.2s !important;
+            }
+
+            /* ── HOVER ── */
+            #sidebarnav .sidebar-link:hover {
+                background: rgba(249,115,22,0.13) !important;
+                color: #f97316 !important;
+            }
+
+                #sidebarnav .sidebar-link:hover i {
+                    color: #f97316 !important;
+                }
+
+        /* ── ACTIVE STATE (selected class) ── */
+        #sidebarnav li.sidebar-item.selected > .sidebar-link,
+        #sidebarnav li.sidebar-item.selected > .sidebar-link:hover {
+            background: linear-gradient(135deg, #f97316 0%, #fb923c 100%) !important;
+            color: #ffffff !important;
+            box-shadow: 0 4px 20px rgba(249,115,22,0.45) !important;
+        }
+
+            #sidebarnav li.sidebar-item.selected > .sidebar-link i {
+                color: #ffffff !important;
+            }
+
+        /* ── SUB-MENU DROPDOWN ── */
+        #sidebarnav .first-level {
+            background: rgba(0,0,0,0.18) !important;
+            border-radius: 12px !important;
+            margin: 4px 0 !important;
+            padding: 4px 0 !important;
+            list-style: none !important;
+        }
+
+            #sidebarnav .first-level .sidebar-link {
+                padding: 9px 16px 9px 46px !important;
+                font-size: 13px !important;
+                color: #ffffff !important;
+                border-radius: 8px !important;
+            }
+
+            #sidebarnav .first-level .sidebar-item.selected > .sidebar-link {
+                background: rgba(249,115,22,0.2) !important;
+                color: #fb923c !important;
+                box-shadow: none !important;
+            }
+
+                #sidebarnav .first-level .sidebar-item.selected > .sidebar-link i {
+                    color: #fb923c !important;
+                }
+
+        /* Arrow colour */
+        #sidebarnav .has-arrow::after {
+            border-color: #64748b !important;
+        }
+
+        /* ── SIDEBAR FOOTER ── */
         .sidebar-footer {
-            padding: 15px;
-            background: #1c2228;
-            border-top: 1px solid rgba(255,255,255,0.05);
-            margin-top: auto;
+            padding: 12px !important;
+            background: rgba(0,0,0,0.25) !important;
+            border-top: 1px solid rgba(255,255,255,0.05) !important;
+            margin-top: auto !important;
         }
 
         .logout-box {
-            display: flex;
-            align-items: center;
-            padding: 10px 15px;
-            border-radius: 8px;
-            color: #94a3b8 !important;
-            text-decoration: none;
-            transition: 0.3s;
-            background: rgba(255,255,255,0.03);
+            display: flex !important;
+            align-items: center !important;
+            gap: 12px !important;
+            padding: 11px 16px !important;
+            border-radius: 12px !important;
+            color: #ffffff !important;
+            text-decoration: none !important;
+            font-size: 14px !important;
+            font-weight: 500 !important;
+            background: rgba(255,255,255,0.04) !important;
+            transition: all 0.2s ease !important;
         }
 
-            .logout-box:hover {
-                background: rgba(234, 88, 12, 0.15);
-                color: #ea580c !important;
-            }
-
             .logout-box i {
-                margin-right: 10px;
-                color: #ef4444;
+                font-size: 18px !important;
+                color: #ef4444 !important;
+                width: 22px !important;
+                text-align: center !important;
             }
 
+            .logout-box:hover {
+                background: rgba(239,68,68,0.12) !important;
+                color: #ef4444 !important;
+            }
+
+        /* ── FOOTER ── */
+        .footer {
+            background: transparent !important;
+            border-top: 1px solid rgba(0,0,0,0.08) !important;
+            color: #94a3b8 !important;
+            font-size: 13px !important;
+            padding: 18px !important;
+            margin-top: 40px;
+        }
+
+        /* ── PRELOADER ── */
+        .preloader {
+            background: #1a2235 !important;
+        }
+
+        .lds-ripple div {
+            border-color: #f97316 !important;
+        }
+
+        /* ── MOBILE ── */
         @@media (max-width: 767px) {
             .topbar .top-navbar .navbar-header {
                 display: flex !important;
                 align-items: center;
                 width: 100%;
-                justify-content: normal !important;
-            }
-            /* Ensuring the toggler doesn't hug the edge too tightly */
-            .nav-toggler {
-                padding: 10px;
-                display: flex;
-                align-items: center;
             }
         }
     </style>
@@ -98,29 +284,37 @@
         </div>
     </div>
 
-    <div id="main-wrapper" data-layout="vertical" data-navbarbg="skin5" data-sidebartype="full"
-         data-sidebar-position="fixed" data-header-position="fixed" data-boxed-layout="full">
+    <div id="main-wrapper"
+         data-layout="vertical"
+         data-navbarbg="skin5"
+         data-sidebartype="full"
+         data-sidebar-position="fixed"
+         data-header-position="fixed"
+         data-boxed-layout="full">
 
+        <!-- TOPBAR -->
         <header class="topbar" data-navbarbg="skin5">
             <nav class="navbar top-navbar navbar-expand-md navbar-dark">
                 <div class="navbar-header" data-logobg="skin5">
                     <a class="nav-toggler waves-effect waves-light d-block d-md-none" href="javascript:void(0)">
                         <i class="ti-menu ti-close"></i>
                     </a>
-
                     <a class="navbar-brand" href="/home/index">
                         <b class="logo-icon ps-2">
-                            <img src="~/Admin/assets/images/1400.png" alt="logo" class="light-logo" width="25" />
+                            <img src="~/Admin/assets/images/1400.png" alt="logo" class="light-logo" width="28" />
                         </b>
                         <span class="logo-text ms-2">
-                            <img src="~/Admin/assets/images/believeintext.png" alt="text" class="light-logo" />
+                            <span class="brand-logo-text">Believe<span>In</span> Admin</span>
+                            @* <img src="~/Admin/assets/images/believeintext.png" alt="BelieveIn" class="light-logo" height="20" /> *@
                         </span>
                     </a>
                 </div>
-                <div class="" id="navbarSupportedContent" data-navbarbg="skin5">
+                <div id="navbarSupportedContent" data-navbarbg="skin5">
                     <ul class="navbar-nav float-start me-auto">
                         <li class="nav-item d-none d-lg-block">
-                            <a class="nav-link sidebartoggler waves-effect waves-light" href="javascript:void(0)" data-sidebartype="mini-sidebar">
+                            <a class="nav-link sidebartoggler waves-effect waves-light"
+                               href="javascript:void(0)"
+                               data-sidebartype="mini-sidebar">
                                 <i class="mdi mdi-menu font-24"></i>
                             </a>
                         </li>
@@ -129,83 +323,94 @@
             </nav>
         </header>
 
+        <!-- SIDEBAR -->
         <aside class="left-sidebar" data-sidebarbg="skin5">
             <div class="scroll-sidebar">
                 <nav class="sidebar-nav">
-                    <ul id="sidebarnav" class="pt-4">
+                    <ul id="sidebarnav" class="pt-2">
+
+                        <li class="nav-small-cap">Main</li>
 
                         <li class="sidebar-item @(ControllerIs("Home") ? "selected" : "")">
-                            <a class="sidebar-link waves-effect waves-dark" asp-controller="Home" asp-action="Index">
-                                <i class="mdi mdi-view-dashboard"></i><span class="hide-menu">Dashboard</span>
+                            <a class="sidebar-link" asp-controller="Home" asp-action="Index">
+                                <i class="mdi mdi-view-dashboard"></i>
+                                <span class="hide-menu">Dashboard</span>
                             </a>
                         </li>
 
+                        <li class="nav-small-cap">Content</li>
+
                         <li class="sidebar-item @(ControllerIs("Categories") ? "selected" : "")">
-                            <a class="sidebar-link waves-effect waves-dark" asp-controller="Categories" asp-action="Index">
-                                <i class="mdi mdi-receipt"></i><span class="hide-menu">Categories</span>
+                            <a class="sidebar-link" asp-controller="Categories" asp-action="Index">
+                                <i class="mdi mdi-shape-plus"></i>
+                                <span class="hide-menu">Categories</span>
                             </a>
                         </li>
 
                         <li class="sidebar-item @(ControllerIs("Quotes") ? "selected" : "")">
-                            <a class="sidebar-link waves-effect waves-dark" asp-controller="Quotes" asp-action="Index">
-                                <i class="mdi mdi-chart-bubble"></i><span class="hide-menu">Affirmations</span>
+                            <a class="sidebar-link" asp-controller="Quotes" asp-action="Index">
+                                <i class="mdi mdi-view-list"></i>
+                                <span class="hide-menu">Affirmations</span>
                             </a>
                         </li>
 
+                        <li class="nav-small-cap">Management</li>
+
                         <li class="sidebar-item @(ControllerIs("Users") ? "selected" : "")">
-                            <a class="sidebar-link waves-effect waves-dark" asp-controller="Users" asp-action="Index">
-                                <i class="mdi mdi-border-inside"></i><span class="hide-menu">Users</span>
+                            <a class="sidebar-link" asp-controller="Users" asp-action="Index">
+                                <i class="mdi mdi-account-box"></i>
+                                <span class="hide-menu">Users</span>
                             </a>
                         </li>
 
                         <li class="sidebar-item @(ControllerIs("Reports") ? "selected" : "")">
-                            <a class="sidebar-link has-arrow waves-effect waves-dark"
+                            <a class="sidebar-link has-arrow"
                                href="javascript:void(0)"
                                aria-expanded="@(ControllerIs("Reports") ? "true" : "false")">
-                                <i class="mdi mdi-receipt"></i>
+                                <i class="mdi mdi-chart-bar"></i>
                                 <span class="hide-menu">Reports</span>
                             </a>
                             <ul aria-expanded="@(ControllerIs("Reports") ? "true" : "false")"
                                 class="collapse first-level @(ControllerIs("Reports") ? "in" : "")">
-
                                 <li class="sidebar-item @(ActiveForControllerAction("Reports", "Dashboard"))">
                                     <a href="/Reports/Dashboard" class="sidebar-link">
-                                        <i class="mdi mdi-note-outline"></i>
+                                        <i class="mdi mdi-account-outline"></i>
                                         <span class="hide-menu">Users</span>
                                     </a>
                                 </li>
                                 <li class="sidebar-item @(ActiveForControllerAction("Reports", "ErrorLogs"))">
                                     <a href="/Reports/ErrorLogs" class="sidebar-link">
-                                        <i class="mdi mdi-note-plus"></i>
+                                        <i class="mdi mdi-alert-circle-outline"></i>
                                         <span class="hide-menu">Error Logs</span>
                                     </a>
                                 </li>
                                 <li class="sidebar-item @(ActiveForControllerAction("Reports", "UserEngagement"))">
                                     <a href="/Reports/UserEngagement" class="sidebar-link">
-                                        <i class="mdi mdi-note-plus"></i>
+                                        <i class="mdi mdi-heart-pulse"></i>
                                         <span class="hide-menu">User Engagement</span>
                                     </a>
                                 </li>
                                 <li class="sidebar-item @(ActiveForControllerAction("Reports", "ContentAnalytics"))">
                                     <a href="/Reports/ContentAnalytics" class="sidebar-link">
-                                        <i class="mdi mdi-note-plus"></i>
+                                        <i class="mdi mdi-chart-line"></i>
                                         <span class="hide-menu">Content Analytics</span>
                                     </a>
                                 </li>
                                 <li class="sidebar-item @(ActiveForControllerAction("Reports", "Subscriptions"))">
                                     <a href="/Reports/Subscriptions" class="sidebar-link">
-                                        <i class="mdi mdi-note-plus"></i>
+                                        <i class="mdi mdi-playlist-check"></i>
                                         <span class="hide-menu">Subscription</span>
                                     </a>
                                 </li>
                                 <li class="sidebar-item @(ActiveForControllerAction("Reports", "ScheduleReport"))">
                                     <a href="/Reports/ScheduleReport" class="sidebar-link">
-                                        <i class="mdi mdi-note-plus"></i>
+                                        <i class="mdi mdi-calendar-clock"></i>
                                         <span class="hide-menu">Schedule Report</span>
                                     </a>
                                 </li>
                             </ul>
                         </li>
+
                     </ul>
                 </nav>
             </div>
@@ -215,21 +420,22 @@
                     @Html.AntiForgeryToken()
                 </form>
                 <a href="javascript:void(0)" onclick="confirmLogout();" class="logout-box">
-                    <i class="mdi mdi-power"></i>
+                    <i class="mdi mdi-logout-variant"></i>
                     <span class="hide-menu">Sign Out</span>
                 </a>
             </div>
         </aside>
 
+        <!-- PAGE CONTENT -->
         <div class="page-wrapper">
-            <div class="container-fluid">
+            <div class="container-fluid" style="padding: 28px 28px 0;">
                 @RenderBody()
             </div>
-
             <footer class="footer text-center">
-                &copy; @DateTime.Now.Year BelieveIn App. All rights reserved.
+                &copy; @DateTime.Now.Year BelieveIn App &nbsp;·&nbsp; All rights reserved.
             </footer>
         </div>
+
     </div>
 
     <script src="~/Admin/assets/libs/jquery/dist/jquery.min.js"></script>
@@ -243,40 +449,43 @@
     <script>
         function confirmLogout() {
             Swal.fire({
-                title: 'Confirm Sign Out',
-                text: "Are you sure you want to logout?",
+                title: 'Sign Out?',
+                text: "You'll be logged out of the admin panel.",
                 icon: 'warning',
-                background: '#1f262d',
-                color: '#fff',
+                background: '#1a2235',
+                color: '#f1f5f9',
                 showCancelButton: true,
-                confirmButtonColor: '#ea580c',
-                cancelButtonColor: '#64748b',
-                confirmButtonText: 'Yes, Logout'
+                confirmButtonColor: '#f97316',
+                cancelButtonColor: '#475569',
+                confirmButtonText: 'Yes, Sign Out',
+                cancelButtonText: 'Cancel'
             }).then((result) => {
                 if (result.isConfirmed) {
                     document.getElementById('logoutForm').submit();
                 }
             });
         }
-           $(document).ready(function() {
-            // Force active state for the parent
-            $('.collapse.in').parents('li').addClass('active');
 
-            // Manual click handler if the template script fails
-            $('.has-arrow').on('click', function (e) {
+        $(document).ready(function () {
+            // If a sub-menu is open, mark parent as selected too
+            $('#sidebarnav .collapse.in').closest('li.sidebar-item').addClass('selected');
+
+            // Collapse toggle
+            $('#sidebarnav .has-arrow').on('click', function (e) {
                 e.preventDefault();
-                var $el = $(this).parent().find('ul').first();
-                if ($el.hasClass('in')) {
-                    $el.removeClass('in').attr('aria-expanded', 'false');
-                    $(this).attr('aria-expanded', 'false');
-                } else {
-                    $el.addClass('in').attr('aria-expanded', 'true');
-                    $(this).attr('aria-expanded', 'true');
+                var $ul = $(this).parent().find('ul.first-level').first();
+                var isOpen = $ul.hasClass('in');
+                // Close all others
+                $('#sidebarnav ul.first-level.in').removeClass('in').attr('aria-expanded','false');
+                $('#sidebarnav .has-arrow').attr('aria-expanded','false');
+                if (!isOpen) {
+                    $ul.addClass('in').attr('aria-expanded','true');
+                    $(this).attr('aria-expanded','true');
                 }
             });
         });
-
     </script>
+
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

@@ -1,100 +1,526 @@
 ﻿@model IEnumerable<Phrase_App.Core.Models.Quote>
 
 @{
-    ViewData["Title"] = "Quotes";
+    ViewData["Title"] = "Affirmations";
 }
 
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-12">
-            <!-- Toast Container -->
-            <div id="toastContainer" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
+<style>
+    /* ================================================
+               QUOTES / AFFIRMATIONS INDEX — cream/dark theme
+               ================================================ */
+    :root {
+        --orange: #f97316;
+        --orange-light: #fff4ed;
+        --orange-border: #fed7aa;
+        --amber: #fbbf24;
+        --card-bg: #ffffff;
+        --card-border: rgba(0,0,0,0.06);
+        --card-shadow: 0 1px 12px rgba(0,0,0,0.07), 0 4px 24px rgba(0,0,0,0.04);
+        --text: #1e293b;
+        --muted: #64748b;
+        --muted-light: #94a3b8;
+        --input-bg: #f8fafc;
+        --input-border: #e2e8f0;
+        --gradient: linear-gradient(135deg, #f97316 0%, #fbbf24 100%);
+    }
 
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">Quotes</h5>
+    /* ── PAGE HEADER ── */
+    .page-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-bottom: 28px;
+    }
 
-                    <div class="mb-3 d-flex gap-2">
-                        <a class="btn btn-primary" asp-area="Admin" asp-controller="Quotes" asp-action="Create">New Quote</a>
-                        <a class="btn btn-success" asp-area="Admin" asp-controller="Quotes" asp-action="BulkUpload">Bulk Upload</a>
-                    </div>
+        .page-header h2 {
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--text);
+            margin: 0 0 4px;
+            letter-spacing: -0.4px;
+        }
 
-                    <div class="mb-3">
-                        <form method="get" class="row g-2">
-                            <div class="col-md-6">
-                                <select name="categoryId" class="form-select" onchange="this.form.submit();">
-                                    <option value="">All Categories</option>
-                                    @foreach (var cat in (IEnumerable<Phrase_App.Core.Models.Category>)ViewBag.Categories ?? new List<Phrase_App.Core.Models.Category>())
-                                    {
-                                        <option value="@cat.Id" selected="@(cat.Id == (Guid?)ViewBag.SelectedCategoryId)">@cat.Name</option>
-                                    }
-                                </select>
-                            </div>
-                        </form>
-                    </div>
+        .page-header p {
+            font-size: 13px;
+            color: var(--muted);
+            margin: 0;
+        }
 
-                    <div class="table-responsive">
-                        <table id="zero_config" class="table table-striped table-bordered">
-                            <thead>
-                                <tr>
-                                    <th>Quote</th>
-                                    <th>Author</th>
-                                    <th>Category</th>
-                                    <th>Created At</th>
-                                    <th class="text-center">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @if (Model != null)
+    /* ── HEADER BUTTONS ── */
+    .btn-new {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: var(--gradient);
+        color: #fff !important;
+        border: none;
+        border-radius: 12px;
+        padding: 10px 20px;
+        font-size: 14px;
+        font-weight: 600;
+        text-decoration: none !important;
+        box-shadow: 0 4px 16px rgba(249,115,22,0.35);
+        transition: opacity 0.2s, transform 0.2s;
+    }
+
+        .btn-new:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+            color: #fff !important;
+        }
+
+    .btn-bulk {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: #f1f5f9;
+        color: var(--text) !important;
+        border: 1.5px solid var(--input-border);
+        border-radius: 12px;
+        padding: 10px 20px;
+        font-size: 14px;
+        font-weight: 600;
+        text-decoration: none !important;
+        transition: all 0.2s;
+    }
+
+        .btn-bulk:hover {
+            background: var(--orange-light);
+            border-color: var(--orange-border);
+            color: var(--orange) !important;
+        }
+
+    /* ── FILTER BAR ── */
+    .filter-bar {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 16px;
+        padding: 16px 20px;
+        box-shadow: var(--card-shadow);
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        flex-wrap: wrap;
+    }
+
+    .filter-label {
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.8px;
+        text-transform: uppercase;
+        color: var(--muted);
+        white-space: nowrap;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+        .filter-label i {
+            color: var(--orange);
+        }
+
+    .filter-select {
+        background: var(--input-bg) !important;
+        border: 1.5px solid var(--input-border) !important;
+        border-radius: 10px !important;
+        padding: 9px 14px !important;
+        font-size: 13px !important;
+        color: var(--text) !important;
+        min-width: 220px;
+        transition: border-color 0.2s, box-shadow 0.2s !important;
+        box-shadow: none !important;
+        cursor: pointer;
+    }
+
+        .filter-select:focus {
+            border-color: var(--orange) !important;
+            box-shadow: 0 0 0 3px rgba(249,115,22,0.12) !important;
+            outline: none !important;
+        }
+
+    /* ── PANEL ── */
+    .panel {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 20px;
+        padding: 28px;
+        box-shadow: var(--card-shadow);
+    }
+
+    /* ── DATATABLE ── */
+    .dataTables_filter input {
+        background: var(--input-bg) !important;
+        border: 1.5px solid var(--input-border) !important;
+        border-radius: 10px !important;
+        padding: 7px 14px !important;
+        font-size: 13px !important;
+        color: var(--text) !important;
+        outline: none !important;
+        transition: border-color 0.2s !important;
+        margin-left: 8px !important;
+    }
+
+        .dataTables_filter input:focus {
+            border-color: var(--orange) !important;
+            box-shadow: 0 0 0 3px rgba(249,115,22,0.1) !important;
+        }
+
+    .dataTables_filter label,
+    .dataTables_length label {
+        font-size: 13px;
+        color: var(--muted);
+        font-weight: 500;
+    }
+
+    .dataTables_length select {
+        background: var(--input-bg) !important;
+        border: 1.5px solid var(--input-border) !important;
+        border-radius: 8px !important;
+        padding: 5px 10px !important;
+        font-size: 13px !important;
+        color: var(--text) !important;
+        margin: 0 6px !important;
+    }
+
+    .dataTables_info {
+        font-size: 13px;
+        color: var(--muted);
+        padding-top: 10px !important;
+    }
+
+    /* ── TABLE ── */
+    table.dataTable {
+        border-collapse: separate !important;
+        border-spacing: 0 !important;
+        width: 100% !important;
+    }
+
+        table.dataTable thead th {
+            font-size: 11px !important;
+            font-weight: 700 !important;
+            letter-spacing: 1px !important;
+            text-transform: uppercase !important;
+            color: var(--muted) !important;
+            border: none !important;
+            border-bottom: 2px solid #e2e8f0 !important;
+            padding: 14px 16px !important;
+            background: #f8fafc !important;
+            white-space: nowrap;
+        }
+
+        table.dataTable tbody tr {
+            transition: background 0.15s;
+        }
+
+            table.dataTable tbody tr:hover {
+                background: #fff9f5 !important;
+            }
+
+        table.dataTable tbody td {
+            font-size: 13.5px !important;
+            color: var(--text) !important;
+            border: none !important;
+            border-bottom: 1px solid #f1f5f9 !important;
+            padding: 14px 16px !important;
+            vertical-align: middle !important;
+        }
+
+        table.dataTable.table-striped tbody tr:nth-of-type(odd) {
+            background: transparent !important;
+        }
+
+    /* ── QUOTE CONTENT CELL ── */
+    .quote-content {
+        font-size: 13.5px;
+        font-weight: 600;
+        color: var(--text);
+        max-width: 340px;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        line-height: 1.5;
+    }
+
+    /* ── AUTHOR CELL ── */
+    .author-cell {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .author-avatar {
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+        background: var(--orange-light);
+        border: 1px solid var(--orange-border);
+        color: var(--orange);
+        font-size: 11px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .author-name {
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--text);
+    }
+
+    /* ── CATEGORY BADGE ── */
+    .cat-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        border-radius: 20px;
+        padding: 4px 12px;
+        font-size: 11px;
+        font-weight: 700;
+        color: #fff;
+        white-space: nowrap;
+    }
+
+    .cat-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.7);
+        flex-shrink: 0;
+    }
+
+    /* ── DATE CELL ── */
+    .date-cell {
+        font-size: 12px;
+        color: var(--muted);
+        font-weight: 500;
+        white-space: nowrap;
+    }
+
+        .date-cell span {
+            display: block;
+            font-size: 11px;
+            color: var(--muted-light);
+        }
+
+    /* ── ACTION BUTTONS ── */
+    .btn-edit {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        background: #f1f5f9;
+        color: #475569 !important;
+        border: 1px solid #e2e8f0;
+        border-radius: 9px;
+        padding: 6px 14px;
+        font-size: 12px;
+        font-weight: 600;
+        text-decoration: none !important;
+        transition: all 0.2s;
+    }
+
+        .btn-edit:hover {
+            background: var(--orange-light);
+            border-color: var(--orange-border);
+            color: var(--orange) !important;
+        }
+
+    .btn-delete {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        background: #fff5f5;
+        color: #dc2626 !important;
+        border: 1px solid #fecaca;
+        border-radius: 9px;
+        padding: 6px 14px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+        .btn-delete:hover {
+            background: #fee2e2;
+            border-color: #fca5a5;
+        }
+
+    /* ── PAGINATION ── */
+    .dataTables_paginate .paginate_button {
+        border-radius: 9px !important;
+        border: 1px solid #e2e8f0 !important;
+        background: #fff !important;
+        color: var(--muted) !important;
+        font-size: 13px !important;
+        font-weight: 500 !important;
+        margin: 0 2px !important;
+        padding: 6px 12px !important;
+        transition: all 0.2s !important;
+    }
+
+        .dataTables_paginate .paginate_button:hover {
+            background: var(--orange-light) !important;
+            border-color: var(--orange-border) !important;
+            color: var(--orange) !important;
+        }
+
+        .dataTables_paginate .paginate_button.current,
+        .dataTables_paginate .paginate_button.current:hover {
+            background: var(--gradient) !important;
+            border-color: transparent !important;
+            color: #fff !important;
+            box-shadow: 0 3px 10px rgba(249,115,22,0.3) !important;
+        }
+
+        .dataTables_paginate .paginate_button.disabled,
+        .dataTables_paginate .paginate_button.disabled:hover {
+            opacity: 0.4 !important;
+            cursor: default !important;
+        }
+
+    @@keyframes slideIn {
+        from {
+            transform: translateX(30px);
+            opacity: 0;
+        }
+
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+</style>
+
+<!-- Toast Container -->
+<div id="toastContainer" style="position:fixed; top:24px; right:24px; z-index:9999;"></div>
+
+<!-- Page Header -->
+<div class="page-header">
+    <div>
+        <h2>Affirmations</h2>
+        <p>Manage your affirmation library across all categories</p>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+        <a class="btn-bulk" asp-area="Admin" asp-controller="Quotes" asp-action="BulkUpload">
+            <i class="mdi mdi-upload-outline"></i> Bulk Upload
+        </a>
+        <a class="btn-new" asp-area="Admin" asp-controller="Quotes" asp-action="Create">
+            <i class="mdi mdi-plus"></i> New Quote
+        </a>
+    </div>
+</div>
+
+<!-- Filter Bar -->
+<div class="filter-bar">
+    <span class="filter-label">
+        <i class="mdi mdi-filter-outline"></i> Filter by Category
+    </span>
+    <form method="get" style="margin:0; flex:1;">
+        <select name="categoryId" class="filter-select" onchange="this.form.submit();">
+            <option value="">All Categories</option>
+            @foreach (var cat in (IEnumerable<Phrase_App.Core.Models.Category>)ViewBag.Categories ?? new List<Phrase_App.Core.Models.Category>())
+            {
+                <option value="@cat.Id" selected="@(cat.Id == (Guid?)ViewBag.SelectedCategoryId)">@cat.Name</option>
+            }
+        </select>
+    </form>
+    @if (ViewBag.SelectedCategoryId != null)
+    {
+        <a href="?" style="display:inline-flex; align-items:center; gap:5px; font-size:12px; font-weight:600; color:var(--muted); text-decoration:none; white-space:nowrap;">
+            <i class="mdi mdi-close-circle-outline"></i> Clear filter
+        </a>
+    }
+</div>
+
+<!-- Table Panel -->
+<div class="panel">
+    <div class="table-responsive">
+        <table id="zero_config" class="table table-bordered" style="width:100%">
+            <thead>
+                <tr>
+                    <th>Quote</th>
+                    <th>Author</th>
+                    <th>Category</th>
+                    <th>Created At</th>
+                    <th class="text-center">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model != null)
+                {
+                    foreach (var quote in Model)
+                    {
+                        <tr>
+                            <td>
+                                <div class="quote-content" title="@quote.Content">@quote.Content</div>
+                            </td>
+                            <td>
+                                <div class="author-cell">
+                                    <div class="author-avatar">
+                                        @(string.IsNullOrEmpty(quote.Author) ? "?" : quote.Author.Substring(0, 1).ToUpper())
+                                    </div>
+                                    <span class="author-name">@(string.IsNullOrEmpty(quote.Author) ? "Unknown" : quote.Author)</span>
+                                </div>
+                            </td>
+                            <td>
+                                @if (quote.Category != null)
                                 {
-                                    foreach (var quote in Model)
-                                    {
-                                        <tr>
-                                            <td><b>@quote.Content</b></td>
-                                            <td>@quote.Author</td>
-                                            <td>
-                                                @if (quote.Category != null)
-                                                {
-                                                    <span class="badge" style="background:@quote.Category.ColorHex; color:#fff;">@quote.Category.Name</span>
-                                                }
-                                            </td>
-                                            <td>@quote.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
-                                            <td class="text-center">
-                                                <a class="btn btn-sm btn-outline-primary me-1"
-                                                   asp-area="Admin"
-                                                   asp-controller="Quotes"
-                                                   asp-action="Edit"
-                                                   asp-route-id="@quote.Id">Edit</a>
-
-                                                <form asp-area="Admin"
-                                                      asp-controller="Quotes"
-                                                      asp-action="Delete"
-                                                      method="post"
-                                                      class="d-inline delete-quote-form">
-                                                    @Html.AntiForgeryToken()
-                                                    <input type="hidden" name="id" value="@quote.Id" />
-                                                    <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
-                                                </form>
-                                            </td>
-                                        </tr>
-                                    }
+                                    <span class="cat-badge" style="background:@quote.Category.ColorHex;">
+                                        <span class="cat-dot"></span>
+                                        @quote.Category.Name
+                                    </span>
                                 }
-                            </tbody>
-                            <tfoot>
-                                <tr>
-                                    <th>Quote</th>
-                                    <th>Author</th>
-                                    <th>Category</th>
-                                    <th>Created At</th>
-                                    <th class="text-center">Actions</th>
-                                </tr>
-                            </tfoot>
-                        </table>
-                    </div>
+                                else
+                                {
+                                    <span style="font-size:12px; color:var(--muted-light);">—</span>
+                                }
+                            </td>
+                            <td>
+                                <div class="date-cell">
+                                    @quote.CreatedAt.ToString("MMM dd, yyyy")
+                                    <span>@quote.CreatedAt.ToString("HH:mm")</span>
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                <a class="btn-edit"
+                                   asp-area="Admin"
+                                   asp-controller="Quotes"
+                                   asp-action="Edit"
+                                   asp-route-id="@quote.Id">
+                                    <i class="mdi mdi-pencil-outline"></i> Edit
+                                </a>
 
-                </div>
-            </div>
-        </div>
+                                <form asp-area="Admin"
+                                      asp-controller="Quotes"
+                                      asp-action="Delete"
+                                      method="post"
+                                      class="d-inline delete-quote-form">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@quote.Id" />
+                                    <button type="submit" class="btn-delete">
+                                        <i class="mdi mdi-trash-can-outline"></i> Delete
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+            <tfoot>
+                <tr>
+                    <th>Quote</th>
+                    <th>Author</th>
+                    <th>Category</th>
+                    <th>Created At</th>
+                    <th class="text-center">Actions</th>
+                </tr>
+            </tfoot>
+        </table>
     </div>
 </div>
 
@@ -110,18 +536,17 @@
                 ordering: true,
                 pageLength: 10,
                 dom:
-                    '<"row mb-2"<"col-sm-6"l><"col-sm-6 text-end"f>>' +
+                    '<"row mb-3 align-items-center"<"col-sm-6"l><"col-sm-6 text-end"f>>' +
                     't' +
-                    '<"row mt-2"<"col-sm-6"i><"col-sm-6 text-end"p>>'
+                    '<"row mt-3 align-items-center"<"col-sm-6"i><"col-sm-6 text-end"p>>'
             });
 
             function alignControls() {
                 var $wrap = $('#zero_config').closest('.dataTables_wrapper');
-                $wrap.find('.dataTables_length').removeClass('float-end').addClass('float-start').css({ 'text-align': 'left' });
-                $wrap.find('.dataTables_info').removeClass('float-end').addClass('float-start').css({ 'text-align': 'left' });
-                $wrap.find('.dataTables_filter').removeClass('float-start').addClass('float-end').css({ 'text-align': 'right' });
-                $wrap.find('.dataTables_paginate').removeClass('float-start').addClass('float-end').css({ 'text-align': 'right' });
-                $wrap.find('.dataTables_filter input').addClass('form-control form-control-sm').css('display', 'inline-block');
+                $wrap.find('.dataTables_length').css('text-align', 'left');
+                $wrap.find('.dataTables_info').css('text-align', 'left');
+                $wrap.find('.dataTables_filter').css('text-align', 'right');
+                $wrap.find('.dataTables_paginate').css('text-align', 'right');
             }
 
             alignControls();
@@ -129,38 +554,57 @@
 
             // Delete confirmation
             $('.delete-quote-form').on('submit', function (e) {
-                if (!confirm('Delete this quote?')) {
-                    e.preventDefault();
-                    return false;
-                }
-                return true;
+                e.preventDefault();
+                var $form = $(this);
+                Swal.fire({
+                    title: 'Delete Affirmation?',
+                    text: "This will permanently remove the quote.",
+                    icon: 'warning',
+                    background: '#1a2235',
+                    color: '#f1f5f9',
+                    showCancelButton: true,
+                    confirmButtonColor: '#ef4444',
+                    cancelButtonColor: '#475569',
+                    confirmButtonText: 'Yes, Delete',
+                    cancelButtonText: 'Cancel'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $form[0].submit();
+                    }
+                });
             });
 
-            // Toast notification function
-            function showToast(message, type = 'success') {
-                var toastHtml = `
-                    <div class="toast align-items-center text-white bg-${type} border-0" role="alert" aria-live="assertive" aria-atomic="true">
-                        <div class="d-flex">
-                            <div class="toast-body">
-                                ${message}
-                            </div>
-                            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-                        </div>
+            // Toast
+            function showToast(message, type) {
+                var iconMap    = { success: 'check-circle', danger: 'alert-circle' };
+                var colorMap   = { success: '#16a34a',      danger: '#dc2626'      };
+                var bgMap      = { success: '#f0fdf4',       danger: '#fff5f5'      };
+                var borderMap  = { success: '#bbf7d0',       danger: '#fecaca'      };
+
+                var $toast = $(`
+                    <div style="
+                        background:${bgMap[type] || '#fff'};
+                        border: 1.5px solid ${borderMap[type] || '#e2e8f0'};
+                        border-radius: 14px;
+                        padding: 14px 18px;
+                        display: flex;
+                        align-items: center;
+                        gap: 12px;
+                        min-width: 260px;
+                        box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+                        margin-bottom: 10px;
+                        animation: slideIn 0.3s ease;
+                    ">
+                        <i class="mdi mdi-${iconMap[type] || 'information'}" style="font-size:20px; color:${colorMap[type] || '#f97316'}; flex-shrink:0;"></i>
+                        <span style="font-size:14px; font-weight:500; color:#1e293b;">${message}</span>
                     </div>
-                `;
-                var $container = $('#toastContainer');
-                var $toast = $(toastHtml);
-                $container.append($toast);
-
-                var bsToast = new bootstrap.Toast($toast[0]);
-                bsToast.show();
-
-                $toast.on('hidden.bs.toast', function () {
-                    $toast.remove();
-                });
+                `);
+                $('#toastContainer').append($toast);
+                setTimeout(function () {
+                    $toast.fadeOut(300, function () { $toast.remove(); });
+                }, 3500);
             }
 
-            // Check for TempData messages and show toast
             @if (TempData["Success"] != null)
             {
                         <text>showToast('@TempData["Success"]', 'success');</text>

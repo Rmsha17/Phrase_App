@@ -16,10 +16,12 @@ namespace Phrase_App.Api.Controllers
     public class PaymentController : ControllerBase
     {
         private readonly IPaymentService _paymentService;
+        private readonly IConfiguration _config; 
 
-        public PaymentController(IPaymentService paymentService)
+        public PaymentController(IPaymentService paymentService, IConfiguration config)
         {
             _paymentService = paymentService;
+            _config = config; 
         }
 
         [HttpPost("verify-purchase")]
@@ -49,6 +51,48 @@ namespace Phrase_App.Api.Controllers
             if (!result) return BadRequest(new { success = false, message = "Failed" });
 
             return Ok(new { success = true, message = "Successfull" });
+        }
+
+        /// Google Pub/Sub pushes subscription events here in real-time.
+        /// Must return 200 ALWAYS — otherwise Pub/Sub retries endlessly.
+        [HttpPost("google-notification")]
+        [AllowAnonymous]
+        public async Task<IActionResult> HandleGoogleNotification(
+            [FromBody] GooglePubSubMessage message)
+        {
+            try
+            {
+                var result = await _paymentService.HandleGooglePlayNotificationAsync(message);
+                return Ok(new { result.Success, result.Message });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[RTDN Controller] Error: {ex.Message}");
+                return Ok(new { Success = false, Message = "Error logged" });
+            }
+        }
+
+        /// Daily cron safety net — protected with shared secret.
+        [HttpPost("verify-all-subscriptions")]
+        [AllowAnonymous]
+        public async Task<IActionResult> VerifyAllSubscriptions([FromHeader(Name = "X-Cron-Secret")] string cronSecret)
+        {
+            var expectedSecret = _config["CronJob:Secret"];
+            if (string.IsNullOrEmpty(expectedSecret) || cronSecret != expectedSecret)
+            {
+                return Unauthorized("Invalid cron secret");
+            }
+
+            try
+            {
+                await _paymentService.VerifyAllActiveSubscriptionsAsync();
+                return Ok(new { Success = true, Message = "Verification complete" });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[Cron Controller] Error: {ex.Message}");
+                return Ok(new { Success = false, Message = ex.Message });
+            }
         }
     }
 }

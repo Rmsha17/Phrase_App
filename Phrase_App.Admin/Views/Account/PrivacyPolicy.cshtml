@@ -6,81 +6,513 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Privacy Policy - BelieveIn</title>
+    <title>BelieveIn | Privacy Policy</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@@mdi/font@7.2.96/css/materialdesignicons.min.css">
     <style>
-        body {
+        *, *::before, *::after {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            /* Sunset Gradient Background */
-            /* Optimized Sunset Gradient for your Logo */
-            background: linear-gradient( 180deg, #FFE082 0%, #FFB74D 50%, #FF7043 100% );
-            background-attachment: fixed; /* Keeps background still while scrolling */
-            display: flex;
-            justify-content: center;
-            align-items: center;
+        }
+
+        body {
             min-height: 100vh;
-            color: black;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: #0f1623;
+            overflow-x: hidden;
+            position: relative;
+            padding: 48px 20px;
         }
 
-        .glass-card {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+        /* ── BACKGROUND ── */
+        .bg-layer {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .bg-grid {
+            position: absolute;
+            inset: 0;
+            background-image: linear-gradient(rgba(249,115,22,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(249,115,22,0.04) 1px, transparent 1px);
+            background-size: 48px 48px;
+        }
+
+        .bg-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(90px);
+            opacity: 0.5;
+            animation: drift 20s ease-in-out infinite alternate;
+        }
+
+            .bg-orb.o1 {
+                width: 500px;
+                height: 500px;
+                background: radial-gradient(circle, rgba(249,115,22,0.45), transparent 70%);
+                top: -140px;
+                left: -140px;
+                animation-duration: 22s;
+            }
+
+            .bg-orb.o2 {
+                width: 380px;
+                height: 380px;
+                background: radial-gradient(circle, rgba(251,191,36,0.25), transparent 70%);
+                bottom: 5%;
+                right: -100px;
+                animation-duration: 28s;
+                animation-direction: alternate-reverse;
+            }
+
+            .bg-orb.o3 {
+                width: 260px;
+                height: 260px;
+                background: radial-gradient(circle, rgba(249,115,22,0.18), transparent 70%);
+                top: 45%;
+                left: 62%;
+                animation-duration: 16s;
+            }
+
+        @@keyframes drift {
+            from {
+                transform: translate(0, 0) scale(1);
+            }
+
+            to {
+                transform: translate(50px, -35px) scale(1.08);
+            }
+        }
+
+        /* ── BRAND ── */
+        .brand-mark {
+            position: fixed;
+            top: 24px;
+            left: 32px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 10;
+        }
+
+        .brand-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #f97316, #fbbf24);
+            box-shadow: 0 0 12px rgba(249,115,22,0.6);
+        }
+
+        .brand-name {
+            font-size: 13px;
+            font-weight: 800;
+            color: rgba(255,255,255,0.28);
+            letter-spacing: 0.5px;
+        }
+
+        /* ── CARD ── */
+        .card {
+            position: relative;
+            z-index: 1;
+            background: rgba(255,255,255,0.04);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255,255,255,0.09);
+            border-radius: 28px;
+            padding: 48px 44px;
+            max-width: 720px;
+            width: 100%;
+            box-shadow: 0 32px 64px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.08);
+            animation: fadeUp 0.6s cubic-bezier(0.16,1,0.3,1) both;
+        }
+
+        @@keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(28px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ── PAGE HEADER ── */
+        .page-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(249,115,22,0.1);
+            border: 1px solid rgba(249,115,22,0.22);
+            color: #fb923c;
             border-radius: 20px;
-            padding: 40px;
-            max-width: 700px;
-            margin: 20px;
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            padding: 5px 14px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1.2px;
+            text-transform: uppercase;
+            margin-bottom: 18px;
         }
 
-        h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            color: darkorange;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            .page-badge i {
+                font-size: 13px;
+            }
+
+        .page-title {
+            font-size: 32px;
+            font-weight: 900;
+            color: #f1f5f9;
+            letter-spacing: -0.8px;
+            line-height: 1.1;
+            margin-bottom: 12px;
         }
 
-        h2 {
-            color: black;
-            margin-top: 25px;
-            border-left: 4px solid #f27121;
-            padding-left: 10px;
+            .page-title span {
+                background: linear-gradient(135deg, #f97316, #fbbf24);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+            }
+
+        .page-intro {
+            font-size: 14px;
+            color: #64748b;
+            line-height: 1.75;
+            margin-bottom: 36px;
         }
 
-        p {
-            line-height: 1.7;
-            color: black;
-            font-size: 1.1rem;
+        /* ── DIVIDER ── */
+        .section-divider {
+            width: 48px;
+            height: 4px;
+            background: linear-gradient(90deg, #f97316, #fbbf24);
+            border-radius: 10px;
+            margin-bottom: 32px;
         }
 
-        .footer {
-            margin-top: 30px;
-            font-size: 0.8rem;
-            opacity: 0.7;
+        /* ── POLICY SECTION ── */
+        .policy-section {
+            margin-bottom: 6px;
+        }
+
+        .policy-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px 18px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 16px;
+            cursor: default;
+            transition: background 0.2s, border-color 0.2s;
+        }
+
+            .policy-header:hover {
+                background: rgba(249,115,22,0.05);
+                border-color: rgba(249,115,22,0.15);
+            }
+
+        .policy-num {
+            width: 32px;
+            height: 32px;
+            border-radius: 10px;
+            flex-shrink: 0;
+            background: linear-gradient(135deg, #f97316, #fbbf24);
+            color: #fff;
+            font-size: 12px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 3px 10px rgba(249,115,22,0.3);
+        }
+
+        .policy-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 10px;
+            flex-shrink: 0;
+            background: rgba(249,115,22,0.1);
+            border: 1px solid rgba(249,115,22,0.2);
+            color: #f97316;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .policy-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #f1f5f9;
+            flex: 1;
+        }
+
+        .policy-body {
+            padding: 14px 18px 18px 80px;
+            font-size: 13.5px;
+            color: #64748b;
+            line-height: 1.8;
+        }
+
+            .policy-body strong {
+                color: #94a3b8;
+                font-weight: 600;
+            }
+
+        /* ── SEPARATOR ── */
+        .separator {
+            height: 1px;
+            background: rgba(255,255,255,0.06);
+            margin: 28px 0;
+        }
+
+        /* ── CONTACT BOX ── */
+        .contact-section {
+            margin-top: 8px;
+        }
+
+        .contact-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .contact-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            flex-shrink: 0;
+            background: rgba(249,115,22,0.1);
+            border: 1px solid rgba(249,115,22,0.2);
+            color: #f97316;
+            font-size: 19px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .contact-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #f1f5f9;
+        }
+
+        .contact-body {
+            font-size: 13.5px;
+            color: #64748b;
+            line-height: 1.75;
+            margin-bottom: 16px;
+        }
+
+        .email-box {
+            background: rgba(249,115,22,0.07);
+            border: 1.5px solid rgba(249,115,22,0.2);
+            border-radius: 16px;
+            padding: 18px 20px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .email-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 11px;
+            flex-shrink: 0;
+            background: rgba(249,115,22,0.12);
+            border: 1px solid rgba(249,115,22,0.2);
+            color: #f97316;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .email-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: #f97316;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+            margin-bottom: 3px;
+        }
+
+        .email-addr {
+            font-size: 14px;
+            font-weight: 700;
+            color: #f1f5f9;
+        }
+
+        /* ── TRUST ROW ── */
+        .trust-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 28px;
+        }
+
+        .trust-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 20px;
+            padding: 6px 14px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #475569;
+        }
+
+            .trust-pill i {
+                color: #f97316;
+                font-size: 13px;
+            }
+
+        /* ── FOOTER ── */
+        .card-footer {
             text-align: center;
+            font-size: 12px;
+            color: #ffffff;
+            padding-top: 24px;
+            margin-top: 28px;
+            border-top: 1px solid rgba(255,255,255,0.06);
         }
     </style>
 </head>
 <body>
-    <div class="glass-card">
-        <h1>Privacy Policy</h1>
-        <p>Your trust is the foundation of <strong>BelieveIn</strong>. This policy details our commitment to protecting your data.</p>
 
-        <h2>1. Data Collection</h2>
-        <p>Through Google or Facebook login, we access your name and email to identify you. We do not access private files, friends, or social feeds.</p>
-
-        <h2>2. Data Usage</h2>
-        <p>Your data stays with us. We use it only for authentication. We never sell your personal information to third parties.</p>
-
-        <h2>3. Security</h2>
-        <p>Just like the sunset remains constant, we consistently monitor our systems to ensure your data remains encrypted and safe.</p>
-
-        <h2>4. Contact</h2>
-        <p>Questions? Reach out at: <br><strong>getbelievein@gmail.com</strong></p>
-
-        <div class="footer">&copy; @DateTime.UtcNow.Year BelieveIn</div>
+    <!-- Background -->
+    <div class="bg-layer">
+        <div class="bg-grid"></div>
+        <div class="bg-orb o1"></div>
+        <div class="bg-orb o2"></div>
+        <div class="bg-orb o3"></div>
     </div>
+
+    <!-- Brand -->
+    <div class="brand-mark">
+        <div class="brand-dot"></div>
+        <span class="brand-name">BelieveIn</span>
+    </div>
+
+    <!-- Card -->
+    <div class="card">
+
+        <!-- Header -->
+        <div class="page-badge">
+            <i class="mdi mdi-shield-lock-outline"></i>
+            Legal
+        </div>
+
+        <div class="page-title"><span>Privacy</span> Policy</div>
+
+        <div class="section-divider"></div>
+
+        <p class="page-intro">
+            Your trust is the foundation of <strong style="color:#f1f5f9;">BelieveIn</strong>.
+            This policy details our commitment to protecting your personal data and being transparent about how we use it.
+        </p>
+
+        <!-- Section 1 -->
+        <div class="policy-section">
+            <div class="policy-header">
+                <div class="policy-num">1</div>
+                <div class="policy-icon"><i class="mdi mdi-database-outline"></i></div>
+                <div class="policy-title">Data Collection</div>
+            </div>
+            <div class="policy-body">
+                Through <strong>Google</strong> or <strong>Facebook</strong> login, we access only your name and email address to identify your account.
+                We do not access your private files, friends list, or social media feeds.
+            </div>
+        </div>
+
+        <!-- Section 2 -->
+        <div class="policy-section">
+            <div class="policy-header">
+                <div class="policy-num">2</div>
+                <div class="policy-icon"><i class="mdi mdi-lock-outline"></i></div>
+                <div class="policy-title">Data Usage</div>
+            </div>
+            <div class="policy-body">
+                Your data stays with us. We use it solely for authentication purposes.
+                We <strong>never</strong> sell, share, or trade your personal information with third parties.
+            </div>
+        </div>
+
+        <!-- Section 3 -->
+        <div class="policy-section">
+            <div class="policy-header">
+                <div class="policy-num">3</div>
+                <div class="policy-icon"><i class="mdi mdi-shield-check-outline"></i></div>
+                <div class="policy-title">Security</div>
+            </div>
+            <div class="policy-body">
+                We consistently monitor our systems to ensure your data remains <strong>encrypted and safe</strong>.
+                Our infrastructure follows modern security best practices to prevent unauthorized access.
+            </div>
+        </div>
+
+        <div class="separator"></div>
+
+        <!-- Section 4: Contact -->
+        <div class="contact-section">
+            <div class="contact-header">
+                <div class="contact-icon">
+                    <i class="mdi mdi-message-outline"></i>
+                </div>
+                <div class="contact-title">Contact & Questions</div>
+            </div>
+
+            <p class="contact-body">
+                Have a question about this policy or how your data is handled?
+                We're happy to help — reach out to us directly.
+            </p>
+
+            <div class="email-box">
+                <div class="email-icon">
+                    <i class="mdi mdi-email-outline"></i>
+                </div>
+                <div>
+                    <div class="email-label">Email us at</div>
+                    <div class="email-addr">getbelievein@gmail.com</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Trust pills -->
+        <div class="trust-row">
+            <span class="trust-pill"><i class="mdi mdi-check-circle-outline"></i> No data selling</span>
+            <span class="trust-pill"><i class="mdi mdi-check-circle-outline"></i> Encrypted storage</span>
+            <span class="trust-pill"><i class="mdi mdi-check-circle-outline"></i> Auth-only access</span>
+            <span class="trust-pill"><i class="mdi mdi-check-circle-outline"></i> No social tracking</span>
+        </div>
+
+        <!-- Footer -->
+        <div class="card-footer">
+            &copy; @DateTime.UtcNow.Year BelieveIn App. All rights reserved.
+        </div>
+
+    </div>
+
+    <script>
+        document.addEventListener('mousemove', function (e) {
+            var xPct = (e.clientX / window.innerWidth  - 0.5) * 25;
+            var yPct = (e.clientY / window.innerHeight - 0.5) * 18;
+            document.querySelectorAll('.bg-orb').forEach(function (orb, i) {
+                var f = (i + 1) * 0.5;
+                orb.style.transform = 'translate(' + (xPct * f) + 'px, ' + (yPct * f) + 'px)';
+            });
+        });
+    </script>
+
 </body>
 </html>

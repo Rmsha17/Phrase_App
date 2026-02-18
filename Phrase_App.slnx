@@ -2,6 +2,5 @@
   <Project Path="Phrase_App.Admin/Phrase_App.Admin.csproj" />
   <Project Path="Phrase_App.Api/Phrase_App.Api.csproj" />
   <Project Path="Phrase_App.Core/Phrase_App.Core.csproj" />
-  <Project Path="Phrase_App.Functions/Phrase_App.Functions.csproj" Id="31e73df6-cb8f-4755-b899-ed23349ca9dd" />
   <Project Path="Phrase_App.Infrastructure/Phrase_App.Infrastructure.csproj" />
 </Solution>

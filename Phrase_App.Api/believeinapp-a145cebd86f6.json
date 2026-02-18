@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "believeinapp",
+  "private_key_id": "a145cebd86f6fb5b36ca5f94c81e377cf4f4d84d",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDHjGOIqm5PKSWc\nyvstVhh5P5efQLJMt2f1loEskA4oGSHuR3H8dJsbfoXiOedCg9HzWDZ1xrMxSFgz\n0gPTpjG5R6bEQt9nRMvWqU0fdtQc6+uaWj/crJEMstflECc2XcQxc3j6Ft9HsCz+\n8GbMhNR8vM5ONljmnkWXE6xHel50Do9THHDnMVLR9sCw/GkwweYPKFj92p9S8dZL\n5G6as0odhbaW1ow3mZJlz/bCIn+Cv9oC4R7bAYO+m6wX7avoaARnchhlrlepk0RF\nQ1lJY5jkIL6djFSoY2GttFgqjbDixw2T4u2qHCHIlJB8KpGBUt+bU1xxq/nvP3rj\nqvWtqEJbAgMBAAECggEAHyJAc1XCsTd7xqta0NeCflnAJ9jkbhjIL7vu5TYypz9I\nmSXs2xU8ZWfyWU9seBHGGOrApdPofb4frjIhu7d4lu5ezsyaO5azG7JoNd+zN4dN\nnVRga2dB7afHtysJMIUlCQwkVMIVzdhnJNL6+a+YfD/JtnqUmKLFZngWJJmAkX20\nw5FtZkVrUQlIadXR8kWRc9YrogcuPvWJsMWR725E3eU053aDUItTCTVwHCyfPipO\nt2cZyCdZvNM+jUj5+hXtXfXq18ik5jt0QGlrOBW8OpWQcTfDApEFppPPRENYCb6H\nAD41PWqNBMUSCezgHXLy6sO4tfl++yB1u8T7WBpvjQKBgQDubI8f9EXjzOuk7WXr\nsQV9plVYA/d1gfLvi3Ck5Kvzq6JCfTL07hCrGuy1q02Q1KNtuTrX/HkOhqRU2Jnw\n+nh3H7mR0md7yWIadBSDycQHN+9tALNZGs4jzAI22YBwov5CeRnMPuyKPbIUrvS1\nLvuiIcKrZqwb830KbLYPBquV3wKBgQDWQi8jkNHQsQPYU2x32MkSEfMRVAOlLMen\ntPVTFtWplhF3g2tZMAG/U1JIOMIpUPMnV0UIBqrConvBq/AXgO81/WbhBankwzZJ\nr/48PSpqnt2zgGjdUVYpXbfXog/rC1tVNd6jGnuJdKzgnUn42thifWRshJmA113a\n/g85SVpLBQKBgCmplqkCymOwH01GnpS87jSyqB8lMky6VHU/bIOj4dhGmaf8sLbU\nEt2TauGj+X3hal12DK5JU+4R4Q1ifCP74KkQRiERHzwmSJpOxnbw/uwz/gaSJMTh\nRjxDHe/vud303XFIMBXcuQC/Hys2F1TBzP7b32SMIG8R8TutG3MsuzcJAoGBAMUw\njGnTMwc6oytJPB7g6c0zr91W0TQHjokOxmn+Lg6yCslPrlCbGkCX0radZjTYR7EB\nZIsKd8ZB/Fw2ffVjuMSbvz+CEuZzs1cGHpoaQRt3ststZ1WpMf9IPZa7lKLiBODb\nf1flW6UaOLFQkW/zGgsrFG27a/tkOwD9qc0zcWJxAoGAa5hyQsTmZqNjYJHoQ07H\nqK4kgT6T6cUdreGvUukXFu3KorDpwj3ipQBIMV0yZ3R91mww9PrUSs9JQjo4Zair\nyYqktQkLO20X+LNWJZQsgFYFjYd8OHhRqF0OPy40/m8PIZGPGpq7AtiKnknreShh\nYL5Tt1ZbzKhLPhvWQWRs9XA=\n-----END PRIVATE KEY-----\n",
+  "client_email": "play-store-verify@believeinapp.iam.gserviceaccount.com",
+  "client_id": "105106381939736620347",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/play-store-verify%40believeinapp.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}

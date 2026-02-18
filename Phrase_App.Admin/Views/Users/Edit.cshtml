@@ -1,75 +1,744 @@
 ﻿@model Phrase_App.Core.Models.ApplicationUser
-
 @{
     ViewData["Title"] = "Edit User";
     Layout = "~/Views/Shared/_Layout.cshtml";
+    var isLocked = Model.LockoutEnd.HasValue && Model.LockoutEnd.Value > DateTimeOffset.UtcNow;
+    var isExpired = Model.PremiumExpiryDate.HasValue && Model.PremiumExpiryDate.Value < DateTime.UtcNow;
 }
 
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">Edit User</h5>
+<style>
+    :root {
+        --orange: #f97316;
+        --orange-light: #fff4ed;
+        --orange-border: #fed7aa;
+        --card-bg: #ffffff;
+        --card-border: rgba(0,0,0,0.06);
+        --card-shadow: 0 1px 12px rgba(0,0,0,0.07), 0 4px 24px rgba(0,0,0,0.04);
+        --text: #1e293b;
+        --muted: #64748b;
+        --muted-light: #94a3b8;
+        --input-bg: #f8fafc;
+        --input-border: #e2e8f0;
+        --gradient: linear-gradient(135deg, #f97316 0%, #fbbf24 100%);
+    }
 
-                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+    .page-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-bottom: 28px;
+    }
 
-                    <form asp-area="Admin" asp-controller="Users" asp-action="Edit" asp-route-id="@Model.Id" method="post" class="row g-3">
-                        @Html.AntiForgeryToken()
+        .page-header h2 {
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--text);
+            margin: 0 0 4px;
+            letter-spacing: -0.4px;
+        }
 
+        .page-header p {
+            font-size: 13px;
+            color: var(--muted);
+            margin: 0;
+        }
+
+    .breadcrumb-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 500;
+        text-decoration: none;
+        transition: color 0.2s;
+    }
+
+        .breadcrumb-link:hover {
+            color: var(--orange);
+        }
+
+    .panel {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 20px;
+        padding: 32px;
+        box-shadow: var(--card-shadow);
+        margin-bottom: 20px;
+    }
+
+    .form-section {
+        margin-bottom: 28px;
+    }
+
+    .form-section-title {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 1.2px;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+        .form-section-title i {
+            color: var(--orange);
+            font-size: 16px;
+        }
+
+        .form-section-title::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #f1f5f9;
+        }
+
+    .form-label {
+        font-size: 13px !important;
+        font-weight: 600 !important;
+        color: var(--text) !important;
+        margin-bottom: 7px !important;
+    }
+
+    /* Editable input */
+    .form-control {
+        background: var(--input-bg) !important;
+        border: 1.5px solid var(--input-border) !important;
+        border-radius: 12px !important;
+        padding: 11px 15px !important;
+        font-size: 14px !important;
+        color: var(--text) !important;
+        transition: border-color 0.2s, box-shadow 0.2s !important;
+        box-shadow: none !important;
+    }
+
+        .form-control:focus {
+            border-color: var(--orange) !important;
+            box-shadow: 0 0 0 3px rgba(249,115,22,0.12) !important;
+            background: #fff !important;
+            outline: none !important;
+        }
+
+        /* Readonly input — visually distinct */
+        .form-control[disabled],
+        .form-control:disabled {
+            background: #f1f5f9 !important;
+            border-color: transparent !important;
+            color: var(--muted) !important;
+            cursor: not-allowed !important;
+            opacity: 1 !important;
+        }
+
+    .readonly-label-hint {
+        font-size: 11px;
+        color: var(--muted-light);
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        margin-left: 6px;
+        font-weight: 500;
+    }
+
+    /* ── USER PROFILE CARD (top of right panel) ── */
+    .profile-card {
+        background: linear-gradient(135deg, #1a2235 0%, #263044 100%);
+        border-radius: 16px;
+        padding: 22px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 20px;
+    }
+
+    .profile-avatar {
+        width: 56px;
+        height: 56px;
+        border-radius: 16px;
+        background: var(--gradient);
+        color: #fff;
+        font-size: 24px;
+        font-weight: 800;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        box-shadow: 0 4px 14px rgba(249,115,22,0.4);
+    }
+
+    .profile-name {
+        font-size: 16px;
+        font-weight: 700;
+        color: #f1f5f9;
+        margin-bottom: 3px;
+    }
+
+    .profile-email {
+        font-size: 12px;
+        color: #64748b;
+    }
+
+    /* ── INFO ROWS (readonly meta) ── */
+    .info-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 11px 0;
+        border-bottom: 1px solid #f1f5f9;
+        font-size: 13px;
+    }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+    .info-key {
+        color: var(--muted);
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 7px;
+    }
+
+        .info-key i {
+            color: var(--orange);
+            font-size: 15px;
+        }
+
+    .info-val {
+        color: var(--text);
+        font-weight: 500;
+        text-align: right;
+    }
+
+    /* ── STATUS BADGES ── */
+    .badge-active {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: #f0fdf4;
+        color: #16a34a;
+        border: 1px solid #bbf7d0;
+        border-radius: 20px;
+        padding: 4px 12px;
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+    .badge-locked {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: #fff5f5;
+        color: #dc2626;
+        border: 1px solid #fecaca;
+        border-radius: 20px;
+        padding: 4px 12px;
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+    .badge-premium {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        background: linear-gradient(135deg, rgba(249,115,22,0.12), rgba(251,191,36,0.12));
+        color: #b45309;
+        border: 1px solid #fde68a;
+        border-radius: 20px;
+        padding: 4px 12px;
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+    .badge-free {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        background: #f1f5f9;
+        color: var(--muted);
+        border: 1px solid var(--input-border);
+        border-radius: 20px;
+        padding: 4px 12px;
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+    /* ── ACCOUNT CONTROL CARD ── */
+    .control-card {
+        border-radius: 16px;
+        padding: 20px 22px;
+        margin-bottom: 0;
+    }
+
+        .control-card.activate {
+            background: #f0fdf4;
+            border: 1.5px solid #bbf7d0;
+        }
+
+        .control-card.deactivate {
+            background: #fff5f5;
+            border: 1.5px solid #fecaca;
+        }
+
+    .control-title {
+        font-size: 13px;
+        font-weight: 700;
+        margin-bottom: 4px;
+        display: flex;
+        align-items: center;
+        gap: 7px;
+    }
+
+    .control-card.activate .control-title {
+        color: #15803d;
+    }
+
+    .control-card.deactivate .control-title {
+        color: #dc2626;
+    }
+
+    .control-desc {
+        font-size: 12px;
+        color: var(--muted);
+        margin-bottom: 14px;
+        line-height: 1.5;
+    }
+
+    .btn-activate {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        width: 100%;
+        background: #16a34a;
+        color: #fff !important;
+        border: none;
+        border-radius: 10px;
+        padding: 10px 18px;
+        font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: opacity 0.2s;
+        text-decoration: none !important;
+    }
+
+        .btn-activate:hover {
+            opacity: 0.88;
+        }
+
+    .btn-deactivate {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        width: 100%;
+        background: #fee2e2;
+        color: #dc2626 !important;
+        border: 1.5px solid #fca5a5;
+        border-radius: 10px;
+        padding: 10px 18px;
+        font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+        .btn-deactivate:hover {
+            background: #fecaca;
+        }
+
+    /* ── DARK MODE TOGGLE ── */
+    .dark-toggle-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 18px;
+        background: var(--input-bg);
+        border: 1.5px solid var(--input-border);
+        border-radius: 14px;
+    }
+
+    .dark-toggle-label {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text);
+    }
+
+    .dark-toggle-sub {
+        font-size: 12px;
+        color: var(--muted);
+        margin-top: 2px;
+    }
+
+    .form-check-input#darkMode {
+        width: 40px !important;
+        height: 22px !important;
+        cursor: pointer;
+        border-radius: 20px !important;
+    }
+
+        .form-check-input#darkMode:checked {
+            background-color: var(--orange) !important;
+            border-color: var(--orange) !important;
+        }
+
+    /* ── BUTTONS ── */
+    .btn-submit {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: var(--gradient);
+        color: #fff !important;
+        border: none;
+        border-radius: 12px;
+        padding: 12px 28px;
+        font-size: 14px;
+        font-weight: 700;
+        cursor: pointer;
+        box-shadow: 0 4px 16px rgba(249,115,22,0.35);
+        transition: opacity 0.2s, transform 0.2s;
+    }
+
+        .btn-submit:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+    .btn-cancel {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: #f1f5f9;
+        color: var(--muted) !important;
+        border: 1.5px solid var(--input-border);
+        border-radius: 12px;
+        padding: 12px 24px;
+        font-size: 14px;
+        font-weight: 600;
+        text-decoration: none !important;
+        transition: all 0.2s;
+    }
+
+        .btn-cancel:hover {
+            background: #e2e8f0;
+            color: var(--text) !important;
+        }
+
+    .status-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+
+    .badge-active .status-dot {
+        background: #16a34a;
+        animation: blink 2s infinite;
+    }
+
+    .badge-locked .status-dot {
+        background: #dc2626;
+    }
+
+    @@keyframes blink {
+        0%, 100% {
+            opacity: 1;
+        }
+
+        50% {
+            opacity: 0.3;
+        }
+    }
+</style>
+
+<!-- Page Header -->
+<div class="page-header">
+    <div>
+        <h2>Edit User</h2>
+        <p>Manage user settings and account status</p>
+    </div>
+    <a class="breadcrumb-link"
+       asp-area="Admin" asp-controller="Users"
+       asp-action="Details" asp-route-id="@Model.Id">
+        <i class="mdi mdi-arrow-left"></i> Back to User Details
+    </a>
+</div>
+
+<div class="row g-4">
+
+    <!-- Left: Form -->
+    <div class="col-lg-8">
+        <div class="panel">
+
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3" style="font-size:13px;"></div>
+
+            <form asp-area="Admin" asp-controller="Users"
+                  asp-action="Edit" asp-route-id="@Model.Id" method="post">
+                @Html.AntiForgeryToken()
+
+                <!-- Identity (readonly) -->
+                <div class="form-section">
+                    <div class="form-section-title">
+                        <i class="mdi mdi-account-outline"></i>
+                        Identity
+                        <span style="font-size:11px; color:var(--muted-light); font-weight:500; text-transform:none; letter-spacing:0;">
+                            — read-only
+                        </span>
+                    </div>
+                    <div class="row g-3">
                         <div class="col-md-6">
-                            <label class="form-label">Username (Read-only)</label>
+                            <label class="form-label">
+                                Username
+                                <span class="readonly-label-hint"><i class="mdi mdi-lock-outline"></i> read-only</span>
+                            </label>
                             <input type="text" class="form-control" value="@Model.UserName" disabled />
                         </div>
-
                         <div class="col-md-6">
-                            <label class="form-label">Email (Read-only)</label>
+                            <label class="form-label">
+                                Email
+                                <span class="readonly-label-hint"><i class="mdi mdi-lock-outline"></i> read-only</span>
+                            </label>
                             <input type="email" class="form-control" value="@Model.Email" disabled />
                         </div>
-
                         <div class="col-md-6">
-                            <label class="form-label"><b>Full Name</b></label>
-                            <input type="text" name="FullName" class="form-control" value="@Model.FullName" />
+                            <label class="form-label">Full Name</label>
+                            <input type="text" name="FullName" class="form-control"
+                                   value="@Model.FullName" placeholder="Enter full name" />
                         </div>
-
                         <div class="col-md-6">
-                            <label class="form-label">Phone (Read-only)</label>
-                            <input type="text" class="form-control" value="@(Model.PhoneNumber ?? "-")" disabled />
+                            <label class="form-label">
+                                Phone
+                                <span class="readonly-label-hint"><i class="mdi mdi-lock-outline"></i> read-only</span>
+                            </label>
+                            <input type="text" class="form-control"
+                                   value="@(Model.PhoneNumber ?? "—")" disabled />
                         </div>
-
-                        <div class="col-12">
-                            <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" id="darkMode" name="DarkMode" @(Model.DarkMode ? "checked" : "") />
-                                <label class="form-check-label" for="darkMode">Enable Dark Mode</label>
-                            </div>
-                        </div>
-
-                        <div class="col-12 border-top pt-3">
-                            <h6>Subscription Info (Read-only)</h6>
-                            <div class="row">
-                                <div class="col-md-4">
-                                    <label class="form-label">Status</label>
-                                    <input type="text" class="form-control" value="@(Model.IsPremium ? "Premium" : "Free")" disabled />
-                                </div>
-                                <div class="col-md-4">
-                                    <label class="form-label">Type</label>
-                                    <input type="text" class="form-control" value="@(Model.SubscriptionType ?? "N/A")" disabled />
-                                </div>
-                                <div class="col-md-4">
-                                    <label class="form-label">Expiry Date</label>
-                                    <input type="text" class="form-control" value="@(Model.PremiumExpiryDate?.ToString("yyyy-MM-dd") ?? "N/A")" disabled />
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-12">
-                            <button type="submit" class="btn btn-primary">Save Changes</button>
-                            <a asp-area="Admin" asp-controller="Users" asp-action="Details" asp-route-id="@Model.Id" class="btn btn-secondary ms-2">Cancel</a>
-                        </div>
-                    </form>
-
+                    </div>
                 </div>
-            </div>
+
+                <!-- Preferences -->
+                <div class="form-section">
+                    <div class="form-section-title">
+                        <i class="mdi mdi-tune"></i>
+                        Preferences
+                    </div>
+                    <div class="dark-toggle-row">
+                        <div>
+                            <div class="dark-toggle-label">Dark Mode</div>
+                            <div class="dark-toggle-sub">Enable dark UI for this user's app experience</div>
+                        </div>
+                        <div class="form-check form-switch mb-0">
+                            <input class="form-check-input" type="checkbox"
+                                   id="darkMode" name="DarkMode"
+                                   @(Model.DarkMode ? "checked" : "") />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="d-flex gap-3 pt-2">
+                  @*   <button type="submit" class="btn-submit">
+                        <i class="mdi mdi-check"></i> Save Changes
+                    </button> *@
+                    <a asp-area="Admin" asp-controller="Users"
+                       asp-action="Index" 
+                       class="btn-cancel">
+                        <i class="mdi mdi-close"></i> Cancel
+                    </a>
+                </div>
+
+            </form>
         </div>
     </div>
+
+    <!-- Right: Profile + Info + Account Control -->
+    <div class="col-lg-4">
+        <div style="position: sticky; top: 90px;">
+
+            <!-- Profile snapshot -->
+            <div class="panel" style="padding: 24px;">
+                <div class="profile-card">
+                    <div class="profile-avatar">
+                        @(string.IsNullOrEmpty(Model.UserName) ? "?" : Model.UserName.Substring(0, 1).ToUpper())
+                    </div>
+                    <div>
+                        <div class="profile-name">@Model.UserName</div>
+                        <div class="profile-email">@Model.Email</div>
+                    </div>
+                </div>
+
+                <!-- Meta rows -->
+                <div class="info-row">
+                    <span class="info-key"><i class="mdi mdi-crown-outline"></i> Subscription</span>
+                    <span class="info-val">
+                        @if (Model.IsPremium)
+                        {
+                            <span class="badge-premium">
+                                <i class="mdi mdi-crown" style="font-size:11px;"></i>
+                                @(Model.SubscriptionType ?? "Premium")
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="badge-free">
+                                <i class="mdi mdi-account-outline" style="font-size:11px;"></i>
+                                Free
+                            </span>
+                        }
+                    </span>
+                </div>
+
+                <div class="info-row">
+                    <span class="info-key"><i class="mdi mdi-calendar-clock"></i> Expiry</span>
+                    <span class="info-val" style="font-size:12px; font-family:'Courier New',monospace;">
+                        @(Model.PremiumExpiryDate?.ToString("MMM dd, yyyy") ?? "—")
+                    </span>
+                </div>
+
+                <div class="info-row">
+                    <span class="info-key"><i class="mdi mdi-calendar-plus"></i> Joined</span>
+                    <span class="info-val" style="font-size:12px; font-family:'Courier New',monospace;">
+                        @Model.CreatedAt.ToString("MMM dd, yyyy")
+                    </span>
+                </div>
+
+                <div class="info-row">
+                    <span class="info-key"><i class="mdi mdi-shield"></i> Status</span>
+                    <span class="info-val">
+                        @if (isLocked)
+                        {
+                            <span class="badge-locked">
+                                <span class="status-dot"></span> Deactivated
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="badge-active">
+                                <span class="status-dot"></span> Active
+                            </span>
+                        }
+                    </span>
+                </div>
+            </div>
+
+            <!-- Account Activation / Deactivation -->
+            @if (isLocked)
+            {
+                <!-- Currently locked → show Activate option -->
+                <div class="control-card activate">
+                    <div class="control-title">
+                        <i class="mdi mdi-lock-open-outline"></i> Activate Account
+                    </div>
+                    <p class="control-desc">
+                        This account is currently deactivated
+                        @if (Model.LockoutEnd.HasValue)
+                        {
+                            <text>until <strong>@Model.LockoutEnd.Value.ToString("MMM dd, yyyy HH:mm") UTC</strong></text>
+                        }
+                        . Activating it will clear the lockout and restore full access.
+                    </p>
+                    <form asp-area="Admin" asp-controller="Users"
+                          asp-action="SetLockout" asp-route-id="@Model.Id"
+                          method="post" class="lockout-form"
+                          data-action="activate">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="lockoutEnd" value="" />
+                        <button type="submit" class="btn-activate">
+                            <i class="mdi mdi-lock-open-variant-outline"></i> Activate Account
+                        </button>
+                    </form>
+                </div>
+            }
+            else
+            {
+                <!-- Currently active → show Deactivate option -->
+                <div class="control-card deactivate">
+                    <div class="control-title">
+                        <i class="mdi mdi-lock-outline"></i> Deactivate Account
+                    </div>
+                    <p class="control-desc">
+                        Deactivating sets <code style="font-size:11px; background:#fecaca; color:#dc2626; padding:1px 5px; border-radius:4px;">LockoutEnd</code>
+                        to a future date, preventing the user from signing in.
+                    </p>
+
+                    <!-- Duration picker -->
+                    <div style="margin-bottom: 12px;">
+                        <label class="form-label" style="font-size:12px;">Lock duration</label>
+                        <select id="lockDuration" style="background:#fff; border:1.5px solid #fca5a5; border-radius:10px; padding:8px 12px; font-size:13px; color:var(--text); width:100%; outline:none;">
+                            <option value="1">1 day</option>
+                            <option value="7" selected>7 days</option>
+                            <option value="30">30 days</option>
+                            <option value="365">1 year</option>
+                            <option value="36500">Permanent (100 years)</option>
+                        </select>
+                    </div>
+
+                    <form asp-area="Admin" asp-controller="Users"
+                          asp-action="SetLockout" asp-route-id="@Model.Id"
+                          method="post" class="lockout-form"
+                          data-action="deactivate">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="lockoutEnd" id="lockoutEndInput" value="" />
+                        <button type="submit" class="btn-deactivate">
+                            <i class="mdi mdi-lock-outline"></i> Deactivate Account
+                        </button>
+                    </form>
+                </div>
+            }
+
+        </div>
+    </div>
+
 </div>
+
+@section Scripts {
+    <script>
+        (function () {
+            // ── Compute lockout date from duration select ──
+            var $duration = $('#lockDuration');
+            var $input    = $('#lockoutEndInput');
+
+            function setLockoutDate() {
+                if (!$input.length) return;
+                var days   = parseInt($duration.val()) || 7;
+                var future = new Date();
+                future.setDate(future.getDate() + days);
+                $input.val(future.toISOString());
+            }
+
+            if ($duration.length) {
+                setLockoutDate();
+                $duration.on('change', setLockoutDate);
+            }
+
+            // ── Confirm before lockout action ──
+            $('.lockout-form').on('submit', function (e) {
+                e.preventDefault();
+                var $form  = $(this);
+                var action = $form.data('action');
+
+                var isActivate = action === 'activate';
+                Swal.fire({
+                    title: isActivate ? 'Activate Account?' : 'Deactivate Account?',
+                    text: isActivate
+                        ? 'This will restore full access for this user.'
+                        : 'The user will be locked out for the selected duration.',
+                    icon: 'warning',
+                    background: '#1a2235',
+                    color: '#f1f5f9',
+                    showCancelButton: true,
+                    confirmButtonColor: isActivate ? '#16a34a' : '#ef4444',
+                    cancelButtonColor: '#475569',
+                    confirmButtonText: isActivate ? 'Yes, Activate' : 'Yes, Deactivate',
+                    cancelButtonText: 'Cancel'
+                }).then((result) => {
+                    if (result.isConfirmed) { $form[0].submit(); }
+                });
+            });
+        })();
+    </script>
+}

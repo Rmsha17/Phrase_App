@@ -1,227 +1,824 @@
-﻿@{
-    ViewData["Title"] = "Engine Analysis | Schedule Report";
+﻿@using Phrase_App.Core.DTOs
+@{
+    ViewData["Title"] = "Schedule Report";
     Layout = "~/Views/Shared/_Layout.cshtml";
 
+    var morning = (int)(ViewBag.Morning ?? 0);
+    var afternoon = (int)(ViewBag.Afternoon ?? 0);
+    var evening = (int)(ViewBag.Evening ?? 0);
+    var night = (int)(ViewBag.Night ?? 0);
+    var total = morning + afternoon + evening + night;
 }
 
 <style>
     :root {
-        --p-indigo: #6366f1;
-        --p-emerald: #10b981;
+        --orange: #f97316;
+        --orange-light: #fff4ed;
+        --orange-border: #fed7aa;
+        --amber: #fbbf24;
+        --card-bg: #ffffff;
+        --card-border: rgba(0,0,0,0.06);
+        --card-shadow: 0 1px 12px rgba(0,0,0,0.07), 0 4px 24px rgba(0,0,0,0.04);
+        --text: #1e293b;
+        --muted: #64748b;
+        --muted-light: #94a3b8;
+        --input-bg: #f8fafc;
+        --input-border: #e2e8f0;
+        --gradient: linear-gradient(135deg, #f97316 0%, #fbbf24 100%);
     }
 
-    .report-shell {
-        background: #fdfdfd;
-        min-height: 100vh;
-        padding: 40px;
-        color: #2d3748;
-        font-family: 'Inter', sans-serif;
+    .page-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-bottom: 28px;
     }
 
-    .report-card {
-        background: white;
-        border: 1px solid #edf2f7;
-        border-radius: 16px;
-        padding: 25px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+        .page-header h2 {
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--text);
+            margin: 0 0 4px;
+            letter-spacing: -0.4px;
+        }
+
+        .page-header p {
+            font-size: 13px;
+            color: var(--muted);
+            margin: 0;
+        }
+
+    /* ── STAT CARDS ── */
+    .stat-card {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 20px;
+        padding: 22px;
+        box-shadow: var(--card-shadow);
+        position: relative;
+        overflow: hidden;
+        height: 100%;
+        transition: transform 0.25s, box-shadow 0.25s;
     }
 
-    .heat-cell {
-        height: 45px;
-        border-radius: 8px;
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+
+        .stat-card.primary {
+            background: var(--gradient);
+            border: none;
+            box-shadow: 0 8px 32px rgba(249,115,22,0.35);
+        }
+
+            .stat-card.primary::before {
+                content: '';
+                position: absolute;
+                top: -40px;
+                right: -40px;
+                width: 130px;
+                height: 130px;
+                background: rgba(255,255,255,0.12);
+                border-radius: 50%;
+            }
+
+    .stat-icon {
+        position: absolute;
+        top: 18px;
+        right: 18px;
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-weight: bold;
-        font-size: 13px;
-        transition: 0.3s;
+        font-size: 21px;
     }
 
-    .bg-low {
-        background: #f1f5f9;
-        color: #94a3b8;
+    .stat-card:not(.primary) .stat-icon {
+        background: var(--orange-light);
+        color: var(--orange);
+        border: 1px solid var(--orange-border);
     }
 
-    .bg-high {
-        background: var(--p-indigo);
-        color: white;
-        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+    .stat-card.primary .stat-icon {
+        background: rgba(255,255,255,0.2);
+        color: #fff;
     }
 
-    .metric-label {
-        font-size: 0.75rem;
+    .stat-label {
+        font-size: 11px;
         font-weight: 700;
-        color: #718096;
+        letter-spacing: 1.2px;
         text-transform: uppercase;
-        letter-spacing: 0.05em;
+        margin-bottom: 8px;
     }
 
-    .status-pulse {
+    .stat-card:not(.primary) .stat-label {
+        color: var(--muted);
+    }
+
+    .stat-card.primary .stat-label {
+        color: rgba(255,255,255,0.75);
+    }
+
+    .stat-value {
+        font-size: 36px;
+        font-weight: 800;
+        line-height: 1;
+        letter-spacing: -1.5px;
+        margin-bottom: 8px;
+    }
+
+    .stat-card:not(.primary) .stat-value {
+        color: var(--text);
+    }
+
+    .stat-card.primary .stat-value {
+        color: #fff;
+    }
+
+    .stat-sub {
+        font-size: 12px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .stat-card:not(.primary) .stat-sub {
+        color: var(--muted);
+    }
+
+    .stat-card.primary .stat-sub {
+        color: rgba(255,255,255,0.8);
+    }
+
+    .stat-bar-track {
+        height: 5px;
+        border-radius: 10px;
+        margin-top: 14px;
+        overflow: hidden;
+    }
+
+    .stat-card:not(.primary) .stat-bar-track {
+        background: #f1f5f9;
+    }
+
+    .stat-card:not(.primary) .stat-bar-fill {
+        height: 100%;
+        border-radius: 10px;
+        background: var(--gradient);
+    }
+
+    .stat-card.primary .stat-bar-track {
+        background: rgba(255,255,255,0.2);
+    }
+
+    .stat-card.primary .stat-bar-fill {
+        height: 100%;
+        border-radius: 10px;
+        background: rgba(255,255,255,0.7);
+    }
+
+    /* ── PANELS ── */
+    .panel {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 20px;
+        padding: 24px;
+        box-shadow: var(--card-shadow);
+        margin-bottom: 24px;
+    }
+
+    .panel-title {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 1.2px;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+        .panel-title i {
+            color: var(--orange);
+            font-size: 16px;
+        }
+
+        .panel-title::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #f1f5f9;
+        }
+
+    /* ── TIME WINDOW BARS ── */
+    .time-row {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 12px 0;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+        .time-row:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+    .time-icon {
+        width: 38px;
+        height: 38px;
+        border-radius: 11px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+    }
+
+        .time-icon.morning {
+            background: #fffbeb;
+            border: 1px solid #fde68a;
+            color: #b45309;
+        }
+
+        .time-icon.afternoon {
+            background: var(--orange-light);
+            border: 1px solid var(--orange-border);
+            color: var(--orange);
+        }
+
+        .time-icon.evening {
+            background: #f0f9ff;
+            border: 1px solid #bae6fd;
+            color: #0284c7;
+        }
+
+        .time-icon.night {
+            background: #1a2235;
+            border: 1px solid rgba(255,255,255,0.08);
+            color: #94a3b8;
+        }
+
+    .time-label {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text);
+        margin-bottom: 2px;
+    }
+
+    .time-range {
+        font-size: 11px;
+        color: var(--muted-light);
+    }
+
+    .time-bar-track {
+        flex: 1;
         height: 8px;
-        width: 8px;
-        background: var(--p-emerald);
+        background: #f1f5f9;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    .time-bar-fill {
+        height: 100%;
+        border-radius: 10px;
+        background: var(--gradient);
+        transition: width 0.8s ease;
+    }
+
+    .time-count {
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--text);
+        min-width: 28px;
+        text-align: right;
+    }
+
+    /* ── HEATMAP ── */
+    .heat-cell {
+        height: 56px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        font-size: 16px;
+        transition: transform 0.2s;
+        margin-bottom: 6px;
+        cursor: default;
+    }
+
+        .heat-cell:hover {
+            transform: scale(1.06);
+        }
+
+        .heat-cell.bg-low {
+            background: var(--input-bg);
+            border: 1.5px solid var(--input-border);
+            color: var(--muted-light);
+        }
+
+        .heat-cell.bg-mid {
+            background: var(--orange-light);
+            border: 1.5px solid var(--orange-border);
+            color: var(--orange);
+        }
+
+        .heat-cell.bg-high {
+            background: var(--gradient);
+            color: #fff;
+            box-shadow: 0 4px 14px rgba(249,115,22,0.35);
+        }
+
+    .heat-day-label {
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--muted);
+        text-align: center;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    /* ── INSIGHT BOX ── */
+    .insight-box {
+        background: var(--orange-light);
+        border: 1.5px solid var(--orange-border);
+        border-radius: 14px;
+        padding: 16px 18px;
+        margin-top: 18px;
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+    }
+
+    .insight-icon-wrap {
+        width: 34px;
+        height: 34px;
+        border-radius: 10px;
+        flex-shrink: 0;
+        background: rgba(249,115,22,0.15);
+        border: 1px solid var(--orange-border);
+        color: var(--orange);
+        font-size: 17px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-top: 1px;
+    }
+
+    .insight-title {
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--orange);
+        margin-bottom: 5px;
+    }
+
+    .insight-body {
+        font-size: 13px;
+        color: #92400e;
+        line-height: 1.65;
+    }
+
+        .insight-body strong {
+            color: #c2410c;
+        }
+
+    /* ── POWER USERS TABLE ── */
+    .pu-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+        .pu-table thead th {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--muted);
+            padding: 12px 16px;
+            background: #f8fafc;
+            border-bottom: 2px solid #e2e8f0;
+            white-space: nowrap;
+        }
+
+        .pu-table tbody tr {
+            transition: background 0.15s;
+        }
+
+            .pu-table tbody tr:hover {
+                background: #fff9f5;
+            }
+
+        .pu-table tbody td {
+            font-size: 13px;
+            color: var(--text);
+            border-bottom: 1px solid #f1f5f9;
+            padding: 14px 16px;
+            vertical-align: middle;
+        }
+
+        .pu-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+    .rank-badge {
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        font-weight: 800;
+    }
+
+        .rank-badge.r1 {
+            background: var(--gradient);
+            color: #fff;
+            box-shadow: 0 3px 10px rgba(249,115,22,0.35);
+        }
+
+        .rank-badge.r2 {
+            background: #f1f5f9;
+            color: var(--muted);
+        }
+
+        .rank-badge.r3 {
+            background: #fffbeb;
+            border: 1px solid #fde68a;
+            color: #b45309;
+        }
+
+        .rank-badge.rn {
+            background: #f8fafc;
+            color: var(--muted-light);
+            border: 1px solid #e2e8f0;
+        }
+
+    .user-cell {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .user-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 11px;
+        flex-shrink: 0;
+        background: var(--orange-light);
+        border: 1px solid var(--orange-border);
+        color: var(--orange);
+        font-size: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .schedule-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        background: var(--orange-light);
+        color: var(--orange);
+        border: 1px solid var(--orange-border);
+        border-radius: 20px;
+        padding: 4px 12px;
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+    .status-active {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: #f0fdf4;
+        color: #16a34a;
+        border: 1px solid #bbf7d0;
+        border-radius: 20px;
+        padding: 4px 12px;
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+    .status-dot {
+        width: 6px;
+        height: 6px;
         border-radius: 50%;
-        display: inline-block;
+        background: #16a34a;
         animation: blink 2s infinite;
     }
 
+    .load-bar-wrap {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 10px;
+    }
+
+    .load-bar-track {
+        width: 90px;
+        height: 6px;
+        background: #f1f5f9;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    .load-bar-fill {
+        height: 100%;
+        border-radius: 10px;
+        background: var(--gradient);
+    }
+
+    .load-pct {
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--orange);
+        min-width: 32px;
+        text-align: right;
+    }
+
     @@keyframes blink {
-        0% {
+        0%, 100% {
             opacity: 1;
         }
 
         50% {
-            opacity: 0.4;
-        }
-
-        100% {
-            opacity: 1;
+            opacity: 0.3;
         }
     }
 </style>
 
-<div class="report-shell">
-    <div class="d-flex justify-content-between align-items-center mb-5 pb-4 border-bottom">
-        <div>
-            <h1 class="h3 fw-bold mb-1 text-dark">Schedule Distribution Report</h1>
-            <p class="text-muted small mb-0">System performance and user engagement analytics</p>
-        </div>
-       @*  <button class="btn btn-dark rounded-pill px-4 shadow-sm" onclick="window.print()">
-            <i class="mdi mdi-printer me-2"></i>Print Report
-        </button> *@
+<!-- Page Header -->
+<div class="page-header">
+    <div>
+        <h2>Schedule Distribution Report</h2>
+        <p>System performance and user engagement analytics</p>
     </div>
+</div>
 
-    <div class="row">
-        <div class="col-lg-7 mb-4">
-            <div class="report-card h-100">
-                <h6 class="metric-label mb-4">Hourly Traffic Distribution</h6>
-                <div style="height: 320px;">
-                    <canvas id="timeRadarChart"></canvas>
-                </div>
+<!-- Stat Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-lg-3 col-md-6">
+        <div class="stat-card primary">
+            <div class="stat-icon"><i class="mdi mdi-calendar-clock"></i></div>
+            <div class="stat-label">Total Schedules</div>
+            <div class="stat-value">@total</div>
+            <div class="stat-sub"><i class="mdi mdi-circle" style="font-size:8px;"></i> All time windows</div>
+            <div class="stat-bar-track"><div class="stat-bar-fill" style="width:100%;"></div></div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="stat-card">
+            <div class="stat-icon"><i class="mdi mdi-weather-sunny"></i></div>
+            <div class="stat-label">Morning Peak</div>
+            <div class="stat-value">@morning</div>
+            <div class="stat-sub"><i class="mdi mdi-clock-outline"></i> 05:00 – 12:00</div>
+            <div class="stat-bar-track"><div class="stat-bar-fill" style="width:@(total > 0 ? morning * 100 / total : 0)%;"></div></div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="stat-card">
+            <div class="stat-icon"><i class="mdi mdi-weather-sunset"></i></div>
+            <div class="stat-label">Evening Peak</div>
+            <div class="stat-value">@evening</div>
+            <div class="stat-sub"><i class="mdi mdi-clock-outline"></i> 17:00 – 22:00</div>
+            <div class="stat-bar-track"><div class="stat-bar-fill" style="width:@(total > 0 ? evening * 100 / total : 0)%;"></div></div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="stat-card">
+            <div class="stat-icon"><i class="mdi mdi-account-star-outline"></i></div>
+            <div class="stat-label">Top Users</div>
+            <div class="stat-value">@(((IEnumerable<dynamic>)ViewBag.PowerUsers)?.Count() ?? 0)</div>
+            <div class="stat-sub"><i class="mdi mdi-podium"></i> High-frequency schedulers</div>
+            <div class="stat-bar-track"><div class="stat-bar-fill" style="width:70%;"></div></div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+
+    <!-- Left: Time Windows + Heatmap -->
+    <div class="col-lg-5">
+
+        <!-- Time Window Breakdown -->
+        <div class="panel" style="margin-bottom:20px;">
+            <div class="panel-title">
+                <i class="mdi mdi-clock-time-four-outline"></i>
+                Time Window Breakdown
             </div>
+
+            @{
+                var windows = new[]
+                {
+                        new { Label = "Morning",   Range = "05:00 – 12:00", Count = morning,   IconClass = "morning",   Icon = "mdi-weather-sunny",          Pct = total > 0 ? morning   * 100 / total : 0 },
+                        new { Label = "Afternoon", Range = "12:00 – 17:00", Count = afternoon, IconClass = "afternoon", Icon = "mdi-weather-cloudy",   Pct = total > 0 ? afternoon * 100 / total : 0 },
+                        new { Label = "Evening",   Range = "17:00 – 22:00", Count = evening,   IconClass = "evening",   Icon = "mdi-weather-sunset",          Pct = total > 0 ? evening   * 100 / total : 0 },
+                        new { Label = "Night",     Range = "22:00 – 05:00", Count = night,     IconClass = "night",     Icon = "mdi-weather-night",           Pct = total > 0 ? night     * 100 / total : 0 }
+                        };
+            }
+
+            @foreach (var w in windows)
+            {
+                <div class="time-row">
+                    <div class="time-icon @w.IconClass">
+                        <i class="mdi @w.Icon"></i>
+                    </div>
+                    <div style="min-width:80px;">
+                        <div class="time-label">@w.Label</div>
+                        <div class="time-range">@w.Range</div>
+                    </div>
+                    <div class="time-bar-track">
+                        <div class="time-bar-fill" style="width:@w.Pct%;"></div>
+                    </div>
+                    <span class="time-count">@w.Count</span>
+                </div>
+            }
         </div>
 
-        <div class="col-lg-5 mb-4">
-            <div class="report-card h-100 d-flex flex-column">
-                <h6 class="metric-label mb-4">Weekly Density Heatmap</h6>
-                <div class="row g-2 text-center mb-auto">
-                    @foreach (var day in ViewBag.DayDistribution)
-                    {
-                        // SAFETY FIX: Ensure day.Day is not null and long enough before calling Substring
-                        string dayName = day.Day ?? "Unknown";
-                        string shortDay = dayName.Length >= 3 ? dayName.Substring(0, 3) : dayName;
+        <!-- Weekly Heatmap -->
+        <div class="panel">
+            <div class="panel-title">
+                <i class="mdi mdi-grid"></i>
+                Weekly Density Heatmap
+            </div>
 
-                        <div class="col-4">
-                            <div class="heat-cell @(day.Count > 0 ? "bg-high" : "bg-low") mb-1">
-                                @day.Count
-                            </div>
-                            <span class="x-small text-muted" style="font-size: 11px; font-weight: 600;">@shortDay</span>
-                        </div>
-                    }
+            <div class="row g-2 text-center">
+                @foreach (DayDistributionDto day in ViewBag.DayDistribution)
+                {
+                    string shortDay = day.Day.Length >= 3 ? day.Day.Substring(0, 3) : day.Day;
+                    int count = day.Count;   // no cast needed — it's already a typed int
+                    string cellClass = count == 0 ? "bg-low" : count < 3 ? "bg-mid" : "bg-high";
+
+                    <div class="col-4">
+                        <div class="heat-cell @cellClass">@count</div>
+                        <div class="heat-day-label">@shortDay</div>
+                    </div>
+                }
+            </div>
+
+            <div class="insight-box">
+                <div class="insight-icon-wrap">
+                    <i class="mdi mdi-lightbulb-outline"></i>
                 </div>
-
-                <div class="mt-4 p-3 rounded-4" style="background: #f8fafc; border: 1px solid #e2e8f0;">
-                    <p class="small mb-0 text-muted">
-                        <i class="mdi mdi-lightbulb-on text-warning me-2 fs-5"></i>
-                        <strong>Dynamic Insight:</strong>
-                        System activity peaks on <span class="text-indigo fw-bold">@ViewBag.PeakDay s</span>
-                        during the <span class="text-indigo fw-bold">@ViewBag.PeakTimeSlot</span> window.
-
-                        @{
-                            var morning = ViewBag.Morning ?? 0;
-                            var afternoon = ViewBag.Afternoon ?? 0;
-                            var evening = ViewBag.Evening ?? 0;
-                            var night = ViewBag.Night ?? 0;
-                            var total = (int)morning + (int)afternoon + (int)evening + (int)night;
-
-                            if (total > 50)
-                            {
-                                <span class="d-block mt-2 text-dark">Suggesting resource pre-allocation for this period.</span>
-                            }
+                <div>
+                    <div class="insight-title">Dynamic Insight</div>
+                    <div class="insight-body">
+                        Activity peaks on <strong>@ViewBag.PeakDay</strong>
+                        during the <strong>@ViewBag.PeakTimeSlot</strong> window.
+                        @if (total > 50)
+                        {
+                            <span class="d-block mt-1">Consider pre-allocating resources for this period.</span>
                         }
-                    </p>
+                    </div>
                 </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Right: Polar Chart -->
+    <div class="col-lg-7">
+        <div class="panel" style="height:calc(100% - 24px);">
+            <div class="panel-title">
+                <i class="mdi mdi-chart-arc"></i>
+                Hourly Traffic Distribution
+            </div>
+            <div style="height:420px;">
+                <canvas id="timeRadarChart"></canvas>
             </div>
         </div>
     </div>
 
-    <div class="row mt-3">
-        <div class="col-12">
-            <div class="report-card">
-                <h6 class="metric-label mb-4">Top Scheduling Accounts</h6>
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle">
-                        <thead>
-                            <tr class="text-muted" style="font-size: 12px; border-bottom: 2px solid #f1f5f9;">
-                                <th class="pb-3">USER ACCOUNT</th>
-                                <th class="pb-3">ACTIVE WINDOWS</th>
-                                <th class="pb-3">EST. DURATION</th>
-                                <th class="pb-3">STATUS</th>
-                                <th class="pb-3 text-end">LOAD IMPACT</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var user in ViewBag.PowerUsers)
-                            {
-                                <tr>
-                                    <td class="py-3">
-                                        <div class="d-flex align-items-center">
-                                            <div class="avatar-sm me-3 d-flex align-items-center justify-content-center rounded-circle"
-                                                 style="width: 38px; height: 38px; background: #eef2ff; color: #6366f1;">
-                                                <i class="mdi mdi-account-circle-outline fs-4"></i>
-                                            </div>
-                                            <span class="fw-bold">@user.UserEmail</span>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <span class="badge rounded-pill" style="background: #e0e7ff; color: #4338ca;">
-                                            @user.Count Schedules
-                                        </span>
-                                    </td>
-                                    <td class="text-muted small">8.2 hrs / avg</td>
-                                    <td>
-                                        <span class="status-pulse me-2"></span>
-                                        <span class="text-success small fw-bold">Operational</span>
-                                    </td>
-                                    <td class="text-end">
-                                        <div class="progress" style="height: 6px; width: 80px; display: inline-flex; border-radius: 10px;">
-                                            <div class="progress-bar bg-indigo" style="width: @(user.Count * 15)%"></div>
-                                        </div>
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
+</div>
+
+<!-- Power Users Table -->
+<div class="panel">
+    <div class="panel-title">
+        <i class="mdi mdi-account-star-outline"></i>
+        Top Scheduling Accounts
+    </div>
+    <div class="table-responsive">
+        <table class="pu-table">
+            <thead>
+                <tr>
+                    <th style="width:50px;">#</th>
+                    <th>User Account</th>
+                    <th>Active Schedules</th>
+                    <th>Status</th>
+                    <th class="text-end">Load Impact</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{
+                    int rank = 1;
+                }
+                @foreach (var user in ViewBag.PowerUsers)
+                {
+                    var pct = Math.Min((int)user.Count * 15, 100);
+                    var rankClass = rank == 1 ? "r1" : rank == 2 ? "r2" : rank == 3 ? "r3" : "rn";
+
+                    <tr>
+                        <td><div class="rank-badge @rankClass">@rank</div></td>
+                        <td>
+                            <div class="user-cell">
+                                <div class="user-avatar"><i class="mdi mdi-account-outline"></i></div>
+                                <span style="font-size:13px; font-weight:600;">@user.UserEmail</span>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="schedule-badge">
+                                <i class="mdi mdi-calendar-check-outline" style="font-size:11px;"></i>
+                                @user.Count Schedules
+                            </span>
+                        </td>
+                        <td>
+                            <span class="status-active">
+                                <span class="status-dot"></span> Operational
+                            </span>
+                        </td>
+                        <td>
+                            <div class="load-bar-wrap">
+                                <div class="load-bar-track">
+                                    <div class="load-bar-fill" style="width:@pct%;"></div>
+                                </div>
+                                <span class="load-pct">@pct%</span>
+                            </div>
+                        </td>
+                    </tr>
+                    rank++;
+                }
+            </tbody>
+        </table>
     </div>
 </div>
 
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        const ctxRadar = document.getElementById('timeRadarChart').getContext('2d');
-        new Chart(ctxRadar, {
-            type: 'polarArea',
-            data: {
-                labels: ['Morning', 'Afternoon', 'Evening', 'Night'],
-                datasets: [{
-                    data: [@(ViewBag.Morning ?? 0), @(ViewBag.Afternoon ?? 0), @(ViewBag.Evening ?? 0), @(ViewBag.Night ?? 0)],
-                    backgroundColor: [
-                        'rgba(99, 102, 241, 0.8)',
-                        'rgba(16, 185, 129, 0.8)',
-                        'rgba(245, 158, 11, 0.8)',
-                        'rgba(30, 41, 59, 0.8)'
-                    ],
-                    borderWidth: 0
-                }]
-            },
-            options: {
-                maintainAspectRatio: false,
-                plugins: { legend: { position: 'bottom' } },
-                scales: { r: { ticks: { display: false }, grid: { color: '#f1f5f9' } } }
-            }
+        document.addEventListener("DOMContentLoaded", function () {
+            var ctx = document.getElementById('timeRadarChart');
+            if (!ctx) return;
+
+            new Chart(ctx, {
+                type: 'polarArea',
+                data: {
+                    labels: ['Morning (05–12)', 'Afternoon (12–17)', 'Evening (17–22)', 'Night (22–05)'],
+                    datasets: [{
+                        data: [@morning, @afternoon, @evening, @night],
+                        backgroundColor: [
+                            'rgba(251,191,36,0.82)',
+                            'rgba(249,115,22,0.82)',
+                            'rgba(2,132,199,0.75)',
+                            'rgba(26,34,53,0.85)'
+                        ],
+                        borderWidth: 0,
+                        hoverOffset: 10
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 22,
+                                color: '#64748b',
+                                font: { size: 12, weight: '600' },
+                                usePointStyle: true,
+                                pointStyleWidth: 10
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: '#1a2235',
+                            borderColor: 'rgba(249,115,22,0.3)',
+                            borderWidth: 1,
+                            titleColor: '#f1f5f9',
+                            bodyColor: '#94a3b8',
+                            padding: 12,
+                            cornerRadius: 10
+                        }
+                    },
+                    scales: {
+                        r: {
+                            ticks: { display: false },
+                            grid: { color: '#f1f5f9' }
+                        }
+                    }
+                }
+            });
         });
     </script>
 }

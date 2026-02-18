@@ -1,10 +1,11 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Phrase_App.Core.DTOs;
 using Phrase_App.Core.Models;
 using System;
-using System.Linq;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Phrase_App.Admin.Controllers
 {
@@ -254,39 +255,88 @@ namespace Phrase_App.Admin.Controllers
 
             return View(model);
         }
-
         public async Task<IActionResult> ScheduleReport()
         {
-            // 1. Density by Day of Week
-            var dayDistribution = await _context.ScheduledDays
-                .GroupBy(d => d.DayOfWeek)
-                .Select(g => new { Day = g.Key.ToString(), Count = g.Count() })
+            // ── 1. Day-of-week density ──────────────────────────────────────────
+            // Load to memory FIRST to avoid EF translation errors on enum.ToString()
+            var scheduledDayEnums = await _context.ScheduledDays
+                .Select(d => d.DayOfWeek)   // DayOfWeek enum column
                 .ToListAsync();
 
-            // 2. High-Frequency Users (Manual Join to bridge Guid UserId to User Email)
-            // We use .ToString() on the IDs to avoid the Type Inference error
-            var powerUsers = await (from s in _context.QuoteSchedules
-                                    join u in _context.Users on s.UserId.ToString() equals u.Id.ToString()
-                                    group s by new { u.Email } into g
-                                    select new
-                                    {
-                                        UserEmail = g.Key.Email,
-                                        Count = g.Count()
-                                    })
-                                    .OrderByDescending(x => x.Count)
-                                    .Take(5)
-                                    .ToListAsync();
+            // Count per day in memory
+            var dayCountDict = scheduledDayEnums
+                .GroupBy(d => d)
+                .ToDictionary(g => g.Key, g => g.Count());
 
-            // 3. Peak Time Windows (Hourly breakdown)
-            var allSchedules = await _context.QuoteSchedules.ToListAsync();
-            ViewBag.Morning = allSchedules.Count(s => s.DailyStartTime.Hours >= 5 && s.DailyStartTime.Hours < 12);
-            ViewBag.Afternoon = allSchedules.Count(s => s.DailyStartTime.Hours >= 12 && s.DailyStartTime.Hours < 17);
-            ViewBag.Evening = allSchedules.Count(s => s.DailyStartTime.Hours >= 17 && s.DailyStartTime.Hours < 22);
-            ViewBag.Night = allSchedules.Count(s => (s.DailyStartTime.Hours >= 22) || (s.DailyStartTime.Hours < 5));
+            // Always emit all 7 days in Mon→Sun order so the heatmap is never missing cells
+            var orderedDays = new[]
+            {
+        DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday,
+        DayOfWeek.Thursday, DayOfWeek.Friday, DayOfWeek.Saturday, DayOfWeek.Sunday
+    };
 
-            // 4. Dynamic Insights
-            var peakDayEntry = dayDistribution.OrderByDescending(x => x.Count).FirstOrDefault();
-            ViewBag.PeakDay = peakDayEntry?.Day ?? "N/A";
+            var dayDistribution = orderedDays
+                .Select(d => new DayDistributionDto
+                {
+                    Day = d.ToString(),
+                    Count = dayCountDict.TryGetValue((int)d, out var c) ? c : 0
+                })
+                .ToList();
+
+
+            // ── 2. High-frequency users ─────────────────────────────────────────
+            // Step A: aggregate schedule counts per UserId in SQL
+            var scheduleGroups = await _context.QuoteSchedules
+                .GroupBy(s => s.UserId)
+                .Select(g => new { UserId = g.Key, Count = g.Count() })
+                .OrderByDescending(x => x.Count)
+                .Take(10)   // fetch a few extra in case some user IDs don't resolve
+                .ToListAsync();
+
+            // Step B: resolve emails from Users table
+            var userIdStrings = scheduleGroups
+                .Select(x => x.UserId.ToString())
+                .ToList();
+
+            var userEmails = await _context.Users
+                .Where(u => userIdStrings.Contains(u.Id))
+                .Select(u => new { u.Id, u.Email })
+                .ToListAsync();
+
+            // Step C: join in memory using named type — avoids anonymous type boxing issues
+            var powerUsers = scheduleGroups
+                .Join(
+                    userEmails,
+                    sg => sg.UserId.ToString(),
+                    ue => ue.Id,
+                    (sg, ue) => new { UserEmail = ue.Email ?? "Unknown", Count = sg.Count }
+                )
+                .Take(5)
+                .ToList();
+
+
+            // ── 3. Time-window breakdown ────────────────────────────────────────
+            var allSchedules = await _context.QuoteSchedules
+                .AsNoTracking()
+                .ToListAsync();
+
+            int morning = allSchedules.Count(s => s.DailyStartTime.Hours >= 5 && s.DailyStartTime.Hours < 12);
+            int afternoon = allSchedules.Count(s => s.DailyStartTime.Hours >= 12 && s.DailyStartTime.Hours < 17);
+            int evening = allSchedules.Count(s => s.DailyStartTime.Hours >= 17 && s.DailyStartTime.Hours < 22);
+            int night = allSchedules.Count(s => s.DailyStartTime.Hours >= 22 || s.DailyStartTime.Hours < 5);
+
+            ViewBag.Morning = morning;
+            ViewBag.Afternoon = afternoon;
+            ViewBag.Evening = evening;
+            ViewBag.Night = night;
+
+
+            // ── 4. Dynamic insights ─────────────────────────────────────────────
+            var peakDay = dayDistribution
+                .OrderByDescending(x => x.Count)
+                .FirstOrDefault();
+
+            ViewBag.PeakDay = peakDay?.Day ?? "N/A";
 
             var peakHour = allSchedules
                 .GroupBy(s => s.DailyStartTime.Hours)
@@ -295,10 +345,10 @@ namespace Phrase_App.Admin.Controllers
                 .FirstOrDefault();
 
             ViewBag.PeakTimeSlot = peakHour != null
-                ? $"{peakHour.Hour}:00 - {(peakHour.Hour + 1) % 24}:00"
+                ? $"{peakHour.Hour:D2}:00 – {(peakHour.Hour + 1) % 24:D2}:00"
                 : "N/A";
 
-            ViewBag.DayDistribution = dayDistribution;
+            ViewBag.DayDistribution = dayDistribution;   // List<DayDistributionDto> — typed, safe
             ViewBag.PowerUsers = powerUsers;
 
             return View();

@@ -10,147 +10,355 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>BelieveIn | Error @errorCode</title>
-    <link href="~/Admin/dist/css/style.min.css" rel="stylesheet" />
+    <title>BelieveIn Admin | Error @errorCode</title>
     <style>
-        body {
+        *, *::before, *::after {
+            box-sizing: border-box;
             margin: 0;
-            background-color: #1a0f00;
-            /* Sunset Mesh Background */
-            background-image: radial-gradient(at 0% 0%, rgba(234, 88, 12, 0.2) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(124, 58, 237, 0.15) 0px, transparent 50%), linear-gradient(180deg, #1a0f00 0%, #2d1a00 100%);
-            height: 100vh;
+            padding: 0;
+        }
+
+        body {
+            min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #fff;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: #0f1623;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* ── ANIMATED BACKGROUND ── */
+        .bg-layer {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
             overflow: hidden;
         }
 
-        /* Floating Light Orbs */
-        .orb {
+        .bg-orb {
             position: absolute;
-            width: 400px;
-            height: 400px;
-            background: rgba(234, 88, 12, 0.15);
-            filter: blur(100px);
             border-radius: 50%;
-            z-index: 0;
-            animation: float 15s infinite alternate;
+            filter: blur(90px);
+            opacity: 0.55;
+            animation: drift 18s ease-in-out infinite alternate;
         }
 
-        @@keyframes float {
+            .bg-orb.o1 {
+                width: 500px;
+                height: 500px;
+                background: radial-gradient(circle, rgba(249,115,22,0.5), transparent 70%);
+                top: -120px;
+                left: -120px;
+                animation-duration: 20s;
+            }
+
+            .bg-orb.o2 {
+                width: 400px;
+                height: 400px;
+                background: radial-gradient(circle, rgba(251,191,36,0.3), transparent 70%);
+                bottom: -80px;
+                right: -80px;
+                animation-duration: 25s;
+                animation-direction: alternate-reverse;
+            }
+
+            .bg-orb.o3 {
+                width: 300px;
+                height: 300px;
+                background: radial-gradient(circle, rgba(249,115,22,0.2), transparent 70%);
+                top: 50%;
+                left: 60%;
+                animation-duration: 15s;
+            }
+
+        /* Subtle grid overlay */
+        .bg-grid {
+            position: absolute;
+            inset: 0;
+            background-image: linear-gradient(rgba(249,115,22,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(249,115,22,0.04) 1px, transparent 1px);
+            background-size: 48px 48px;
+        }
+
+        @@keyframes drift {
             from {
-                transform: translate(0, 0);
+                transform: translate(0, 0) scale(1);
             }
 
             to {
-                transform: translate(100px, -50px);
+                transform: translate(60px, -40px) scale(1.1);
             }
         }
 
-        .error-container {
+        /* ── GLASS CARD ── */
+        .error-card {
             position: relative;
             z-index: 1;
+            background: rgba(255,255,255,0.04);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255,255,255,0.09);
+            border-radius: 28px;
+            padding: 52px 48px;
+            max-width: 560px;
+            width: 92%;
             text-align: center;
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(15px);
-            padding: 50px;
-            border-radius: 30px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            max-width: 600px;
-            width: 90%;
+            box-shadow: 0 32px 64px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.08);
         }
 
+        /* ── ERROR CODE ── */
         .error-code {
-            font-size: 120px;
+            font-size: clamp(80px, 18vw, 130px);
             font-weight: 900;
-            margin: 0;
-            background: linear-gradient(to bottom, #fb923c, #ea580c);
+            line-height: 1;
+            background: linear-gradient(135deg, #f97316 0%, #fbbf24 60%, #f97316 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            line-height: 1;
+            background-clip: text;
+            letter-spacing: -4px;
+            margin-bottom: 4px;
+            filter: drop-shadow(0 8px 32px rgba(249,115,22,0.4));
         }
 
-        .error-subtitle {
-            font-size: 24px;
-            color: #fdba74;
-            margin-bottom: 20px;
+        /* ── DIVIDER ── */
+        .error-divider {
+            width: 60px;
+            height: 4px;
+            background: linear-gradient(90deg, #f97316, #fbbf24);
+            border-radius: 10px;
+            margin: 18px auto;
+        }
+
+        /* ── LABELS ── */
+        .error-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(249,115,22,0.12);
+            border: 1px solid rgba(249,115,22,0.25);
+            color: #fb923c;
+            border-radius: 20px;
+            padding: 5px 14px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1.2px;
             text-transform: uppercase;
-            letter-spacing: 2px;
+            margin-bottom: 16px;
+        }
+
+            .error-badge::before {
+                content: '';
+                width: 6px;
+                height: 6px;
+                border-radius: 50%;
+                background: #f97316;
+                animation: blink 2s infinite;
+            }
+
+        .error-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #f1f5f9;
+            margin-bottom: 12px;
+            letter-spacing: -0.3px;
         }
 
         .error-msg {
-            color: rgba(255, 255, 255, 0.7);
-            margin-bottom: 30px;
-            font-size: 16px;
+            font-size: 14px;
+            line-height: 1.7;
+            color: #64748b;
+            margin-bottom: 32px;
         }
 
-        .btn-sunset {
-            background: #ea580c;
-            color: white;
-            padding: 12px 30px;
+        /* ── BUTTONS ── */
+        .btn-row {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn-primary-error {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, #f97316, #fbbf24);
+            color: #fff !important;
+            font-size: 13px;
+            font-weight: 700;
+            padding: 12px 26px;
             border-radius: 12px;
-            text-decoration: none;
-            font-weight: 600;
-            transition: 0.3s;
-            display: inline-block;
-            border: none;
-            box-shadow: 0 10px 15px -3px rgba(234, 88, 12, 0.3);
+            text-decoration: none !important;
+            box-shadow: 0 8px 24px rgba(249,115,22,0.4);
+            transition: opacity 0.2s, transform 0.2s;
         }
 
-            .btn-sunset:hover {
-                background: #f97316;
+            .btn-primary-error:hover {
+                opacity: 0.88;
                 transform: translateY(-2px);
-                box-shadow: 0 20px 25px -5px rgba(234, 88, 12, 0.4);
             }
 
-        .debug-info {
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            font-size: 12px;
-            color: rgba(255, 255, 255, 0.4);
+        .btn-secondary-error {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255,255,255,0.07);
+            border: 1px solid rgba(255,255,255,0.12);
+            color: #94a3b8 !important;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 12px 26px;
+            border-radius: 12px;
+            text-decoration: none !important;
+            transition: background 0.2s, transform 0.2s, color 0.2s;
+        }
+
+            .btn-secondary-error:hover {
+                background: rgba(249,115,22,0.1);
+                border-color: rgba(249,115,22,0.3);
+                color: #f97316 !important;
+                transform: translateY(-2px);
+            }
+
+        /* ── DEBUG PANEL ── */
+        .debug-panel {
+            margin-top: 28px;
+            background: rgba(0,0,0,0.25);
+            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 14px;
+            padding: 16px 18px;
             text-align: left;
         }
 
-        code {
-            color: #fdba74;
+        .debug-label {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 1.2px;
+            text-transform: uppercase;
+            color: #475569;
+            margin-bottom: 8px;
+        }
+
+        .debug-id {
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            color: #fb923c;
+            word-break: break-all;
+        }
+
+        .debug-hint {
+            font-size: 11px;
+            color: #334155;
+            margin-top: 6px;
+            line-height: 1.5;
+        }
+
+        /* ── BRAND MARK ── */
+        .brand-mark {
+            position: absolute;
+            top: 22px;
+            left: 28px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 2;
+        }
+
+        .brand-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #f97316, #fbbf24);
+            box-shadow: 0 0 12px rgba(249,115,22,0.6);
+        }
+
+        .brand-name {
+            font-size: 13px;
+            font-weight: 800;
+            color: rgba(255,255,255,0.3);
+            letter-spacing: 0.5px;
+        }
+
+        @@keyframes blink {
+            0%, 100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.3;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="orb"></div>
-    <div class="error-container">
-        <h1 class="error-code">@errorCode</h1>
-        <div class="error-subtitle">Something Went Wrong</div>
+
+    <!-- Background layers -->
+    <div class="bg-layer">
+        <div class="bg-grid"></div>
+        <div class="bg-orb o1"></div>
+        <div class="bg-orb o2"></div>
+        <div class="bg-orb o3"></div>
+    </div>
+
+    <!-- Brand mark -->
+    <div class="brand-mark">
+        <div class="brand-dot"></div>
+        <span class="brand-name">BelieveIn Admin</span>
+    </div>
+
+    <!-- Error Card -->
+    <div class="error-card">
+
+        <div class="error-badge">System Alert</div>
+
+        <div class="error-code">@errorCode</div>
+
+        <div class="error-divider"></div>
+
+        <div class="error-title">Something Went Wrong</div>
+
         <p class="error-msg">@errorMessage</p>
 
-        <div style="display: flex; gap: 15px; justify-content: center;">
-            <a href="/" class="btn-sunset">Return Home</a>
-            <a href="javascript:history.back()" class="btn-sunset" style="background: rgba(255,255,255,0.1); box-shadow: none;">Go Back</a>
+        <div class="btn-row">
+            <a href="/" class="btn-primary-error">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 12L12 3l9 9" />
+                    <path d="M9 21V12h6v9" />
+                </svg>
+                Return Home
+            </a>
+            <a href="javascript:history.back()" class="btn-secondary-error">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M19 12H5" />
+                    <path d="M12 5l-7 7 7 7" />
+                </svg>
+                Go Back
+            </a>
         </div>
 
         @if (showRequestId && !string.IsNullOrEmpty(requestId))
         {
-            <div class="debug-info">
-                <strong>Request ID:</strong> <code>@requestId</code><br />
-                <small>Please quote this ID if you report this issue to the administrator.</small>
+            <div class="debug-panel">
+                <div class="debug-label">Request ID</div>
+                <div class="debug-id">@requestId</div>
+                <div class="debug-hint">Please include this ID when reporting this issue to the administrator.</div>
             </div>
         }
+
     </div>
 
-    <script src="~/Admin/assets/libs/jquery/dist/jquery.min.js"></script>
     <script>
-        $(document).ready(function() {
-            // Slight parallax effect for the orb
-            $(document).mousemove(function(e) {
-                let x = (e.pageX / 50);
-                let y = (e.pageY / 50);
-                $('.orb').css('transform', 'translate(' + x + 'px, ' + y + 'px)');
+        // Smooth parallax on mouse move
+        document.addEventListener('mousemove', function (e) {
+            var xPct = (e.clientX / window.innerWidth  - 0.5) * 30;
+            var yPct = (e.clientY / window.innerHeight - 0.5) * 20;
+            document.querySelectorAll('.bg-orb').forEach(function (orb, i) {
+                var factor = (i + 1) * 0.6;
+                orb.style.transform = 'translate(' + (xPct * factor) + 'px, ' + (yPct * factor) + 'px)';
             });
         });
     </script>
+
 </body>
 </html>
