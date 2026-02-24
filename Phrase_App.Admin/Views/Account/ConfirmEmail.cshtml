@@ -1,12 +1,17 @@
 ﻿@{
     Layout = null;
+    bool success = ViewBag.Success ?? false;
+    string title = ViewBag.Title ?? (success ? "Email Confirmed!" : "Confirmation Failed");
+    string message = ViewBag.Message ?? (success
+        ? "Your account is now active and ready to go. Return to the BelieveIn app to start your journey."
+        : "Something went wrong. Please try again or request a new confirmation link from the app.");
 }
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>BelieveIn | Email Confirmed</title>
+    <title>BelieveIn | @title</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@@mdi/font@7.2.96/css/materialdesignicons.min.css">
     <style>
         *, *::before, *::after {
@@ -52,7 +57,6 @@
             .bg-orb.o1 {
                 width: 480px;
                 height: 480px;
-                background: radial-gradient(circle, rgba(249,115,22,0.45), transparent 70%);
                 top: -140px;
                 left: -140px;
                 animation-duration: 22s;
@@ -61,7 +65,6 @@
             .bg-orb.o2 {
                 width: 360px;
                 height: 360px;
-                background: radial-gradient(circle, rgba(34,197,94,0.2), transparent 70%);
                 bottom: -80px;
                 right: -80px;
                 animation-duration: 28s;
@@ -71,11 +74,36 @@
             .bg-orb.o3 {
                 width: 260px;
                 height: 260px;
-                background: radial-gradient(circle, rgba(251,191,36,0.2), transparent 70%);
                 top: 55%;
                 left: 65%;
                 animation-duration: 16s;
             }
+
+        /* Success orb colors */
+        .state-success .bg-orb.o1 {
+            background: radial-gradient(circle, rgba(249,115,22,0.45), transparent 70%);
+        }
+
+        .state-success .bg-orb.o2 {
+            background: radial-gradient(circle, rgba(34,197,94,0.2), transparent 70%);
+        }
+
+        .state-success .bg-orb.o3 {
+            background: radial-gradient(circle, rgba(251,191,36,0.2), transparent 70%);
+        }
+
+        /* Error orb colors */
+        .state-error .bg-orb.o1 {
+            background: radial-gradient(circle, rgba(239,68,68,0.4), transparent 70%);
+        }
+
+        .state-error .bg-orb.o2 {
+            background: radial-gradient(circle, rgba(249,115,22,0.2), transparent 70%);
+        }
+
+        .state-error .bg-orb.o3 {
+            background: radial-gradient(circle, rgba(251,191,36,0.15), transparent 70%);
+        }
 
         @@keyframes drift {
             from {
@@ -142,13 +170,11 @@
             }
         }
 
-        /* ── SUCCESS ICON ── */
+        /* ── ICON RING ── */
         .icon-ring {
             width: 88px;
             height: 88px;
             border-radius: 50%;
-            background: rgba(34,197,94,0.1);
-            border: 1.5px solid rgba(34,197,94,0.25);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -162,13 +188,40 @@
                 position: absolute;
                 inset: -8px;
                 border-radius: 50%;
-                border: 1px solid rgba(34,197,94,0.12);
             }
 
             .icon-ring i {
                 font-size: 40px;
+            }
+
+        /* Success icon */
+        .state-success .icon-ring {
+            background: rgba(34,197,94,0.1);
+            border: 1.5px solid rgba(34,197,94,0.25);
+        }
+
+            .state-success .icon-ring::before {
+                border: 1px solid rgba(34,197,94,0.12);
+            }
+
+            .state-success .icon-ring i {
                 color: #22c55e;
                 filter: drop-shadow(0 0 14px rgba(34,197,94,0.45));
+            }
+
+        /* Error icon */
+        .state-error .icon-ring {
+            background: rgba(239,68,68,0.1);
+            border: 1.5px solid rgba(239,68,68,0.25);
+        }
+
+            .state-error .icon-ring::before {
+                border: 1px solid rgba(239,68,68,0.12);
+            }
+
+            .state-error .icon-ring i {
+                color: #ef4444;
+                filter: drop-shadow(0 0 14px rgba(239,68,68,0.45));
             }
 
         @@keyframes popIn {
@@ -188,9 +241,6 @@
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            background: rgba(34,197,94,0.1);
-            border: 1px solid rgba(34,197,94,0.22);
-            color: #4ade80;
             border-radius: 20px;
             padding: 5px 14px;
             font-size: 11px;
@@ -205,17 +255,43 @@
                 width: 6px;
                 height: 6px;
                 border-radius: 50%;
-                background: #22c55e;
                 animation: blink 2s infinite;
+            }
+
+        .state-success .status-badge {
+            background: rgba(34,197,94,0.1);
+            border: 1px solid rgba(34,197,94,0.22);
+            color: #4ade80;
+        }
+
+            .state-success .status-badge::before {
+                background: #22c55e;
+            }
+
+        .state-error .status-badge {
+            background: rgba(239,68,68,0.1);
+            border: 1px solid rgba(239,68,68,0.22);
+            color: #f87171;
+        }
+
+            .state-error .status-badge::before {
+                background: #ef4444;
             }
 
         /* ── DIVIDER ── */
         .divider {
             width: 48px;
             height: 4px;
-            background: linear-gradient(90deg, #f97316, #fbbf24);
             border-radius: 10px;
             margin: 18px auto;
+        }
+
+        .state-success .divider {
+            background: linear-gradient(90deg, #f97316, #fbbf24);
+        }
+
+        .state-error .divider {
+            background: linear-gradient(90deg, #ef4444, #f97316);
         }
 
         /* ── TEXT ── */
@@ -236,8 +312,6 @@
 
         /* ── INSTRUCTION BOX ── */
         .instruction-box {
-            background: rgba(249,115,22,0.07);
-            border: 1px solid rgba(249,115,22,0.18);
             border-radius: 16px;
             padding: 18px 20px;
             display: flex;
@@ -247,32 +321,89 @@
             margin-bottom: 32px;
         }
 
+        .state-success .instruction-box {
+            background: rgba(249,115,22,0.07);
+            border: 1px solid rgba(249,115,22,0.18);
+        }
+
+        .state-error .instruction-box {
+            background: rgba(239,68,68,0.07);
+            border: 1px solid rgba(239,68,68,0.18);
+        }
+
         .instruction-icon {
             width: 34px;
             height: 34px;
             border-radius: 10px;
             flex-shrink: 0;
-            background: rgba(249,115,22,0.12);
-            border: 1px solid rgba(249,115,22,0.2);
-            color: #f97316;
             font-size: 17px;
             display: flex;
             align-items: center;
             justify-content: center;
         }
 
+        .state-success .instruction-icon {
+            background: rgba(249,115,22,0.12);
+            border: 1px solid rgba(249,115,22,0.2);
+            color: #f97316;
+        }
+
+        .state-error .instruction-icon {
+            background: rgba(239,68,68,0.12);
+            border: 1px solid rgba(239,68,68,0.2);
+            color: #ef4444;
+        }
+
         .instruction-title {
             font-size: 12px;
             font-weight: 700;
-            color: #fb923c;
             margin-bottom: 4px;
+        }
+
+        .state-success .instruction-title {
+            color: #fb923c;
+        }
+
+        .state-error .instruction-title {
+            color: #f87171;
         }
 
         .instruction-body {
             font-size: 12.5px;
-            color: #92400e;
             line-height: 1.6;
         }
+
+        .state-success .instruction-body {
+            color: #92400e;
+        }
+
+        .state-error .instruction-body {
+            color: #991b1b;
+        }
+
+        /* ── RETRY BUTTON ── */
+        .retry-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 28px;
+            border-radius: 14px;
+            font-size: 14px;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+            border: none;
+            transition: transform 0.2s, box-shadow 0.2s;
+            background: linear-gradient(135deg, #f97316, #fbbf24);
+            color: white;
+            box-shadow: 0 4px 15px rgba(249,115,22,0.3);
+            margin-bottom: 12px;
+        }
+
+            .retry-btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 8px 25px rgba(249,115,22,0.4);
+            }
 
         /* ── FOOTER ── */
         .card-footer {
@@ -280,7 +411,7 @@
             padding-top: 20px;
             border-top: 1px solid rgba(255,255,255,0.06);
             font-size: 12px;
-            color: #ffffff;
+            color: rgba(255,255,255,0.25);
         }
 
         @@keyframes blink {
@@ -294,7 +425,7 @@
         }
     </style>
 </head>
-<body>
+<body class="@(success ? "state-success" : "state-error")">
 
     <!-- Background -->
     <div class="bg-layer">
@@ -313,40 +444,67 @@
     <!-- Card -->
     <div class="card">
 
-        <!-- Icon -->
-        <div class="icon-ring">
-            <i class="mdi mdi-check-decagram"></i>
-        </div>
-
-        <!-- Badge -->
-        <div class="status-badge">Verified</div>
-
-        <!-- Title -->
-        <div class="card-title">Email Confirmed!</div>
-
-        <div class="divider"></div>
-
-        <!-- Message -->
-        <p class="card-msg">
-            Your account is now active and ready to go.
-            Return to the BelieveIn app to start your journey.
-        </p>
-
-        <!-- Instruction box -->
-        <div class="instruction-box">
-            <div class="instruction-icon">
-                <i class="mdi mdi-cellphone-check"></i>
+        @if (success)
+        {
+            <!-- ✅ SUCCESS STATE -->
+            <div class="icon-ring">
+                <i class="mdi mdi-check-decagram"></i>
             </div>
-            <div>
-                <div class="instruction-title">What's next?</div>
-                <div class="instruction-body">
-                    You can safely close this window and open the BelieveIn app.
-                    Your account will be logged in automatically.
+
+            <div class="status-badge">Verified</div>
+
+            <div class="card-title">@title</div>
+            <div class="divider"></div>
+
+            <p class="card-msg">@message</p>
+
+            <div class="instruction-box">
+                <div class="instruction-icon">
+                    <i class="mdi mdi-cellphone-check"></i>
+                </div>
+                <div>
+                    <div class="instruction-title">What's next?</div>
+                    <div class="instruction-body">
+                        You can safely close this window and open the BelieveIn app.
+                        Sign in with your email and password to get started.
+                    </div>
                 </div>
             </div>
-        </div>
+        }
+        else
+        {
+            <!-- ❌ ERROR STATE -->
+            <div class="icon-ring">
+                <i class="mdi mdi-alert-circle-outline"></i>
+            </div>
 
-        <!-- Footer -->
+            <div class="status-badge">Failed</div>
+
+            <div class="card-title">@title</div>
+            <div class="divider"></div>
+
+            <p class="card-msg">@message</p>
+
+            <div class="instruction-box">
+                <div class="instruction-icon">
+                    <i class="mdi mdi-information-outline"></i>
+                </div>
+                <div>
+                    <div class="instruction-title">What can you do?</div>
+                    <div class="instruction-body">
+                        Open the BelieveIn app and request a new confirmation email
+                        from the sign-in screen. Confirmation links expire after some time
+                        for security reasons.
+                    </div>
+                </div>
+            </div>
+
+            <a href="javascript:void(0)" class="retry-btn" onclick="openApp()">
+                <i class="mdi mdi-cellphone-arrow-down"></i>
+                Open BelieveIn App
+            </a>
+        }
+
         <div class="card-footer">
             &copy; @DateTime.Now.Year BelieveIn App. All rights reserved.
         </div>
@@ -356,13 +514,20 @@
     <script>
         // Parallax orbs on mouse move
         document.addEventListener('mousemove', function (e) {
-            var xPct = (e.clientX / window.innerWidth  - 0.5) * 25;
+            var xPct = (e.clientX / window.innerWidth - 0.5) * 25;
             var yPct = (e.clientY / window.innerHeight - 0.5) * 18;
             document.querySelectorAll('.bg-orb').forEach(function (orb, i) {
                 var f = (i + 1) * 0.5;
                 orb.style.transform = 'translate(' + (xPct * f) + 'px, ' + (yPct * f) + 'px)';
             });
         });
+
+        function openApp() {
+            window.location.href = 'believein://home';
+            setTimeout(function () {
+                window.location.href = 'https://play.google.com/store/apps/details?id=com.believein.app';
+            }, 2000);
+        }
     </script>
 
 </body>

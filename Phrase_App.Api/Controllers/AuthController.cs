@@ -95,12 +95,18 @@ public class AuthController : ControllerBase
     }
 
     [HttpGet("confirm-email")]
-    public async Task<IActionResult> ConfirmEmail(string email, string token)
+    public async Task<IActionResult> ConfirmEmail([FromQuery] string email, [FromQuery] string token)
     {
-        await _authService.ConfirmEmailAsync(email, token);
-        return Ok();
-    }
+        if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(token))
+            return BadRequest(new { success = false, message = "Email and token are required." });
 
+        var result = await _authService.ConfirmEmailAsync(email, token);
+
+        if (result.Success)
+            return Ok(result);
+
+        return BadRequest(result);
+    }
 
     [HttpPost("forgot-password")]
     public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto dto)

@@ -10,7 +10,6 @@ public interface IAuthService
     Task<AuthResponse> LoginAsync(LoginDto dto);
     Task<AuthResponse> SocialLoginAsync(string email, string fullName);
     Task<AuthResponse> RefreshTokenAsync(string refreshToken);
-    Task ConfirmEmailAsync(string email, string token);
     Task<IdentityResult> ResetPasswordAsync(ResetPasswordDto dto);
     Task<AuthResponse> GoogleLoginAsync(GoogleLoginDto dto);
     Task<AuthResponse> FacebookLoginAsync(FacebookLoginDto dto);
@@ -27,4 +26,5 @@ public interface IAuthService
     Task<IdentityResult> ChangePasswordAsync(Guid? userId, ChangePasswordDto dto);
     Task<bool> UpdateUserThemeAsync(Guid? userId, bool isDarkMode);
     Task<IdentityResult> DeactivateUserAsync(Guid? userId, string password);
+    Task<Response> ConfirmEmailAsync(string email, string token);
 }

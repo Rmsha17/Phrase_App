@@ -26,8 +26,34 @@ namespace Phrase_App.Admin.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> ConfirmEmail()
+        public async Task<IActionResult> ConfirmEmail([FromQuery] string email, [FromQuery] string token)
         {
+            // No params = someone just navigated here directly
+            if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(token))
+            {
+                ViewBag.Success = false;
+                ViewBag.Message = "Invalid confirmation link. Please check your email and try again.";
+                ViewBag.Title = "Invalid Link";
+                return View();
+            }
+
+            try
+            {
+                var result = await _authApi.ConfirmEmailAsync(email, token);
+
+                ViewBag.Success = result.Success;
+                ViewBag.Title = result.Success ? "Email Confirmed!" : "Confirmation Failed";
+                ViewBag.Message = result.Success
+                    ? "Your email has been confirmed successfully! You can now open the BelieveIn app and sign in."
+                    : result.Message ?? "Confirmation failed. The link may have expired. Please request a new one from the app.";
+            }
+            catch (Exception)
+            {
+                ViewBag.Success = false;
+                ViewBag.Title = "Something Went Wrong";
+                ViewBag.Message = "An error occurred while confirming your email. Please try again later.";
+            }
+
             return View();
         }
 

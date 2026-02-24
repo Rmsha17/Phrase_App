@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
@@ -7,6 +8,7 @@ using Phrase_App.Core.DTOs.Request;
 using Phrase_App.Core.DTOs.Response;
 using Phrase_App.Core.Models;
 using System.Security.Claims;
+using System.Text;
 
 public class AuthService : IAuthService
 {
@@ -16,6 +18,8 @@ public class AuthService : IAuthService
     private readonly PhraseDbContext _context;
     private readonly IConfiguration _configuration;
     private readonly IMemoryCache _cache;
+    private const string EMAIL_CONFIRM_PROVIDER = "BelieveInApp";
+    private const string EMAIL_CONFIRM_PURPOSE = "EmailConfirmation";
     public AuthService(UserManager<ApplicationUser> userManager, IJwtService jwtService, IEmailService emailService, PhraseDbContext context, IConfiguration configuration, IMemoryCache cache)
     {
         _userManager = userManager;
@@ -82,14 +86,21 @@ public class AuthService : IAuthService
         if (!result.Succeeded)
             return Response.FailResponse(StaticDetails.MsgRegistrationFailed);
 
-        // Assign default role
         await _userManager.AddToRoleAsync(user, StaticDetails.RoleUser);
 
-        // Send confirmation email
-        var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-        var link = $"{_configuration["App:ClientUrl"]}/confirm-email?email={dto.Email}&token={Uri.EscapeDataString(token)}";
+        // ✅ Generate simple token and store in AspNetUserTokens
+        var token = await GenerateAndStoreEmailTokenAsync(user);
 
-        await _emailService.SendAsync(dto.Email, StaticDetails.EmailSubjectConfirm, string.Format(StaticDetails.EmailBodyConfirmSimpleTemplate, link));
+        var link = $"{_configuration["App:ClientUrl"]}/Account/ConfirmEmail"
+            + $"?email={Uri.EscapeDataString(dto.Email)}"
+            + $"&token={token}";
+
+        await _emailService.SendAsync(
+            dto.Email,
+            StaticDetails.EmailSubjectConfirm,
+            string.Format(StaticDetails.EmailBodyConfirmSimpleTemplate, link)
+        );
+
         return Response.SuccessResponse(StaticDetails.MsgAccountCreated);
     }
 
@@ -179,14 +190,27 @@ public class AuthService : IAuthService
     // ===============================
     // CONFIRM EMAIL
     // ===============================
-    public async Task ConfirmEmailAsync(string email, string token)
+    public async Task<Response> ConfirmEmailAsync(string email, string token)
     {
         var user = await _userManager.FindByEmailAsync(email);
-        if (user == null) throw new ApplicationException(StaticDetails.MsgInvalidEmail);
+        if (user == null)
+            return Response.FailResponse("Invalid confirmation link.");
 
-        var result = await _userManager.ConfirmEmailAsync(user, token);
-        if (!result.Succeeded) throw new ApplicationException(StaticDetails.MsgEmailConfirmationFailed);
+        if (user.EmailConfirmed)
+            return Response.SuccessResponse("Email is already confirmed.");
+
+        var isValid = await VerifyStoredEmailTokenAsync(user, token);
+        if (!isValid)
+            return Response.FailResponse("Confirmation failed. The link may have expired.");
+
+        user.EmailConfirmed = true;
+        await _userManager.UpdateAsync(user);
+
+        // ✅ Clean up used token
+        await RemoveEmailTokenAsync(user);
+
         await SaveDefaultOverLaySetting(Guid.Parse(user.Id));
+        return Response.SuccessResponse("Email confirmed successfully!");
     }
 
     // ===============================
@@ -197,29 +221,30 @@ public class AuthService : IAuthService
     {
         var user = await _userManager.FindByEmailAsync(email);
 
-        // Security: Do not reveal if user exists
         if (user == null)
             return Response.SuccessResponse(StaticDetails.MsgConfirmationEmailSentIfExists);
 
         if (user.EmailConfirmed)
             return Response.FailResponse(StaticDetails.MsgEmailAlreadyConfirmed);
 
-        var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+        // ✅ Remove old token and generate new one
+        await _userManager.RemoveAuthenticationTokenAsync(
+            user, EMAIL_CONFIRM_PROVIDER, EMAIL_CONFIRM_PURPOSE
+        );
+        var token = await GenerateAndStoreEmailTokenAsync(user);
 
-        var confirmationLink =
-            $"{_configuration["App:ClientUrl"]}/confirm-email" +
-            $"?email={Uri.EscapeDataString(user.Email!)}" +
-            $"&token={Uri.EscapeDataString(token)}";
+        var link = $"{_configuration["App:ClientUrl"]}/Account/ConfirmEmail"
+            + $"?email={Uri.EscapeDataString(user.Email!)}"
+            + $"&token={token}";
 
         await _emailService.SendAsync(
             user.Email!,
             StaticDetails.EmailSubjectConfirm,
-            string.Format(StaticDetails.EmailBodyConfirmTemplate, user.FullName, confirmationLink)
+            string.Format(StaticDetails.EmailBodyConfirmTemplate, user.FullName, link)
         );
 
         return Response.SuccessResponse(StaticDetails.MsgConfirmationEmailResent);
     }
-
 
     // ===============================
     // FORGOT PASSWORD
@@ -413,5 +438,63 @@ public class AuthService : IAuthService
         var result = await _userManager.SetLockoutEndDateAsync(user, DateTimeOffset.MaxValue);
 
         return result;
+    }
+
+    // ✅ Store token directly in AspNetUserTokens via DbContext
+    private async Task<string> GenerateAndStoreEmailTokenAsync(ApplicationUser user)
+    {
+        var token = Guid.NewGuid().ToString("N");
+
+        // Remove old token if exists
+        var existing = await _context.UserTokens.FirstOrDefaultAsync(t =>
+            t.UserId == user.Id &&
+            t.LoginProvider == EMAIL_CONFIRM_PROVIDER &&
+            t.Name == EMAIL_CONFIRM_PURPOSE
+        );
+
+        if (existing != null)
+        {
+            _context.UserTokens.Remove(existing);
+        }
+
+        // Add new token
+        _context.UserTokens.Add(new IdentityUserToken<string>
+        {
+            UserId = user.Id,
+            LoginProvider = EMAIL_CONFIRM_PROVIDER,
+            Name = EMAIL_CONFIRM_PURPOSE,
+            Value = token
+        });
+
+        await _context.SaveChangesAsync();
+        return token;
+    }
+
+    // ✅ Verify token directly from DB — no UserManager, no DataProtection
+    private async Task<bool> VerifyStoredEmailTokenAsync(ApplicationUser user, string token)
+    {
+        var stored = await _context.UserTokens.FirstOrDefaultAsync(t =>
+            t.UserId == user.Id &&
+            t.LoginProvider == EMAIL_CONFIRM_PROVIDER &&
+            t.Name == EMAIL_CONFIRM_PURPOSE
+        );
+
+        return stored != null && stored.Value == token;
+    }
+
+    // ✅ Remove token after use
+    private async Task RemoveEmailTokenAsync(ApplicationUser user)
+    {
+        var stored = await _context.UserTokens.FirstOrDefaultAsync(t =>
+            t.UserId == user.Id &&
+            t.LoginProvider == EMAIL_CONFIRM_PROVIDER &&
+            t.Name == EMAIL_CONFIRM_PURPOSE
+        );
+
+        if (stored != null)
+        {
+            _context.UserTokens.Remove(stored);
+            await _context.SaveChangesAsync();
+        }
     }
 }
