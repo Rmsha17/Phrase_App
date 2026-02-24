@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Phrase_App.Core.DTOs;
 using Phrase_App.Core.DTOs.Request;
 using Phrase_App.Core.DTOs.Response;
 using Phrase_App.Core.Models;
@@ -127,6 +129,28 @@ namespace Phrase_App.Infrastructure.Services
             var item = await _context.QuoteSchedules.FindAsync(scheduleId);
             if (item == null) return false;
             _context.QuoteSchedules.Remove(item);
+            return await _context.SaveChangesAsync() > 0;
+        }
+
+        public async Task<bool> UpdateWeeklyAsync(Guid scheduleId, UpdateWeeklyScheduleDto dto, Guid? userId)
+        {
+            var schedule = await _context.QuoteSchedules
+                .Include(s => s.Days)
+                .FirstOrDefaultAsync(s => s.Id == scheduleId && s.UserId == userId.Value);
+
+            if (schedule == null) return false;
+
+            // Update time
+            schedule.DailyStartTime = TimeSpan.Parse(dto.StartTime);
+            schedule.DailyEndTime = TimeSpan.Parse(dto.EndTime);
+
+            // Remove old days and replace with new ones
+            _context.ScheduledDays.RemoveRange(schedule.Days);
+            schedule.Days = dto.DaysOfWeek.Select(day => new ScheduledDay
+            {
+                DayOfWeek = day,
+            }).ToList();
+
             return await _context.SaveChangesAsync() > 0;
         }
     }

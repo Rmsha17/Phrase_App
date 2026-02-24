@@ -382,11 +382,11 @@
 
     <div class="col-lg-4 col-md-6">
         <div class="stat-card primary">
-            <div class="stat-icon"><i class="mdi mdi-format-quote-open"></i></div>
-            <div class="stat-label">New Quotes — 30 Days</div>
+            <div class="stat-icon"><i class="mdi mdi-format-quote"></i></div>
+            <div class="stat-label">New Affirmations — 30 Days</div>
             <div class="stat-value">@Model.TotalQuotesLast30Days</div>
             <div class="stat-sub">
-                <i class="mdi mdi-calendar-month"></i> Last 30 days
+                <i class="mdi mdi-calendar"></i> Last 30 days
             </div>
             <div class="stat-bar-track">
                 <div class="stat-bar-fill" style="width:100%;"></div>
@@ -396,11 +396,11 @@
 
     <div class="col-lg-4 col-md-6">
         <div class="stat-card">
-            <div class="stat-icon"><i class="mdi mdi-tag-multiple-outline"></i></div>
+            <div class="stat-icon"><i class="mdi mdi-tag-multiple"></i></div>
             <div class="stat-label">Total Categories</div>
             <div class="stat-value">@Model.QuotesByCategory.Count</div>
             <div class="stat-sub">
-                <i class="mdi mdi-layers-outline"></i> Active content categories
+                <i class="mdi mdi-layers"></i> Active content categories
             </div>
             <div class="stat-bar-track">
                 <div class="stat-bar-fill" style="width:70%;"></div>
@@ -410,7 +410,7 @@
 
     <div class="col-lg-4 col-md-6">
         <div class="stat-card navy">
-            <div class="stat-icon"><i class="mdi mdi-trophy-outline"></i></div>
+            <div class="stat-icon"><i class="mdi mdi-trophy"></i></div>
             <div class="stat-label">Top Category</div>
             <div class="stat-value">@(topCategory?.Category ?? "N/A")</div>
             <div class="stat-sub">

@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Phrase_App.Api.Extensions;
+using Phrase_App.Core.DTOs;
 using Phrase_App.Core.DTOs.Request;
 
 [Authorize]
@@ -24,6 +25,15 @@ public class SchedulerController : ControllerBase
         if (!result) return BadRequest(new { success = false, message = "Failed to create schedule" });
 
         return Ok(new { success = true, message = "Schedule created successfully" });
+    }
+
+    // PUT: api/scheduler/weekly/{id}
+    [HttpPost("weekly/{id}")]
+    public async Task<IActionResult> UpdateWeeklySchedule(Guid id, [FromBody] UpdateWeeklyScheduleDto dto)
+    {
+        var result = await _schedulerService.UpdateWeeklyAsync(id, dto, User.GetUserId());
+        if (!result) return BadRequest(new { success = false, message = "Failed to update schedule" });
+        return Ok(new { success = true, message = "Schedule updated successfully" });
     }
 
     // GET: api/scheduler/active/{userId}

@@ -1,4 +1,5 @@
-﻿using Phrase_App.Core.DTOs.Request;
+﻿using Phrase_App.Core.DTOs;
+using Phrase_App.Core.DTOs.Request;
 using Phrase_App.Core.DTOs.Response;
 
 public interface IQuoteSchedulerService
@@ -8,4 +9,5 @@ public interface IQuoteSchedulerService
     Task<IEnumerable<ScheduleResponseDto>> GetUserSchedulesAsync(Guid? userId);
     Task<bool> RemoveScheduleAsync(Guid scheduleId);
     Task<List<UserQuoteResponseDto>> GetCurrentScheduledQuoteAsync(Guid? userId);
+    Task<bool> UpdateWeeklyAsync(Guid scheduleId, UpdateWeeklyScheduleDto dto, Guid? userId);
 }
