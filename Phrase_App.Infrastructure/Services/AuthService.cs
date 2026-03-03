@@ -96,10 +96,10 @@ public class AuthService : IAuthService
             + $"&token={token}";
 
         await _emailService.SendAsync(
-            dto.Email,
-            StaticDetails.EmailSubjectConfirm,
-            string.Format(StaticDetails.EmailBodyConfirmSimpleTemplate, link)
-        );
+     dto.Email,
+     StaticDetails.EmailSubjectConfirm,
+     string.Format(StaticDetails.EmailBodyConfirmTemplate, link)
+ );
 
         return Response.SuccessResponse(StaticDetails.MsgAccountCreated);
     }
@@ -238,10 +238,10 @@ public class AuthService : IAuthService
             + $"&token={token}";
 
         await _emailService.SendAsync(
-            user.Email!,
-            StaticDetails.EmailSubjectConfirm,
-            string.Format(StaticDetails.EmailBodyConfirmTemplate, user.FullName, link)
-        );
+     user.Email,
+     StaticDetails.EmailSubjectConfirm,
+     string.Format(StaticDetails.EmailBodyConfirmTemplate, link)
+ );
 
         return Response.SuccessResponse(StaticDetails.MsgConfirmationEmailResent);
     }
@@ -252,14 +252,17 @@ public class AuthService : IAuthService
     public async Task SendOtpAsync(string email)
     {
         var user = await _userManager.FindByEmailAsync(email);
-        if (user == null) return; // Security: don't reveal user doesn't exist
+        if (user == null) return;
 
         var otp = new Random().Next(100000, 999999).ToString();
-
         var cacheKey = $"OTP_{email}";
         _cache.Set(cacheKey, otp, TimeSpan.FromMinutes(10));
 
-        await _emailService.SendAsync(email, "Reset Code", $"Your code is {otp}");
+        await _emailService.SendAsync(
+            email,
+            StaticDetails.EmailSubjectOtp,
+            string.Format(StaticDetails.EmailBodyOtpTemplate, otp)
+        );
     }
 
     public bool VerifyOtp(string email, string otp)

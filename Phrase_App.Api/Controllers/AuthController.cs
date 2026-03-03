@@ -112,7 +112,7 @@ public class AuthController : ControllerBase
     public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto dto)
     {
         await _authService.SendOtpAsync(dto.Email);
-        return Ok(new { success = true, message = "OTP sent to your email" });
+        return Ok(new { success = true , message = "OTP sent to your email" });
     }
 
     [HttpPost("verify-otp")]
