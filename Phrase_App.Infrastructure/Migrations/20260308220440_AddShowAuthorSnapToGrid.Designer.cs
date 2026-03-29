@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Phrase_App.Infrastructure.Migrations
 {
     [DbContext(typeof(PhraseDbContext))]
-    partial class PhraseDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260308220440_AddShowAuthorSnapToGrid")]
+    partial class AddShowAuthorSnapToGrid
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -338,8 +341,8 @@ namespace Phrase_App.Infrastructure.Migrations
                     b.Property<double>("FontSize")
                         .HasColumnType("float");
 
-                    b.Property<double>("IntervalMinutes")
-                        .HasColumnType("float");
+                    b.Property<int>("IntervalMinutes")
+                        .HasColumnType("int");
 
                     b.Property<double>("Opacity")
                         .HasColumnType("float");

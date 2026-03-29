@@ -10,11 +10,13 @@ namespace Phrase_App.Core.DTOs.Request
         public string BackgroundType { get; set; }
         public string? BackgroundValue { get; set; }
         public string AnimationType { get; set; }
-        public int IntervalMinutes { get; set; }
+        public double IntervalMinutes { get; set; } 
         public string Position { get; set; }
         public bool VibrationEnabled { get; set; }
         public string SoundEffect { get; set; }
         public string DisplayMode { get; set; }
         public IFormFile? ImageFile { get; set; }
+        public bool ShowAuthor { get; set; } = false;
+        public bool SnapToGrid { get; set; } = false;
     }
 }

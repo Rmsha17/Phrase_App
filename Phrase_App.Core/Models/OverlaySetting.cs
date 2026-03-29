@@ -22,13 +22,17 @@ namespace Phrase_App.Core.Models
 
         // Animation & Behavior
         public string AnimationType { get; set; } = "Fade";
-        public int IntervalMinutes { get; set; } = 10;
+        public double IntervalMinutes { get; set; } = 1;
         public string Position { get; set; } = "Center";
 
         // Feedback
         public bool VibrationEnabled { get; set; } = true;
         public string SoundEffect { get; set; } = "Nature Chime";
         public string DisplayMode { get; set; } = "Compact Box";
+
+        //New Coulmns
+        public bool ShowAuthor { get; set; } = false;
+        public bool SnapToGrid { get; set; } = false;
 
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
     }

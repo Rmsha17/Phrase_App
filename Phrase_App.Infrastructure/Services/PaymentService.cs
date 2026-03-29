@@ -344,14 +344,16 @@ namespace Phrase_App.Infrastructure.Services
             var user = await _userManager.FindByIdAsync(idString);
             return user;
         }
-
         private async Task<bool> VerifyWithGooglePlayAsync(string productId, string token)
         {
             if (!File.Exists(_jsonKeyPath))
                 throw new FileNotFoundException($"Google Service Account key not found at: {_jsonKeyPath}");
 
+            // ── Read as string first to catch encoding issues ──
+            var jsonContent = await File.ReadAllTextAsync(_jsonKeyPath);
+
             GoogleCredential credential;
-            using (var stream = new FileStream(_jsonKeyPath, FileMode.Open, FileAccess.Read))
+            using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(jsonContent)))
             {
                 credential = GoogleCredential.FromStream(stream)
                     .CreateScoped(AndroidPublisherService.Scope.Androidpublisher);
