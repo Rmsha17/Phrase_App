@@ -34,4 +34,5 @@ public class QuoteService : IQuoteService
             .Select(q => new QuoteResponse(q.Id, q.Content, q.Author, q.CategoryId))
             .ToListAsync();
     }
+    
 }

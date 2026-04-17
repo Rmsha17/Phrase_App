@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Phrase_App.Api.Extensions;
 using Phrase_App.Core.DTOs.Auth;
-using Phrase_App.Core.DTOs.Auth;
 using Phrase_App.Core.DTOs.Request;
 using System.Linq.Expressions;
 using System.Security.Claims;

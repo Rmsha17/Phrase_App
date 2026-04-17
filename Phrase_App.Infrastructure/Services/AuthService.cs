@@ -166,8 +166,8 @@ public class AuthService : IAuthService
                 FontColor = "FFFFFFFF", // White
                 FontFamily = "Default",
                 Opacity = 1.0,
-                BackgroundType = "Glass", // Force back to free Glass texture
-                BackgroundValue = "20.0",
+                BackgroundType = "None", // Force back to free Glass texture
+                BackgroundValue = "",
                 AnimationType = "Fade",
                 Position = "Center",
                 DisplayMode = "Compact Box", // Force back to Compact Box

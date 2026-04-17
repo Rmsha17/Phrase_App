@@ -69,4 +69,32 @@ public class SchedulerController : ControllerBase
 
         return Ok(new { success = true, message = "Deleted successfully" });
     }
+
+    // POST: api/scheduler/select-active
+    // Replaces all schedules with 24/7 all-days for the selected quotes.
+    // User just picks quotes — scheduling is hidden.
+    [HttpPost("select-active")]
+    public async Task<IActionResult> SelectActiveQuotes([FromBody] SelectActiveQuotesDto dto)
+    {
+        var userId = User.GetUserId();
+        if (userId == null) return Unauthorized();
+
+        var result = await _schedulerService.SelectActiveQuotesAsync(dto.UserQuoteIds, userId.Value);
+
+        if (!result) return BadRequest(new { success = false, message = "Failed to update selection" });
+
+        return Ok(new { success = true, message = "Selection saved" });
+    }
+
+    // GET: api/scheduler/quotes-with-selection
+    // Returns all user quotes with IsSelected flag.
+    [HttpGet("quotes-with-selection")]
+    public async Task<IActionResult> GetQuotesWithSelection()
+    {
+        var userId = User.GetUserId();
+        if (userId == null) return Unauthorized();
+
+        var result = await _schedulerService.GetUserQuotesWithSelectionAsync(userId.Value);
+        return Ok(result);
+    }
 }

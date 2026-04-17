@@ -153,5 +153,82 @@ namespace Phrase_App.Infrastructure.Services
 
             return await _context.SaveChangesAsync() > 0;
         }
+
+        /// <summary>
+        /// Replaces all existing schedules with 24/7 all-days schedules for each selected quote.
+        /// The user never sees any scheduling UI — this is done automatically behind the scenes.
+        /// </summary>
+        public async Task<bool> SelectActiveQuotesAsync(List<Guid> userQuoteIds, Guid userId)
+        {
+            // Get all existing schedules for this user
+            var existing = await _context.QuoteSchedules
+                .Include(s => s.Days)
+                .Where(s => s.UserId == userId)
+                .ToListAsync();
+
+            var alreadyScheduledQuoteIds = existing.Select(s => s.UserQuoteId).ToList();
+
+            // 1. Remove schedules for quotes that are NO LONGER selected
+            var toRemove = existing
+                .Where(s => !userQuoteIds.Contains(s.UserQuoteId))
+                .ToList();
+
+            foreach (var s in toRemove)
+                _context.ScheduledDays.RemoveRange(s.Days);
+
+            _context.QuoteSchedules.RemoveRange(toRemove);
+
+            // 2. Add schedules only for quotes that are newly selected (not already in DB)
+            var allDays = new List<int> { 0, 1, 2, 3, 4, 5, 6 }; // Sun–Sat
+
+            var toAdd = userQuoteIds
+                .Where(id => !alreadyScheduledQuoteIds.Contains(id))
+                .ToList();
+
+            foreach (var userQuoteId in toAdd)
+            {
+                var schedule = new QuoteSchedule
+                {
+                    UserId         = userId,
+                    UserQuoteId    = userQuoteId,
+                    DailyStartTime = TimeSpan.Zero,             // 00:00
+                    DailyEndTime   = new TimeSpan(23, 59, 59),  // 23:59
+                    IsActive       = true,
+                    CreatedAt      = DateTime.UtcNow,
+                    Days           = allDays.Select(d => new ScheduledDay { DayOfWeek = d }).ToList()
+                };
+                _context.QuoteSchedules.Add(schedule);
+            }
+
+            return await _context.SaveChangesAsync() >= 0;
+        }
+
+        /// <summary>
+        /// Returns all quotes for this user, with IsSelected=true if they currently have an active schedule.
+        /// </summary>
+        public async Task<List<UserQuoteWithSelectionDto>> GetUserQuotesWithSelectionAsync(Guid userId)
+        {
+            // Get all UserQuote IDs that have an active schedule
+            var scheduledQuoteIds = await _context.QuoteSchedules
+                .Where(s => s.UserId == userId && s.IsActive)
+                .Select(s => s.UserQuoteId)
+                .ToListAsync();
+
+            var userQuotes = await _context.UserQuotes
+                .Include(uq => uq.Quote)
+                .Where(uq => uq.UserId == userId)
+                .OrderByDescending(uq => uq.CreatedAt)
+                .ToListAsync();
+
+            return userQuotes.Select(uq => new UserQuoteWithSelectionDto
+            {
+                Id         = uq.Id,
+                Content    = uq.QuoteId != null ? uq.Quote.Content : uq.CustomContent,
+                Author     = uq.QuoteId != null ? uq.Quote.Author  : uq.CustomAuthor,
+                IsFavorite = uq.IsFavorite,
+                IsCustom   = uq.QuoteId == null,
+                IsSelected = scheduledQuoteIds.Contains(uq.Id)
+            }).ToList();
+        }
     }
 }

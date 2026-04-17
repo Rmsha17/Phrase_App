@@ -11,7 +11,7 @@ namespace Phrase_App.Core.DTOs.Request
         public string? BackgroundValue { get; set; }
         public string AnimationType { get; set; }
         public double IntervalMinutes { get; set; } 
-        public string Position { get; set; }
+        public string Position { get; set; } = "Center";
         public bool VibrationEnabled { get; set; }
         public string SoundEffect { get; set; }
         public string DisplayMode { get; set; }
